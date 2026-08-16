@@ -51,7 +51,7 @@ export function App() {
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark">A</span>
-          <div><strong>ALINE</strong><small>Next</small></div>
+          <div><strong>ATLAS</strong><small>Alignement</small></div>
         </div>
         <nav className="file-actions">
           <button className="primary" onClick={() => inputRef.current?.click()}>Open FASTA</button>
@@ -125,4 +125,3 @@ export function App() {
     </main>
   );
 }
-

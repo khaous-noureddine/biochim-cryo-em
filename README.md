@@ -1,7 +1,7 @@
-# ALINE Next
+# Atlas Alignement
 
-Réécriture moderne et multiplateforme d’ALINE, l’éditeur d’alignements de
-séquences biologiques fourni dans `aline_011208/`.
+Éditeur moderne et multiplateforme d’alignements de séquences biologiques,
+inspiré de l’application historique ALINE fournie dans `aline_011208/`.
 
 ## Démarrage
 
