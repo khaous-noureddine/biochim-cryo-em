@@ -24,13 +24,20 @@ npm run preview
 
 ## Fonctionnalités actuelles
 
-- import de fichiers FASTA ;
+- ouverture de projets `.atlas`, de projets historiques `.aline`, de fichiers FASTA et de séquences texte simples ;
+- sauvegarde du projet courant au format `.atlas` ;
 - validation et normalisation des séquences ;
 - affichage d’un alignement avec noms et positions ;
+- vues interchangeables Modern et Classic ALINE ;
 - coloration par type de résidu ou conservation ;
-- zoom et défilement ;
+- découpage automatique des longues séquences selon la largeur disponible, sans défilement horizontal dans la vue Classic ALINE ;
 - statistiques simples ;
-- export FASTA.
+- export FASTA ;
+- sélection et première édition des cellules ;
+- insertion de gaps et suppression de cellules ;
+- historique undo/redo ;
+- modèle de document Atlas versionné ;
+- tests automatisés du cœur.
 
 ## Architecture
 
@@ -41,8 +48,17 @@ npm run preview
 
 ## Prochaines étapes
 
-1. Ajouter l’édition des gaps et l’historique annuler/rétablir.
-2. Importer les formats ALN, PIR, MSF et l’ancien format `.aline`.
-3. Ajouter les annotations et l’export PNG/SVG/PDF.
-4. Virtualiser les très grands alignements.
-5. Emballer l’interface avec Tauri pour macOS, Windows et Linux.
+1. Ajouter la navigation clavier et la sélection de régions.
+2. Importer les formats ALN, PIR et MSF.
+3. Étendre l’import `.aline` aux annotations et objets graphiques historiques.
+4. Ajouter les annotations et l’export PNG/SVG/PDF.
+5. Virtualiser les très grands alignements.
+6. Emballer l’interface avec Tauri pour macOS, Windows et Linux.
+
+
+## Launch Aline
+
+```bash
+open -a XQuartz
+perl /Users/noureddine/biochim-project/aline_011208/bin/aline
+```

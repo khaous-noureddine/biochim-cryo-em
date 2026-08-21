@@ -1,14 +1,11 @@
-export type Sequence = {
-  id: string;
-  name: string;
-  description: string;
-  residues: string;
-};
+import {
+  AlignmentDocument,
+  createAlignmentDocument,
+  createId,
+  Sequence,
+} from "./model";
 
-export type Alignment = {
-  name: string;
-  sequences: Sequence[];
-};
+export type Alignment = AlignmentDocument;
 
 const VALID_RESIDUES = /^[A-Z*?.-]+$/;
 
@@ -24,10 +21,11 @@ export function parseFasta(source: string, name = "Untitled alignment"): Alignme
       const header = line.slice(1).trim();
       const [sequenceName = `sequence-${sequences.length + 1}`, ...rest] = header.split(/\s+/);
       current = {
-        id: crypto.randomUUID(),
+        id: createId(),
         name: sequenceName,
         description: rest.join(" "),
         residues: "",
+        numberingStart: 1,
       };
       sequences.push(current);
       continue;
@@ -42,7 +40,7 @@ export function parseFasta(source: string, name = "Untitled alignment"): Alignme
   }
 
   if (!sequences.length) throw new Error("Aucune séquence FASTA trouvée.");
-  return { name, sequences: normalizeAlignment(sequences) };
+  return createAlignmentDocument(name, normalizeAlignment(sequences));
 }
 
 export function normalizeAlignment(sequences: Sequence[]): Sequence[] {
@@ -76,4 +74,3 @@ export function exportFasta(alignment: Alignment): string {
     )
     .join("\n");
 }
-
