@@ -6,6 +6,12 @@ import {
 import { documentHistoryReducer, createDocumentHistory } from "./core/history";
 import { CellPosition } from "./core/model";
 import { openAlignmentFile, serializeAtlasProject } from "./core/project";
+import {
+  calculateAlscriptConservation,
+  calculateSimilarityColors,
+  DEFAULT_SIMILARITY_GROUPS,
+  SimilarityOptions,
+} from "./core/coloring";
 import { demoAlignment } from "./data/demo";
 
 const residueGroups: Record<string, string> = {
@@ -42,7 +48,10 @@ export function App() {
     createDocumentHistory,
   );
   const alignment = history.present;
-  const [scheme, setScheme] = useState<"residue" | "conservation" | "none">("none");
+  const [scheme, setScheme] = useState<"residue" | "similarity" | "calcons" | "none">("none");
+  const [similarityOptions, setSimilarityOptions] = useState<SimilarityOptions>({ cutoff: 0.5, groups: DEFAULT_SIMILARITY_GROUPS });
+  const [similarityDialogOpen, setSimilarityDialogOpen] = useState(false);
+  const [colorExclusions, setColorExclusions] = useState<Set<string>>(() => new Set());
   const [viewMode, setViewMode] = useState<"modern" | "classic">("classic");
   const [classicWidths, setClassicWidths] = useState({ first: 60, continuation: 70 });
   const [zoom, setZoom] = useState(1);
@@ -54,6 +63,11 @@ export function App() {
   const classicViewRef = useRef<HTMLDivElement>(null);
   const colorsMenuRef = useRef<HTMLDetailsElement>(null);
   const conservation = useMemo(() => calculateConservation(alignment), [alignment]);
+  const similarityColors = useMemo(
+    () => calculateSimilarityColors(alignment, similarityOptions),
+    [alignment, similarityOptions],
+  );
+  const alscriptConservation = useMemo(() => calculateAlscriptConservation(alignment), [alignment]);
   const width = alignment.sequences[0]?.residues.length ?? 0;
   const longestNameLength = Math.max(1, ...alignment.sequences.map((sequence) => sequence.name.length));
   const classicNameWidthInCells = Math.max(4, Math.ceil(longestNameLength * 0.58 + 0.7));
@@ -94,6 +108,8 @@ export function App() {
       const opened = openAlignmentFile(await readAlignmentFile(file), file.name);
       dispatch({ type: "open", document: opened.document });
       setSelection(null);
+      setColorExclusions(new Set());
+      setScheme("none");
       setError("");
       const sourceLabel = opened.kind === "aline" ? "Projet ALINE importé" : opened.kind === "atlas" ? "Projet Atlas ouvert" : "Séquences importées";
       setNotice([sourceLabel, ...opened.warnings].join(" · "));
@@ -138,9 +154,45 @@ export function App() {
     setNotice("Projet .atlas enregistré");
   }
 
-  function applyColorScheme(nextScheme: "residue" | "conservation" | "none") {
+  function applyColorScheme(nextScheme: "residue" | "similarity" | "calcons" | "none") {
     setScheme(nextScheme);
+    setColorExclusions(new Set());
     colorsMenuRef.current?.removeAttribute("open");
+  }
+
+  function resetSelectedColor() {
+    if (!selection) return;
+    setColorExclusions((current) => {
+      const next = new Set(current);
+      for (let column = 0; column < width; column += 1) next.add(`${selection.sequenceId}:${column}`);
+      return next;
+    });
+    colorsMenuRef.current?.removeAttribute("open");
+  }
+
+  function openSimilarityDialog() {
+    colorsMenuRef.current?.removeAttribute("open");
+    setSimilarityDialogOpen(true);
+  }
+
+  function cellColor(
+    sequenceId: string,
+    row: number,
+    column: number,
+    residue: string,
+  ): { className: string; style?: React.CSSProperties } {
+    if (scheme === "none" || colorExclusions.has(`${sequenceId}:${column}`)) return { className: "none" };
+    if (scheme === "residue") return { className: `residue ${residueGroups[residue] ?? "unknown"} aa-${residue}` };
+    const strength = scheme === "similarity" ? similarityColors[row]?.[column] : alscriptConservation[column];
+    if (strength === null || strength === undefined) return { className: "none" };
+    const displayStrength = strength >= 0.999 ? 1 : Math.floor(strength * 10) / 10;
+    return {
+      className: scheme,
+      style: {
+        "--strength": displayStrength,
+        "--foreground": displayStrength >= 0.6 ? "#fff" : "#111",
+      } as React.CSSProperties,
+    };
   }
 
   return (
@@ -154,15 +206,21 @@ export function App() {
           <details className="top-menu" ref={colorsMenuRef}>
             <summary>Colors</summary>
             <div className="top-menu-popover" role="menu" aria-label="Color scheme">
-              <button role="menuitemradio" aria-checked={scheme === "conservation"} onClick={() => applyColorScheme("conservation")}>
-                <span>By conservation…</span><small>Colour conserved columns</small>
+              <button role="menuitemradio" aria-checked={scheme === "similarity"} onClick={openSimilarityDialog}>
+                <span>By Similarity…</span><small>Threshold and amino-acid groups</small>
+              </button>
+              <button role="menuitemradio" aria-checked={scheme === "calcons"} onClick={() => applyColorScheme("calcons")}>
+                <span>ALSCRIPT Calcons…</span><small>Biochemical-property conservation</small>
               </button>
               <button role="menuitemradio" aria-checked={scheme === "residue"} onClick={() => applyColorScheme("residue")}>
-                <span>By residue type…</span><small>Colour amino-acid families</small>
+                <span>By Residue Type…</span><small>Colour amino-acid families</small>
               </button>
               <div className="menu-separator" />
-              <button role="menuitemradio" aria-checked={scheme === "none"} onClick={() => applyColorScheme("none")}>
-                <span>Monochrome</span><small>Remove automatic colours</small>
+              <button role="menuitem" disabled={!selection || scheme === "none"} onClick={resetSelectedColor}>
+                <span>Reset…</span><small>Remove markup from selected sequence</small>
+              </button>
+              <button role="menuitem" onClick={() => applyColorScheme("none")}>
+                <span>Reset all</span><small>Return to monochrome</small>
               </button>
             </div>
           </details>
@@ -237,21 +295,20 @@ export function App() {
               <div className="ruler">
                 {Array.from({ length: width }, (_, index) => <span key={index}>{(index + 1) % 10 === 0 ? index + 1 : "·"}</span>)}
               </div>
-              {alignment.sequences.map((sequence) => (
+              {alignment.sequences.map((sequence, row) => (
                 <div className="sequence-row" key={sequence.id}>
                   <div className="sequence-name" title={sequence.description}>
                     <strong>{sequence.name}</strong><small>{sequence.description}</small>
                   </div>
                   <div className="residues">
                     {[...sequence.residues].map((residue, column) => {
-                      const className = scheme === "residue" ? residueGroups[residue] ?? "unknown" : "";
-                      const style = scheme === "conservation" ? { "--strength": conservation[column] } as React.CSSProperties : undefined;
+                      const color = cellColor(sequence.id, row, column, residue);
                       const selected = selection?.sequenceId === sequence.id && selection.column === column;
                       return (
                         <button
                           key={column}
-                          className={`residue ${scheme} ${className} ${selected ? "selected" : ""}`}
-                          style={style}
+                          className={`residue ${color.className} ${selected ? "selected" : ""}`}
+                          style={color.style}
                           title={`${sequence.name} · ${column + 1} · ${residue}`}
                           onClick={() => {
                             setSelection({ sequenceId: sequence.id, column });
@@ -309,7 +366,7 @@ export function App() {
                         <span className="classic-end-spacer" />
                       </div>
 
-                      {alignment.sequences.map((sequence) => {
+                      {alignment.sequences.map((sequence, row) => {
                         const endNumber = [...sequence.residues.slice(0, end)]
                           .filter((residue) => residue !== "-").length + sequence.numberingStart - 1;
                         return (
@@ -324,18 +381,13 @@ export function App() {
                               {Array.from({ length: blockWidth }, (_, offset) => {
                                 const column = start + offset;
                                 const residue = sequence.residues[column] ?? "";
-                                const className = scheme === "residue" && residue
-                                  ? residueGroups[residue] ?? "unknown"
-                                  : "";
-                                const style = scheme === "conservation" && residue
-                                  ? { "--strength": conservation[column] } as React.CSSProperties
-                                  : undefined;
+                                const color = cellColor(sequence.id, row, column, residue);
                                 const selected = selection?.sequenceId === sequence.id && selection.column === column;
                                 return residue ? (
                                   <button
                                     key={column}
-                                    className={`residue ${scheme} ${className} ${selected ? "selected" : ""}`}
-                                    style={style}
+                                    className={`residue ${color.className} ${selected ? "selected" : ""}`}
+                                    style={color.style}
                                     title={`${sequence.name} · ${column + 1} · ${residue}`}
                                     onClick={() => {
                                       setSelection({ sequenceId: sequence.id, column });
@@ -361,6 +413,51 @@ export function App() {
           )}
         </section>
       </section>
+      {similarityDialogOpen && (
+        <div className="dialog-backdrop" role="presentation" onMouseDown={() => setSimilarityDialogOpen(false)}>
+          <form
+            className="settings-dialog"
+            aria-labelledby="similarity-title"
+            onMouseDown={(event) => event.stopPropagation()}
+            onSubmit={(event) => {
+              event.preventDefault();
+              applyColorScheme("similarity");
+              setSimilarityDialogOpen(false);
+            }}
+          >
+            <span className="eyebrow">ALINE colouring</span>
+            <h2 id="similarity-title">By Similarity</h2>
+            <label>
+              <span>Low similarity cutoff</span>
+              <div className="range-field">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={similarityOptions.cutoff}
+                  onChange={(event) => setSimilarityOptions((current) => ({ ...current, cutoff: Number(event.target.value) }))}
+                />
+                <strong>{Math.round(similarityOptions.cutoff * 100)}%</strong>
+              </div>
+            </label>
+            <label>
+              <span>Similarity groups</span>
+              <input
+                className="text-field"
+                value={similarityOptions.groups}
+                onChange={(event) => setSimilarityOptions((current) => ({ ...current, groups: event.target.value }))}
+                placeholder="None or DE FWY HKR ILMV NQ ST"
+              />
+              <small>Separate groups with spaces. Use “None” for exact identity only.</small>
+            </label>
+            <div className="dialog-actions">
+              <button type="button" onClick={() => setSimilarityDialogOpen(false)}>Cancel</button>
+              <button className="primary" type="submit">Apply</button>
+            </div>
+          </form>
+        </div>
+      )}
     </main>
   );
 }
