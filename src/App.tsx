@@ -41,6 +41,16 @@ async function readAlignmentFile(file: File): Promise<string> {
   return source;
 }
 
+function measureClassicNameWidth(names: string[], cellSize: number): number {
+  const fallback = Math.max(1, ...names.map((name) => name.length)) * cellSize * 0.32;
+  if (typeof document === "undefined") return fallback + cellSize * 0.5;
+  const context = document.createElement("canvas").getContext("2d");
+  if (!context) return fallback + cellSize * 0.5;
+  context.font = `italic 600 ${cellSize * 0.52}px "DM Mono", monospace`;
+  const textWidth = Math.max(0, ...names.map((name) => context.measureText(name).width));
+  return Math.ceil(textWidth + cellSize * 0.5 + 2);
+}
+
 export function App() {
   const [history, dispatch] = useReducer(
     documentHistoryReducer,
@@ -70,8 +80,11 @@ export function App() {
   );
   const alscriptConservation = useMemo(() => calculateAlscriptConservation(alignment), [alignment]);
   const width = alignment.sequences[0]?.residues.length ?? 0;
-  const longestNameLength = Math.max(1, ...alignment.sequences.map((sequence) => sequence.name.length));
-  const classicNameWidthInCells = Math.max(4, Math.ceil(longestNameLength * 0.58 + 0.7));
+  const classicCellSize = 22 * zoom;
+  const classicNameWidth = useMemo(
+    () => measureClassicNameWidth(alignment.sequences.map((sequence) => sequence.name), classicCellSize),
+    [alignment.sequences, classicCellSize],
+  );
   const classicBlocks = useMemo(() => {
     const blocks: Array<{ start: number; length: number }> = [];
     let start = 0;
@@ -90,11 +103,11 @@ export function App() {
     if (!view || viewMode !== "classic") return;
 
     const updateWidth = () => {
-      const cellSize = 22 * zoom;
+      const cellSize = classicCellSize;
       const sheetPaddingAndEndNumber = cellSize * 4.8 + 24;
       const usableCells = Math.floor((view.clientWidth - sheetPaddingAndEndNumber) / cellSize);
       setClassicWidths({
-        first: Math.max(10, usableCells - classicNameWidthInCells),
+        first: Math.max(10, Math.floor(usableCells - classicNameWidth / cellSize)),
         continuation: Math.max(10, usableCells),
       });
     };
@@ -102,7 +115,7 @@ export function App() {
     const observer = new ResizeObserver(updateWidth);
     observer.observe(view);
     return () => observer.disconnect();
-  }, [viewMode, zoom, classicNameWidthInCells]);
+  }, [viewMode, classicCellSize, classicNameWidth]);
 
   async function openFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -345,8 +358,8 @@ export function App() {
               <div
                 className="classic-sheet"
                 style={{
-                  "--cell-size": `${22 * zoom}px`,
-                  "--name-width": `${classicNameWidthInCells * 22 * zoom}px`,
+                  "--cell-size": `${classicCellSize}px`,
+                  "--name-width": `${classicNameWidth}px`,
                 } as React.CSSProperties}
               >
                 {classicBlocks.map(({ start, length: blockWidth }, blockIndex) => {
