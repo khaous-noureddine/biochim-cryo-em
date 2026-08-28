@@ -1,4 +1,4 @@
-import { ChangeEvent, KeyboardEvent, PointerEvent as ReactPointerEvent, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { ChangeEvent, KeyboardEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   calculateConservation,
   exportFasta,
@@ -110,13 +110,7 @@ export function App() {
   const [sidebarWidth, setSidebarWidth] = useState(258);
   const [annotationTool, setAnnotationTool] = useState<AnnotationKind | null>(null);
   const [annotationColor, setAnnotationColor] = useState("#ef4444");
-  const [annotationDrag, setAnnotationDrag] = useState<{
-    lane: 0 | 1;
-    start: number;
-    current: number;
-    blockStart: number;
-    pointerId: number;
-  } | null>(null);
+  const [annotationStart, setAnnotationStart] = useState<number | null>(null);
   const [zoom, setZoom] = useState(1);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -177,6 +171,7 @@ export function App() {
       const opened = openAlignmentFile(await readAlignmentFile(file), file.name);
       dispatch({ type: "open", document: opened.document });
       setSelection(null);
+      setAnnotationStart(null);
       setColorExclusions(new Set());
       setScheme("none");
       setError("");
@@ -268,50 +263,35 @@ export function App() {
     setSidebarWidth((current) => clampSidebarWidth(current + (event.key === "ArrowLeft" ? -12 : 12)));
   }
 
-  function annotationColumn(event: ReactPointerEvent<HTMLDivElement>, blockStart: number, blockWidth: number): number {
+  function annotationColumn(event: ReactMouseEvent<HTMLDivElement>, blockStart: number, blockWidth: number): number {
     const bounds = event.currentTarget.getBoundingClientRect();
     const offset = Math.floor((event.clientX - bounds.left) / classicCellSize);
     return Math.min(width - 1, blockStart + Math.max(0, Math.min(blockWidth - 1, offset)));
   }
 
-  function startAnnotation(
-    event: ReactPointerEvent<HTMLDivElement>,
-    lane: 0 | 1,
-    blockStart: number,
-    blockWidth: number,
-  ) {
+  function selectAnnotationTool(tool: AnnotationKind) {
+    setAnnotationTool((current) => current === tool ? null : tool);
+    setAnnotationStart(null);
+  }
+
+  function chooseAnnotationBoundary(event: ReactMouseEvent<HTMLDivElement>, blockStart: number, blockWidth: number) {
     if (!annotationTool || width === 0) return;
     event.preventDefault();
     const column = annotationColumn(event, blockStart, blockWidth);
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setAnnotationDrag({ lane, start: column, current: column, blockStart, pointerId: event.pointerId });
-  }
-
-  function moveAnnotation(event: ReactPointerEvent<HTMLDivElement>, blockStart: number, blockWidth: number) {
-    if (!annotationDrag || annotationDrag.pointerId !== event.pointerId) return;
-    const column = annotationColumn(event, blockStart, blockWidth);
-    setAnnotationDrag((current) => current ? { ...current, current: column } : null);
-  }
-
-  function finishAnnotation(event: ReactPointerEvent<HTMLDivElement>, blockStart: number, blockWidth: number) {
-    if (!annotationDrag || !annotationTool || annotationDrag.pointerId !== event.pointerId) return;
-    const finalColumn = annotationColumn(event, blockStart, blockWidth);
-    const start = Math.min(annotationDrag.start, finalColumn);
-    const end = Math.max(annotationDrag.start, finalColumn);
+    if (annotationStart === null) {
+      setAnnotationStart(column);
+      return;
+    }
+    const start = Math.min(annotationStart, column);
+    const end = Math.max(annotationStart, column);
     dispatch({
       type: "execute",
       command: {
         type: "add-annotation",
-        annotation: { id: createId(), kind: annotationTool, start, end, lane: annotationDrag.lane, color: annotationColor },
+        annotation: { id: createId(), kind: annotationTool, start, end, lane: 0, color: annotationColor },
       },
     });
-    setAnnotationDrag(null);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-  }
-
-  function cancelAnnotation(event: ReactPointerEvent<HTMLDivElement>) {
-    setAnnotationDrag(null);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    setAnnotationStart(null);
   }
 
   function cellColor(
@@ -390,11 +370,11 @@ export function App() {
           <div className="panel-section annotation-tools">
             <label>Draw</label>
             <div className="shape-tools">
-              <button className={annotationTool === "helix" ? "active" : ""} onClick={() => setAnnotationTool(annotationTool === "helix" ? null : "helix")}>
+              <button className={annotationTool === "helix" ? "active" : ""} onClick={() => selectAnnotationTool("helix")}>
                 <span className="tool-icon cylinder-icon" />
                 <span>Cylinder</span>
               </button>
-              <button className={annotationTool === "coil" ? "active" : ""} onClick={() => setAnnotationTool(annotationTool === "coil" ? null : "coil")}>
+              <button className={annotationTool === "coil" ? "active" : ""} onClick={() => selectAnnotationTool("coil")}>
                 <svg className="tool-icon spring-icon" viewBox="0 0 44 16" aria-hidden="true">
                   <path d="M1 8 C4 1 7 1 10 8 S16 15 19 8 S25 1 28 8 S34 15 37 8 S41 1 43 8" fill="none" stroke="currentColor" strokeWidth="2" />
                 </svg>
@@ -405,7 +385,11 @@ export function App() {
               <span>Shape color</span>
               <input type="color" value={annotationColor} onChange={(event) => setAnnotationColor(event.target.value)} />
             </label>
-            <p>{annotationTool ? "Drag across one of the two top annotation lanes." : "Choose a shape, then draw it above the alignment."}</p>
+            <p>{annotationTool
+              ? annotationStart === null
+                ? "Click the start cell on the second line."
+                : `Start: ${annotationStart + 1}. Click the end cell.`
+              : "Choose a shape, then select its start and end above the alignment."}</p>
           </div>
         </aside>
 
@@ -549,27 +533,21 @@ export function App() {
                             />
                           );
                         })}
-                      {annotationDrag?.lane === lane && annotationDrag.blockStart === start && annotationTool && (
-                        <AnnotationShape
-                          kind={annotationTool}
-                          left={Math.min(annotationDrag.start, annotationDrag.current) - start}
-                          length={Math.abs(annotationDrag.current - annotationDrag.start) + 1}
-                          total={blockWidth}
-                          color={annotationColor}
-                          preview
+                      {lane === 0 && annotationStart !== null && annotationStart >= start && annotationStart <= blockEnd && (
+                        <span
+                          className="annotation-start-marker"
+                          style={{ left: `calc(${annotationStart - start} * var(--cell-size))` }}
+                          aria-hidden="true"
                         />
                       )}
                     </>
                   );
-                  const topLane = (lane: 0 | 1) => (
+                  const topLane = (lane: 0 | 1, interactive = false) => (
                     <div className={`classic-row classic-annotation-lane top${continuationClass}`} key={`${start}-top-${lane}`} aria-label={`Annotation lane ${lane + 1}`}>
                       <span className="classic-name-spacer" />
                       <div
-                        className={`classic-cells annotation-cells ${annotationTool ? "drawing" : ""}`}
-                        onPointerDown={(event) => startAnnotation(event, lane, start, blockWidth)}
-                        onPointerMove={(event) => moveAnnotation(event, start, blockWidth)}
-                        onPointerUp={(event) => finishAnnotation(event, start, blockWidth)}
-                        onPointerCancel={cancelAnnotation}
+                        className={`classic-cells annotation-cells ${interactive && annotationTool ? "drawing" : ""}`}
+                        onClick={interactive ? (event) => chooseAnnotationBoundary(event, start, blockWidth) : undefined}
                       >
                         {Array.from({ length: blockWidth }, (_, offset) => (
                           <span className="classic-empty" key={start + offset} />
@@ -592,8 +570,6 @@ export function App() {
                   );
                   return (
                     <section className={`classic-block${continuationClass}`} key={start}>
-                      {topLane(0)}
-                      {topLane(1)}
                       <div className={`classic-ruler classic-row${continuationClass}`}>
                         <span className="classic-name-spacer" />
                         <div className="classic-cells">
@@ -608,6 +584,8 @@ export function App() {
                         </div>
                         <span className="classic-end-spacer" />
                       </div>
+                      {topLane(0, true)}
+                      {topLane(1)}
 
                       {alignment.sequences.map((sequence, row) => {
                         const endNumber = [...sequence.residues.slice(0, end)]

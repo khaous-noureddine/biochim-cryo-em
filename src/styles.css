@@ -107,9 +107,10 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .classic-end-number { display: flex; align-items: center; justify-content: center; color: #343434; font-size: calc(var(--cell-size) * .48); font-style: italic; }
 .classic-cells { display: flex; }
 .annotation-cells { position: relative; touch-action: none; user-select: none; }
-.annotation-cells.drawing { cursor: crosshair; }
+.annotation-cells.drawing { cursor: cell; }
 .annotation-shape { --annotation-color: #ef4444; position: absolute; z-index: 2; pointer-events: none; }
 .annotation-shape.preview { opacity: .58; }
+.annotation-start-marker { position: absolute; z-index: 3; width: var(--cell-size); height: var(--cell-size); border: 2px solid #0f766e; background: rgba(20, 184, 166, .18); pointer-events: none; }
 .helix-shape { top: 16%; height: 68%; border: 1px solid color-mix(in srgb, var(--annotation-color) 72%, #111); border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--annotation-color) 55%, white), var(--annotation-color) 48%, color-mix(in srgb, var(--annotation-color) 72%, black)); box-shadow: inset 2px 0 2px rgba(255,255,255,.38), 0 1px 1px rgba(0,0,0,.22); }
 .helix-shape::before { position: absolute; top: -1px; bottom: -1px; left: -1px; width: min(calc(var(--cell-size) * .48), 45%); border: 1px solid color-mix(in srgb, var(--annotation-color) 72%, #111); border-radius: 50%; background: color-mix(in srgb, var(--annotation-color) 70%, white); content: ""; }
 .coil-shape { top: 5%; height: 90%; overflow: visible; color: var(--annotation-color); filter: drop-shadow(0 1px 0 rgba(0,0,0,.22)); }
