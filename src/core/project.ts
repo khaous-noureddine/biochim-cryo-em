@@ -1,5 +1,6 @@
 import { normalizeAlignment, parseFasta } from "./alignment";
 import {
+  AlignmentAnnotation,
   AlignmentDocument,
   ATLAS_DOCUMENT_FORMAT,
   ATLAS_DOCUMENT_VERSION,
@@ -64,6 +65,26 @@ export function parseAtlasProject(source: string): AlignmentDocument {
       numberingStart: numberingStart as number,
     };
   });
+  const alignmentWidth = Math.max(...sequences.map((sequence) => sequence.residues.length));
+  const rawAnnotations = project.annotations ?? [];
+  if (!Array.isArray(rawAnnotations)) throw new Error("La liste d’annotations du projet .atlas est invalide.");
+  const annotationIds = new Set<string>();
+  const annotations: AlignmentAnnotation[] = rawAnnotations.map((item, index) => {
+    if (!item || typeof item !== "object") throw new Error(`Annotation ${index + 1} invalide.`);
+    const annotation = item as Record<string, unknown>;
+    const id = requireString(annotation.id, `Identifiant de l’annotation ${index + 1}`);
+    if (annotationIds.has(id)) throw new Error(`Identifiant d’annotation dupliqué : ${id}.`);
+    annotationIds.add(id);
+    if (annotation.kind !== "helix" && annotation.kind !== "coil") throw new Error(`Type d’annotation ${index + 1} invalide.`);
+    if (!Number.isInteger(annotation.start) || !Number.isInteger(annotation.end)) throw new Error(`Position de l’annotation ${index + 1} invalide.`);
+    const start = annotation.start as number;
+    const end = annotation.end as number;
+    if (start < 0 || end < start || end >= alignmentWidth) throw new Error(`Étendue de l’annotation ${index + 1} invalide.`);
+    if (annotation.lane !== 0 && annotation.lane !== 1) throw new Error(`Piste de l’annotation ${index + 1} invalide.`);
+    const color = requireString(annotation.color, `Couleur de l’annotation ${index + 1}`);
+    if (!/^#[0-9a-f]{6}$/i.test(color)) throw new Error(`Couleur de l’annotation ${index + 1} invalide.`);
+    return { id, kind: annotation.kind, start, end, lane: annotation.lane, color };
+  });
 
   return {
     format: ATLAS_DOCUMENT_FORMAT,
@@ -71,6 +92,7 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     id: requireString(project.id, "Identifiant du projet"),
     name: requireString(project.name, "Nom du projet"),
     sequences: normalizeAlignment(sequences),
+    annotations,
   };
 }
 

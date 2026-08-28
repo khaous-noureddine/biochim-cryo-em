@@ -1,12 +1,14 @@
 import { normalizeAlignment } from "./alignment";
-import { AlignmentDocument, CellPosition, Sequence } from "./model";
+import { AlignmentAnnotation, AlignmentDocument, CellPosition, Sequence } from "./model";
 
 export type AlignmentCommand =
   | { type: "replace-residue"; position: CellPosition; residue: string }
   | { type: "insert-gap"; position: CellPosition }
   | { type: "delete-cell"; position: CellPosition }
   | { type: "rename-sequence"; sequenceId: string; name: string }
-  | { type: "move-sequence"; sequenceId: string; toIndex: number };
+  | { type: "move-sequence"; sequenceId: string; toIndex: number }
+  | { type: "add-annotation"; annotation: AlignmentAnnotation }
+  | { type: "delete-annotation"; annotationId: string };
 
 const EDITABLE_RESIDUE = /^[A-Z*?.-]$/;
 
@@ -104,6 +106,30 @@ export function applyAlignmentCommand(
       sequences.splice(toIndex, 0, sequence);
       return { ...document, sequences };
     }
+
+    case "add-annotation": {
+      const annotation = command.annotation;
+      const width = document.sequences[0]?.residues.length ?? 0;
+      const valid =
+        !document.annotations.some((item) => item.id === annotation.id) &&
+        (annotation.kind === "helix" || annotation.kind === "coil") &&
+        Number.isInteger(annotation.start) &&
+        Number.isInteger(annotation.end) &&
+        annotation.start >= 0 &&
+        annotation.end >= annotation.start &&
+        annotation.end < width &&
+        (annotation.lane === 0 || annotation.lane === 1) &&
+        /^#[0-9a-f]{6}$/i.test(annotation.color);
+      if (!valid) return document;
+      return { ...document, annotations: [...document.annotations, annotation] };
+    }
+
+    case "delete-annotation": {
+      if (!document.annotations.some((annotation) => annotation.id === command.annotationId)) return document;
+      return {
+        ...document,
+        annotations: document.annotations.filter((annotation) => annotation.id !== command.annotationId),
+      };
+    }
   }
 }
-

@@ -6,7 +6,15 @@ import proteinAlignment from "../../examples/7kd-dna-binding-alignment.fasta?raw
 describe("Atlas project files", () => {
   it("round-trips an Atlas document", () => {
     const document = parseFasta(">alpha\nACD\n>beta\nAC-", "Example");
+    document.annotations.push({ id: "helix-1", kind: "helix", start: 0, end: 2, lane: 0, color: "#ef4444" });
     expect(parseAtlasProject(serializeAtlasProject(document))).toEqual(document);
+  });
+
+  it("opens older Atlas documents without an annotations field", () => {
+    const document = parseFasta(">alpha\nACD", "Example");
+    const legacy = JSON.parse(serializeAtlasProject(document));
+    delete legacy.annotations;
+    expect(parseAtlasProject(JSON.stringify(legacy)).annotations).toEqual([]);
   });
 
   it("rejects an unsupported Atlas version", () => {

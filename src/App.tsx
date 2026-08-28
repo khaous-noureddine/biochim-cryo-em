@@ -4,7 +4,7 @@ import {
   exportFasta,
 } from "./core/alignment";
 import { documentHistoryReducer, createDocumentHistory } from "./core/history";
-import { CellPosition } from "./core/model";
+import { AnnotationKind, CellPosition, createId } from "./core/model";
 import { openAlignmentFile, serializeAtlasProject } from "./core/project";
 import {
   calculateAlscriptConservation,
@@ -58,6 +58,41 @@ function measureClassicNameWidth(names: string[], cellSize: number): number {
   return Math.ceil(textWidth + cellSize * 0.5 + 2);
 }
 
+function AnnotationShape({
+  kind,
+  left,
+  length,
+  total,
+  color,
+  preview = false,
+}: {
+  kind: AnnotationKind;
+  left: number;
+  length: number;
+  total: number;
+  color: string;
+  preview?: boolean;
+}) {
+  const style = {
+    "--annotation-color": color,
+    left: `${(left / total) * 100}%`,
+    width: `${(length / total) * 100}%`,
+  } as React.CSSProperties;
+  if (kind === "helix") {
+    return <span className={`annotation-shape helix-shape ${preview ? "preview" : ""}`} style={style} />;
+  }
+  const cycles = Math.max(1, Math.round(length / 2));
+  const points = Array.from({ length: 61 }, (_, index) => {
+    const progress = index / 60;
+    return `${progress * 100},${10 + Math.sin(progress * cycles * Math.PI * 2) * 7}`;
+  }).join(" ");
+  return (
+    <svg className={`annotation-shape coil-shape ${preview ? "preview" : ""}`} style={style} viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">
+      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="2.6" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
 export function App() {
   const [history, dispatch] = useReducer(
     documentHistoryReducer,
@@ -73,6 +108,15 @@ export function App() {
   const [repeatNames, setRepeatNames] = useState(true);
   const [classicWidths, setClassicWidths] = useState({ first: 60, continuation: 70 });
   const [sidebarWidth, setSidebarWidth] = useState(258);
+  const [annotationTool, setAnnotationTool] = useState<AnnotationKind | null>(null);
+  const [annotationColor, setAnnotationColor] = useState("#ef4444");
+  const [annotationDrag, setAnnotationDrag] = useState<{
+    lane: 0 | 1;
+    start: number;
+    current: number;
+    blockStart: number;
+    pointerId: number;
+  } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -224,6 +268,52 @@ export function App() {
     setSidebarWidth((current) => clampSidebarWidth(current + (event.key === "ArrowLeft" ? -12 : 12)));
   }
 
+  function annotationColumn(event: ReactPointerEvent<HTMLDivElement>, blockStart: number, blockWidth: number): number {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const offset = Math.floor((event.clientX - bounds.left) / classicCellSize);
+    return Math.min(width - 1, blockStart + Math.max(0, Math.min(blockWidth - 1, offset)));
+  }
+
+  function startAnnotation(
+    event: ReactPointerEvent<HTMLDivElement>,
+    lane: 0 | 1,
+    blockStart: number,
+    blockWidth: number,
+  ) {
+    if (!annotationTool || width === 0) return;
+    event.preventDefault();
+    const column = annotationColumn(event, blockStart, blockWidth);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setAnnotationDrag({ lane, start: column, current: column, blockStart, pointerId: event.pointerId });
+  }
+
+  function moveAnnotation(event: ReactPointerEvent<HTMLDivElement>, blockStart: number, blockWidth: number) {
+    if (!annotationDrag || annotationDrag.pointerId !== event.pointerId) return;
+    const column = annotationColumn(event, blockStart, blockWidth);
+    setAnnotationDrag((current) => current ? { ...current, current: column } : null);
+  }
+
+  function finishAnnotation(event: ReactPointerEvent<HTMLDivElement>, blockStart: number, blockWidth: number) {
+    if (!annotationDrag || !annotationTool || annotationDrag.pointerId !== event.pointerId) return;
+    const finalColumn = annotationColumn(event, blockStart, blockWidth);
+    const start = Math.min(annotationDrag.start, finalColumn);
+    const end = Math.max(annotationDrag.start, finalColumn);
+    dispatch({
+      type: "execute",
+      command: {
+        type: "add-annotation",
+        annotation: { id: createId(), kind: annotationTool, start, end, lane: annotationDrag.lane, color: annotationColor },
+      },
+    });
+    setAnnotationDrag(null);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  }
+
+  function cancelAnnotation(event: ReactPointerEvent<HTMLDivElement>) {
+    setAnnotationDrag(null);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  }
+
   function cellColor(
     sequenceId: string,
     row: number,
@@ -295,6 +385,27 @@ export function App() {
             <label>Overview</label>
             <div><span>Mean conservation</span><strong>{Math.round((conservation.reduce((a, b) => a + b, 0) / Math.max(1, conservation.length)) * 100)}%</strong></div>
             <div><span>Gaps</span><strong>{alignment.sequences.reduce((sum, s) => sum + (s.residues.match(/-/g)?.length ?? 0), 0)}</strong></div>
+          </div>
+
+          <div className="panel-section annotation-tools">
+            <label>Draw</label>
+            <div className="shape-tools">
+              <button className={annotationTool === "helix" ? "active" : ""} onClick={() => setAnnotationTool(annotationTool === "helix" ? null : "helix")}>
+                <span className="tool-icon cylinder-icon" />
+                <span>Cylinder</span>
+              </button>
+              <button className={annotationTool === "coil" ? "active" : ""} onClick={() => setAnnotationTool(annotationTool === "coil" ? null : "coil")}>
+                <svg className="tool-icon spring-icon" viewBox="0 0 44 16" aria-hidden="true">
+                  <path d="M1 8 C4 1 7 1 10 8 S16 15 19 8 S25 1 28 8 S34 15 37 8 S41 1 43 8" fill="none" stroke="currentColor" strokeWidth="2" />
+                </svg>
+                <span>Spring</span>
+              </button>
+            </div>
+            <label className="annotation-color">
+              <span>Shape color</span>
+              <input type="color" value={annotationColor} onChange={(event) => setAnnotationColor(event.target.value)} />
+            </label>
+            <p>{annotationTool ? "Drag across one of the two top annotation lanes." : "Choose a shape, then draw it above the alignment."}</p>
           </div>
         </aside>
 
@@ -419,6 +530,55 @@ export function App() {
                   const end = Math.min(width, start + blockWidth);
                   const showNames = repeatNames || blockIndex === 0;
                   const continuationClass = showNames ? "" : " continuation";
+                  const blockEnd = Math.min(width - 1, start + blockWidth - 1);
+                  const shapesForLane = (lane: 0 | 1) => (
+                    <>
+                      {alignment.annotations
+                        .filter((annotation) => annotation.lane === lane && annotation.start <= blockEnd && annotation.end >= start)
+                        .map((annotation) => {
+                          const segmentStart = Math.max(annotation.start, start);
+                          const segmentEnd = Math.min(annotation.end, blockEnd);
+                          return (
+                            <AnnotationShape
+                              key={`${annotation.id}-${start}`}
+                              kind={annotation.kind}
+                              left={segmentStart - start}
+                              length={segmentEnd - segmentStart + 1}
+                              total={blockWidth}
+                              color={annotation.color}
+                            />
+                          );
+                        })}
+                      {annotationDrag?.lane === lane && annotationDrag.blockStart === start && annotationTool && (
+                        <AnnotationShape
+                          kind={annotationTool}
+                          left={Math.min(annotationDrag.start, annotationDrag.current) - start}
+                          length={Math.abs(annotationDrag.current - annotationDrag.start) + 1}
+                          total={blockWidth}
+                          color={annotationColor}
+                          preview
+                        />
+                      )}
+                    </>
+                  );
+                  const topLane = (lane: 0 | 1) => (
+                    <div className={`classic-row classic-annotation-lane top${continuationClass}`} key={`${start}-top-${lane}`} aria-label={`Annotation lane ${lane + 1}`}>
+                      <span className="classic-name-spacer" />
+                      <div
+                        className={`classic-cells annotation-cells ${annotationTool ? "drawing" : ""}`}
+                        onPointerDown={(event) => startAnnotation(event, lane, start, blockWidth)}
+                        onPointerMove={(event) => moveAnnotation(event, start, blockWidth)}
+                        onPointerUp={(event) => finishAnnotation(event, start, blockWidth)}
+                        onPointerCancel={cancelAnnotation}
+                      >
+                        {Array.from({ length: blockWidth }, (_, offset) => (
+                          <span className="classic-empty" key={start + offset} />
+                        ))}
+                        {shapesForLane(lane)}
+                      </div>
+                      <span className="classic-end-spacer" />
+                    </div>
+                  );
                   const emptyLane = (lane: string, position: "top" | "bottom") => (
                     <div className={`classic-row classic-annotation-lane ${position}${continuationClass}`} key={`${start}-${lane}`} aria-label={`Annotation lane ${lane}`}>
                       <span className="classic-name-spacer" />
@@ -432,8 +592,8 @@ export function App() {
                   );
                   return (
                     <section className={`classic-block${continuationClass}`} key={start}>
-                      {emptyLane("top-1", "top")}
-                      {emptyLane("top-2", "top")}
+                      {topLane(0)}
+                      {topLane(1)}
                       <div className={`classic-ruler classic-row${continuationClass}`}>
                         <span className="classic-name-spacer" />
                         <div className="classic-cells">

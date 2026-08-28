@@ -9,12 +9,24 @@ export type Sequence = {
   numberingStart: number;
 };
 
+export type AnnotationKind = "helix" | "coil";
+
+export type AlignmentAnnotation = {
+  id: string;
+  kind: AnnotationKind;
+  start: number;
+  end: number;
+  lane: 0 | 1;
+  color: string;
+};
+
 export type AlignmentDocument = {
   format: typeof ATLAS_DOCUMENT_FORMAT;
   version: typeof ATLAS_DOCUMENT_VERSION;
   id: string;
   name: string;
   sequences: Sequence[];
+  annotations: AlignmentAnnotation[];
 };
 
 export type CellPosition = {
@@ -36,6 +48,6 @@ export function createAlignmentDocument(
     id: createId(),
     name,
     sequences,
+    annotations: [],
   };
 }
-

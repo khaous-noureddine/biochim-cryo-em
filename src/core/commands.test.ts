@@ -8,6 +8,7 @@ function document(): AlignmentDocument {
     version: 1,
     id: "document-1",
     name: "Test alignment",
+    annotations: [],
     sequences: [
       { id: "seq-a", name: "A", description: "", residues: "AC-D", numberingStart: 1 },
       { id: "seq-b", name: "B", description: "", residues: "ACED", numberingStart: 1 },
@@ -58,5 +59,25 @@ describe("applyAlignmentCommand", () => {
 
     expect(result).toBe(original);
   });
-});
 
+  it("adds and deletes a graphical annotation without mutating the document", () => {
+    const original = document();
+    const annotation = { id: "helix-1", kind: "helix" as const, start: 1, end: 3, lane: 0 as const, color: "#ef4444" };
+    const added = applyAlignmentCommand(original, { type: "add-annotation", annotation });
+    const deleted = applyAlignmentCommand(added, { type: "delete-annotation", annotationId: annotation.id });
+
+    expect(original.annotations).toEqual([]);
+    expect(added.annotations).toEqual([annotation]);
+    expect(deleted.annotations).toEqual([]);
+  });
+
+  it("rejects annotations outside the alignment", () => {
+    const original = document();
+    const result = applyAlignmentCommand(original, {
+      type: "add-annotation",
+      annotation: { id: "bad", kind: "coil", start: 2, end: 9, lane: 1, color: "#3b82f6" },
+    });
+
+    expect(result).toBe(original);
+  });
+});
