@@ -58,6 +58,8 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .view-switch button { padding: 5px 9px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 10px; }
 .view-switch button.active { background: #27463d; color: var(--accent); }
 .block-width { color: #a9b9b4; white-space: nowrap; }
+.name-display { display: flex; align-items: center; gap: 6px; color: #a9b9b4; white-space: nowrap; }
+.name-display select { padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; color: #d5e1dd; background: #14231f; font-size: 10px; }
 .alignment-scroll { height: calc(100vh - 168px); overflow: auto; }
 .alignment-grid { --cell-size: 28px; display: grid; grid-template-columns: 210px max-content; min-width: max-content; font-family: "DM Mono", monospace; font-size: calc(var(--cell-size) * .43); }
 .corner { position: sticky; left: 0; top: 0; z-index: 5; background: #13211e; border: solid var(--line); border-width: 0 1px 1px 0; }

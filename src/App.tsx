@@ -53,6 +53,7 @@ export function App() {
   const [similarityDialogOpen, setSimilarityDialogOpen] = useState(false);
   const [colorExclusions, setColorExclusions] = useState<Set<string>>(() => new Set());
   const [viewMode, setViewMode] = useState<"modern" | "classic">("classic");
+  const [repeatNames, setRepeatNames] = useState(true);
   const [classicWidths, setClassicWidths] = useState({ first: 60, continuation: 70 });
   const [zoom, setZoom] = useState(1);
   const [error, setError] = useState("");
@@ -75,12 +76,14 @@ export function App() {
     const blocks: Array<{ start: number; length: number }> = [];
     let start = 0;
     while (start < width || blocks.length === 0) {
-      const length = blocks.length === 0 ? classicWidths.first : classicWidths.continuation;
+      const length = blocks.length === 0 || repeatNames
+        ? classicWidths.first
+        : classicWidths.continuation;
       blocks.push({ start, length });
       start += length;
     }
     return blocks;
-  }, [width, classicWidths]);
+  }, [width, repeatNames, classicWidths]);
 
   useEffect(() => {
     const view = classicViewRef.current;
@@ -281,7 +284,20 @@ export function App() {
               <button disabled={!selection} onClick={deleteCell}>Delete cell</button>
             </div>
             <div className="zoom-control">
-              {viewMode === "classic" && <span className="block-width">Auto · {classicWidths.first}/{classicWidths.continuation} positions</span>}
+              {viewMode === "classic" && (
+                <label className="name-display">
+                  Names
+                  <select value={repeatNames ? "all" : "first"} onChange={(event) => setRepeatNames(event.target.value === "all")}>
+                    <option value="all">Every block</option>
+                    <option value="first">First block only</option>
+                  </select>
+                </label>
+              )}
+              {viewMode === "classic" && (
+                <span className="block-width">
+                  Auto · {repeatNames ? classicWidths.first : `${classicWidths.first}/${classicWidths.continuation}`} positions
+                </span>
+              )}
               <span>{viewMode === "classic" ? "Cell size" : "Zoom"}</span>
               <input type="range" min="0.55" max="1.5" step="0.05" value={zoom} onChange={(e) => setZoom(Number(e.target.value))} />
               <b>{Math.round(zoom * 100)}%</b>
@@ -335,7 +351,8 @@ export function App() {
               >
                 {classicBlocks.map(({ start, length: blockWidth }, blockIndex) => {
                   const end = Math.min(width, start + blockWidth);
-                  const continuationClass = blockIndex > 0 ? " continuation" : "";
+                  const showNames = repeatNames || blockIndex === 0;
+                  const continuationClass = showNames ? "" : " continuation";
                   const emptyLane = (lane: string, position: "top" | "bottom") => (
                     <div className={`classic-row classic-annotation-lane ${position}${continuationClass}`} key={`${start}-${lane}`} aria-label={`Annotation lane ${lane}`}>
                       <span className="classic-name-spacer" />
@@ -371,11 +388,8 @@ export function App() {
                           .filter((residue) => residue !== "-").length + sequence.numberingStart - 1;
                         return (
                           <div className={`classic-row${continuationClass}`} key={`${sequence.id}-${start}`}>
-                            <div
-                              className={`classic-name ${blockIndex > 0 ? "continuation" : ""}`}
-                              title={blockIndex === 0 ? sequence.description : undefined}
-                            >
-                              {blockIndex === 0 ? sequence.name : ""}
+                            <div className="classic-name" title={showNames ? sequence.description : undefined}>
+                              {showNames ? sequence.name : ""}
                             </div>
                             <div className="classic-cells">
                               {Array.from({ length: blockWidth }, (_, offset) => {
