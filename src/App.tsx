@@ -1,4 +1,4 @@
-import { ChangeEvent, KeyboardEvent, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { ChangeEvent, KeyboardEvent, PointerEvent as ReactPointerEvent, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   calculateConservation,
   exportFasta,
@@ -21,6 +21,13 @@ const residueGroups: Record<string, string> = {
   S: "polar", T: "polar", N: "polar", Q: "polar", C: "polar",
   G: "special", P: "special",
 };
+
+const MIN_SIDEBAR_WIDTH = 150;
+const MAX_SIDEBAR_WIDTH = 420;
+
+function clampSidebarWidth(width: number): number {
+  return Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, width));
+}
 
 function downloadFile(name: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
@@ -65,6 +72,7 @@ export function App() {
   const [viewMode, setViewMode] = useState<"modern" | "classic">("classic");
   const [repeatNames, setRepeatNames] = useState(true);
   const [classicWidths, setClassicWidths] = useState({ first: 60, continuation: 70 });
+  const [sidebarWidth, setSidebarWidth] = useState(258);
   const [zoom, setZoom] = useState(1);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -73,6 +81,7 @@ export function App() {
   const editorRef = useRef<HTMLElement>(null);
   const classicViewRef = useRef<HTMLDivElement>(null);
   const colorsMenuRef = useRef<HTMLDetailsElement>(null);
+  const sidebarResizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
   const conservation = useMemo(() => calculateConservation(alignment), [alignment]);
   const similarityColors = useMemo(
     () => calculateSimilarityColors(alignment, similarityOptions),
@@ -191,6 +200,30 @@ export function App() {
     setSimilarityDialogOpen(true);
   }
 
+  function startSidebarResize(event: ReactPointerEvent<HTMLButtonElement>) {
+    sidebarResizeRef.current = { startX: event.clientX, startWidth: sidebarWidth };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function resizeSidebar(event: ReactPointerEvent<HTMLButtonElement>) {
+    const resize = sidebarResizeRef.current;
+    if (!resize) return;
+    setSidebarWidth(clampSidebarWidth(resize.startWidth + event.clientX - resize.startX));
+  }
+
+  function stopSidebarResize(event: ReactPointerEvent<HTMLButtonElement>) {
+    sidebarResizeRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  function resizeSidebarWithKeyboard(event: KeyboardEvent<HTMLButtonElement>) {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    setSidebarWidth((current) => clampSidebarWidth(current + (event.key === "ArrowLeft" ? -12 : 12)));
+  }
+
   function cellColor(
     sequenceId: string,
     row: number,
@@ -247,7 +280,10 @@ export function App() {
         </nav>
       </header>
 
-      <section className="workspace">
+      <section
+        className="workspace"
+        style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
+      >
         <aside className="sidebar">
           <div className="document-heading">
             <span className="eyebrow">Alignment</span>
@@ -261,6 +297,23 @@ export function App() {
             <div><span>Gaps</span><strong>{alignment.sequences.reduce((sum, s) => sum + (s.residues.match(/-/g)?.length ?? 0), 0)}</strong></div>
           </div>
         </aside>
+
+        <button
+          type="button"
+          className="sidebar-resizer"
+          role="separator"
+          aria-label="Resize sidebar"
+          aria-orientation="vertical"
+          aria-valuemin={MIN_SIDEBAR_WIDTH}
+          aria-valuemax={MAX_SIDEBAR_WIDTH}
+          aria-valuenow={sidebarWidth}
+          title="Drag to resize the sidebar"
+          onPointerDown={startSidebarResize}
+          onPointerMove={resizeSidebar}
+          onPointerUp={stopSidebarResize}
+          onPointerCancel={stopSidebarResize}
+          onKeyDown={resizeSidebarWithKeyboard}
+        />
 
         <section
           className="editor-card"
