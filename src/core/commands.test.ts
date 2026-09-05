@@ -89,6 +89,12 @@ describe("applyAlignmentCommand", () => {
     expect(applyAlignmentCommand(original, { type: "add-annotation", annotation }).annotations).toEqual([annotation]);
   });
 
+  it.each(["line", "dashed-line"] as const)("accepts %s annotations", (kind) => {
+    const original = document();
+    const annotation = { id: `${kind}-1`, kind, start: 0, end: 3, lane: 0 as const, color: "#111111" };
+    expect(applyAlignmentCommand(original, { type: "add-annotation", annotation }).annotations).toEqual([annotation]);
+  });
+
   it("rejects annotations outside the alignment", () => {
     const original = document();
     const result = applyAlignmentCommand(original, {

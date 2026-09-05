@@ -8,6 +8,8 @@ describe("Atlas project files", () => {
     const document = parseFasta(">alpha\nACD\n>beta\nAC-", "Example");
     document.annotations.push({ id: "helix-1", kind: "helix", start: 0, end: 2, lane: 0, color: "#ef4444" });
     document.annotations.push({ id: "strand-1", kind: "strand", start: 0, end: 1, lane: 0, color: "#2563eb" });
+    document.annotations.push({ id: "line-1", kind: "line", start: 0, end: 2, lane: 1, color: "#111111" });
+    document.annotations.push({ id: "dashed-1", kind: "dashed-line", start: 1, end: 2, lane: 1, color: "#64748b" });
     expect(parseAtlasProject(serializeAtlasProject(document))).toEqual(document);
   });
 

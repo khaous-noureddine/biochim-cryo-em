@@ -6,6 +6,7 @@ import {
   ATLAS_DOCUMENT_VERSION,
   createAlignmentDocument,
   createId,
+  isAnnotationKind,
   Sequence,
 } from "./model";
 
@@ -75,7 +76,7 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     const id = requireString(annotation.id, `Identifiant de l’annotation ${index + 1}`);
     if (annotationIds.has(id)) throw new Error(`Identifiant d’annotation dupliqué : ${id}.`);
     annotationIds.add(id);
-    if (annotation.kind !== "helix" && annotation.kind !== "strand" && annotation.kind !== "coil") throw new Error(`Type d’annotation ${index + 1} invalide.`);
+    if (!isAnnotationKind(annotation.kind)) throw new Error(`Type d’annotation ${index + 1} invalide.`);
     if (!Number.isInteger(annotation.start) || !Number.isInteger(annotation.end)) throw new Error(`Position de l’annotation ${index + 1} invalide.`);
     const start = annotation.start as number;
     const end = annotation.end as number;

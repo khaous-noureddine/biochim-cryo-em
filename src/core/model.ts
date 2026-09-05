@@ -9,7 +9,12 @@ export type Sequence = {
   numberingStart: number;
 };
 
-export type AnnotationKind = "helix" | "strand" | "coil";
+export const ANNOTATION_KINDS = ["helix", "strand", "coil", "line", "dashed-line"] as const;
+export type AnnotationKind = typeof ANNOTATION_KINDS[number];
+
+export function isAnnotationKind(value: unknown): value is AnnotationKind {
+  return typeof value === "string" && (ANNOTATION_KINDS as readonly string[]).includes(value);
+}
 
 export type AlignmentAnnotation = {
   id: string;
