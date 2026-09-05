@@ -30,7 +30,7 @@ colonne de vérification.
 | CORE-019 | Numérotation automatique/fixe et offsets | `_FillSeqnum`, `_SeqStart`, `_SetNumberingType`, `SetNumberOffsets` | partiel | gaps, insertions et codes d'insertion |
 | CORE-020 | Curseur et navigation clavier | `_CursorMove`, `SequenceEditor` | partiel | flèches/Home/End et maintien de visibilité implémentés ; raccourcis complets à vérifier |
 | CORE-021 | Modes insertion/remplacement/agressif | `SequenceEditor`, `_AggroCheck`, `_ApplyEdits` | partiel | tests différentiels d'édition |
-| CORE-022 | Sélection cellule/région/ligne/colonne | `SelectBox`, `_RubberBand`, `ShadeRegion` | partiel | parcours souris et clavier |
+| CORE-022 | Sélection cellule/région/ligne/colonne | `SelectBox`, `_RubberBand`, `ShadeRegion` | partiel | rectangle Shift-clic/clavier implémenté ; sélection entière et glisser à compléter |
 | CORE-023 | Insertion/suppression de cellules et gaps | `_InsertCells`, `_DeleteCells`, `_DefrayEnds` | partiel | lignes attachées, objets, undo |
 | CORE-024 | Édition des propriétés de cellule/région | `_PropertyWindow`, `_PropertySheet` | absent | texte, police, couleurs, plage |
 | CORE-025 | Vue quadrillée et découpage en blocs | `PrintSeq`, `Grid`, paramètres d'affichage | partiel | références visuelles et responsive |
@@ -56,7 +56,7 @@ colonne de vérification.
 | ID | Plugin | Capacité observable | Atlas | Vérification requise |
 |---|---|---|---|---|
 | PLUG-001 | `aColourPicker` | Pipette contour/remplissage sur titre, cellule et objet | absent | prélèvement exact des styles |
-| PLUG-002 | `aDeleteResidues` | Delete Region et Clear Region | absent | sélection 2D, lignes attachées, undo |
+| PLUG-002 | `aDeleteResidues` | Delete Region et Clear Region | partiel | sélection 2D et undo testés ; lignes attachées à compléter |
 | PLUG-003 | `aProtTool` | Masse, états cystéines, extinction et absorbance | absent | valeurs de référence scientifiques |
 | PLUG-004 | `cCalCons` | Conservation ALSCRIPT/Calcons avec séquences calculées/colorées distinctes | partiel | vecteurs comparés au Perl |
 | PLUG-005 | `cCalSim` | Similarité, seuil et groupes configurables | partiel | vecteurs comparés au Perl |

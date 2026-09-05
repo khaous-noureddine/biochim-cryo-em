@@ -34,6 +34,12 @@ export type CellPosition = {
   column: number;
 };
 
+export type CellRange = {
+  sequenceIds: string[];
+  start: number;
+  end: number;
+};
+
 export function createId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `atlas-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }

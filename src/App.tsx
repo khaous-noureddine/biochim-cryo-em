@@ -8,7 +8,7 @@ import {
 } from "./core/alignment";
 import { documentHistoryReducer, createDocumentHistory } from "./core/history";
 import { AnnotationKind, CellPosition, createId } from "./core/model";
-import { moveCellSelection, NavigationDirection } from "./core/navigation";
+import { moveCellSelection, NavigationDirection, normalizeCellRange } from "./core/navigation";
 import { openAlignmentFile, serializeAtlasProject } from "./core/project";
 import {
   calculateAlscriptConservation,
@@ -120,6 +120,7 @@ export function App() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [selection, setSelection] = useState<CellPosition | null>(null);
+  const [selectionAnchor, setSelectionAnchor] = useState<CellPosition | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLElement>(null);
   const classicViewRef = useRef<HTMLDivElement>(null);
@@ -132,6 +133,10 @@ export function App() {
   );
   const alscriptConservation = useMemo(() => calculateAlscriptConservation(alignment), [alignment]);
   const width = alignment.sequences[0]?.residues.length ?? 0;
+  const selectedRange = useMemo(
+    () => selection && selectionAnchor ? normalizeCellRange(alignment, selectionAnchor, selection) : null,
+    [alignment, selection, selectionAnchor],
+  );
   const classicCellSize = 22 * zoom;
   const classicNameWidth = useMemo(
     () => measureClassicNameWidth(alignment.sequences.map((sequence) => sequence.name), classicCellSize),
@@ -186,6 +191,7 @@ export function App() {
       const opened = openAlignmentFile(await readAlignmentFile(file), file.name);
       dispatch({ type: "open", document: opened.document });
       setSelection(null);
+      setSelectionAnchor(null);
       setAnnotationStart(null);
       setColorExclusions(new Set());
       setScheme("none");
@@ -205,6 +211,16 @@ export function App() {
     dispatch({ type: "execute", command: { type: "replace-residue", position: selection, residue } });
   }
 
+  function selectCell(event: ReactMouseEvent<HTMLButtonElement>, position: CellPosition) {
+    if (!event.shiftKey || !selectionAnchor) setSelectionAnchor(position);
+    setSelection(position);
+    editorRef.current?.focus();
+  }
+
+  function cellIsInSelectedRange(sequenceId: string, column: number): boolean {
+    return Boolean(selectedRange && selectedRange.sequenceIds.includes(sequenceId) && column >= selectedRange.start && column <= selectedRange.end);
+  }
+
   function handleEditorKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (!selection) return;
     const navigationKeys: Partial<Record<string, NavigationDirection>> = {
@@ -218,7 +234,9 @@ export function App() {
     const direction = navigationKeys[event.key];
     if (direction) {
       event.preventDefault();
-      setSelection(moveCellSelection(alignment, selection, direction));
+      const next = moveCellSelection(alignment, selection, direction);
+      if (!event.shiftKey) setSelectionAnchor(next);
+      setSelection(next);
       return;
     }
     if (/^[a-zA-Z*?.-]$/.test(event.key)) {
@@ -238,6 +256,18 @@ export function App() {
   function deleteCell() {
     if (!selection) return;
     dispatch({ type: "execute", command: { type: "delete-cell", position: selection } });
+  }
+
+  function applyRegionCommand(type: "clear-region" | "delete-region") {
+    if (!selectedRange) return;
+    dispatch({ type: "execute", command: { type, range: selectedRange } });
+    const removedWidth = type === "delete-region" ? selectedRange.end - selectedRange.start + 1 : 0;
+    const nextSelection = {
+      sequenceId: selectedRange.sequenceIds[0],
+      column: Math.min(selectedRange.start, Math.max(0, width - removedWidth - 1)),
+    };
+    setSelection(nextSelection);
+    setSelectionAnchor(nextSelection);
   }
 
   function saveAtlasProject() {
@@ -269,6 +299,7 @@ export function App() {
   function deleteSequence(sequenceId: string) {
     dispatch({ type: "execute", command: { type: "delete-sequence", sequenceId } });
     if (selection?.sequenceId === sequenceId) setSelection(null);
+    if (selectionAnchor?.sequenceId === sequenceId) setSelectionAnchor(null);
   }
 
   function applyColorScheme(nextScheme: "residue" | "similarity" | "calcons" | "none") {
@@ -495,7 +526,9 @@ export function App() {
           <div className="editor-toolbar">
             <div>
               <span className="status-dot" />
-              {selection ? `Selected · ${selection.column + 1}` : "Ready"}
+              {selectedRange && (selectedRange.sequenceIds.length > 1 || selectedRange.start !== selectedRange.end)
+                ? `Region · ${selectedRange.sequenceIds.length} rows × ${selectedRange.end - selectedRange.start + 1} columns`
+                : selection ? `Selected · ${selection.column + 1}` : "Ready"}
               {notice && <span className="notice">{notice}</span>}
               {error && <span className="error">{error}</span>}
             </div>
@@ -519,6 +552,8 @@ export function App() {
               <span className="toolbar-separator" />
               <button disabled={!selection} onClick={insertGap}>Insert gap</button>
               <button disabled={!selection} onClick={deleteCell}>Delete cell</button>
+              <button disabled={!selectedRange} onClick={() => applyRegionCommand("clear-region")}>Clear region</button>
+              <button disabled={!selectedRange} onClick={() => applyRegionCommand("delete-region")}>Delete region</button>
             </div>
             <div className="zoom-control">
               {viewMode === "classic" && (
@@ -557,18 +592,16 @@ export function App() {
                     {[...sequence.residues].map((residue, column) => {
                       const color = cellColor(sequence.id, row, column, residue);
                       const selected = selection?.sequenceId === sequence.id && selection.column === column;
+                      const inSelectedRange = cellIsInSelectedRange(sequence.id, column);
                       return (
                         <button
                           key={column}
                           data-sequence-id={sequence.id}
                           data-column={column}
-                          className={`residue ${color.className} ${selected ? "selected" : ""}`}
+                          className={`residue ${color.className} ${inSelectedRange ? "range-selected" : ""} ${selected ? "selected" : ""}`}
                           style={color.style}
                           title={`${sequence.name} · ${column + 1} · ${residue}`}
-                          onClick={() => {
-                            setSelection({ sequenceId: sequence.id, column });
-                            editorRef.current?.focus();
-                          }}
+                          onClick={(event) => selectCell(event, { sequenceId: sequence.id, column })}
                         >
                           {residue}
                         </button>
@@ -679,18 +712,16 @@ export function App() {
                                 const residue = sequence.residues[column] ?? "";
                                 const color = cellColor(sequence.id, row, column, residue);
                                 const selected = selection?.sequenceId === sequence.id && selection.column === column;
+                                const inSelectedRange = cellIsInSelectedRange(sequence.id, column);
                                 return residue ? (
                                   <button
                                     key={column}
                                     data-sequence-id={sequence.id}
                                     data-column={column}
-                                    className={`residue ${color.className} ${selected ? "selected" : ""}`}
+                                    className={`residue ${color.className} ${inSelectedRange ? "range-selected" : ""} ${selected ? "selected" : ""}`}
                                     style={color.style}
                                     title={`${sequence.name} · ${column + 1} · ${residue}`}
-                                    onClick={() => {
-                                      setSelection({ sequenceId: sequence.id, column });
-                                      editorRef.current?.focus();
-                                    }}
+                                    onClick={(event) => selectCell(event, { sequenceId: sequence.id, column })}
                                   >
                                     {residue}
                                   </button>

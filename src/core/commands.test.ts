@@ -81,6 +81,50 @@ describe("applyAlignmentCommand", () => {
     expect(result).toBe(original);
   });
 
+  it("clears a rectangular region without shifting alignment columns", () => {
+    const original = document();
+    const result = applyAlignmentCommand(original, {
+      type: "clear-region",
+      range: { sequenceIds: ["seq-a", "seq-b"], start: 1, end: 2 },
+    });
+    expect(result.sequences.map((sequence) => sequence.residues)).toEqual(["A--D", "A--D"]);
+    expect(original.sequences[1].residues).toBe("ACED");
+  });
+
+  it("deletes a region from selected rows and preserves the global annotation axis", () => {
+    const original = document();
+    original.annotations = [{ id: "helix", kind: "helix", start: 1, end: 3, lane: 0, color: "#ef4444" }];
+    const result = applyAlignmentCommand(original, {
+      type: "delete-region",
+      range: { sequenceIds: ["seq-a"], start: 1, end: 2 },
+    });
+    expect(result.sequences.map((sequence) => sequence.residues)).toEqual(["AD--", "ACED"]);
+    expect(result.annotations).toEqual(original.annotations);
+  });
+
+  it("remaps annotations when deleting columns from every row", () => {
+    const original = document();
+    original.annotations = [
+      { id: "helix", kind: "helix", start: 1, end: 3, lane: 0, color: "#ef4444" },
+      { id: "removed", kind: "coil", start: 1, end: 1, lane: 0, color: "#3b82f6" },
+    ];
+    const result = applyAlignmentCommand(original, {
+      type: "delete-region",
+      range: { sequenceIds: ["seq-a", "seq-b"], start: 1, end: 1 },
+    });
+    expect(result.sequences.map((sequence) => sequence.residues)).toEqual(["A-D", "AED"]);
+    expect(result.annotations).toEqual([{ id: "helix", kind: "helix", start: 1, end: 2, lane: 0, color: "#ef4444" }]);
+  });
+
+  it("keeps a valid placeholder column when deleting the whole alignment", () => {
+    const original = document();
+    const result = applyAlignmentCommand(original, {
+      type: "delete-region",
+      range: { sequenceIds: ["seq-a", "seq-b"], start: 0, end: 3 },
+    });
+    expect(result.sequences.map((sequence) => sequence.residues)).toEqual(["-", "-"]);
+  });
+
   it("adds, edits, moves, and deletes a sequence without mutating the input", () => {
     const original = document();
     const sequence = { id: "seq-c", name: " C ", description: "new", residues: "AC", numberingStart: 8 };

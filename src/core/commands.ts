@@ -1,10 +1,12 @@
 import { normalizeAlignment } from "./alignment";
-import { AlignmentAnnotation, AlignmentDocument, CellPosition, Sequence } from "./model";
+import { AlignmentAnnotation, AlignmentDocument, CellPosition, CellRange, Sequence } from "./model";
 
 export type AlignmentCommand =
   | { type: "replace-residue"; position: CellPosition; residue: string }
   | { type: "insert-gap"; position: CellPosition }
   | { type: "delete-cell"; position: CellPosition }
+  | { type: "clear-region"; range: CellRange }
+  | { type: "delete-region"; range: CellRange }
   | { type: "rename-sequence"; sequenceId: string; name: string }
   | { type: "update-sequence-properties"; sequenceId: string; name: string; description: string; numberingStart: number }
   | { type: "add-sequence"; sequence: Sequence; atIndex?: number }
@@ -36,6 +38,25 @@ function updateSequence(
 
 function validColumn(sequence: Sequence, column: number): boolean {
   return Number.isInteger(column) && column >= 0 && column < sequence.residues.length;
+}
+
+function validRange(document: AlignmentDocument, range: CellRange): boolean {
+  const ids = new Set(document.sequences.map((sequence) => sequence.id));
+  return range.sequenceIds.length > 0 && new Set(range.sequenceIds).size === range.sequenceIds.length &&
+    range.sequenceIds.every((id) => ids.has(id)) && Number.isInteger(range.start) && Number.isInteger(range.end) &&
+    range.start >= 0 && range.end >= range.start && range.end < (document.sequences[0]?.residues.length ?? 0);
+}
+
+function remapAnnotations(
+  annotations: AlignmentAnnotation[],
+  keptColumns: number[],
+): AlignmentAnnotation[] {
+  const newIndex = new Map(keptColumns.map((column, index) => [column, index]));
+  return annotations.flatMap((annotation) => {
+    const covered = keptColumns.filter((column) => column >= annotation.start && column <= annotation.end);
+    if (!covered.length) return [];
+    return [{ ...annotation, start: newIndex.get(covered[0])!, end: newIndex.get(covered.at(-1)!)! }];
+  });
 }
 
 export function applyAlignmentCommand(
@@ -86,6 +107,37 @@ export function applyAlignmentCommand(
       });
       if (updated === document) return document;
       return { ...updated, sequences: normalizeAlignment(updated.sequences) };
+    }
+
+    case "clear-region": {
+      if (!validRange(document, command.range)) return document;
+      const selected = new Set(command.range.sequenceIds);
+      let changed = false;
+      const fill = "-".repeat(command.range.end - command.range.start + 1);
+      const sequences = document.sequences.map((sequence) => {
+        if (!selected.has(sequence.id)) return sequence;
+        const residues = sequence.residues.slice(0, command.range.start) + fill + sequence.residues.slice(command.range.end + 1);
+        if (residues === sequence.residues) return sequence;
+        changed = true;
+        return { ...sequence, residues };
+      });
+      return changed ? { ...document, sequences } : document;
+    }
+
+    case "delete-region": {
+      if (!validRange(document, command.range)) return document;
+      const selected = new Set(command.range.sequenceIds);
+      const deletingAllRows = selected.size === document.sequences.length;
+      let sequences = normalizeAlignment(document.sequences.map((sequence) => selected.has(sequence.id) ? {
+        ...sequence,
+        residues: sequence.residues.slice(0, command.range.start) + sequence.residues.slice(command.range.end + 1),
+      } : sequence));
+      if (!deletingAllRows) return { ...document, sequences };
+      const oldWidth = document.sequences[0].residues.length;
+      const keptColumns = Array.from({ length: oldWidth }, (_, column) => column)
+        .filter((column) => column < command.range.start || column > command.range.end);
+      if (!keptColumns.length) sequences = sequences.map((sequence) => ({ ...sequence, residues: "-" }));
+      return { ...document, sequences, annotations: remapAnnotations(document.annotations, keptColumns) };
     }
 
     case "rename-sequence": {
@@ -145,23 +197,13 @@ export function applyAlignmentCommand(
       const keptColumns = Array.from({ length: width }, (_, column) => column)
         .filter((column) => document.sequences.some((sequence) => sequence.residues[column] !== "-"));
       if (keptColumns.length === width) return document;
-      const newIndex = new Map(keptColumns.map((column, index) => [column, index]));
-      const annotations = document.annotations.flatMap((annotation) => {
-        const covered = keptColumns.filter((column) => column >= annotation.start && column <= annotation.end);
-        if (!covered.length) return [];
-        return [{
-          ...annotation,
-          start: newIndex.get(covered[0])!,
-          end: newIndex.get(covered.at(-1)!)!,
-        }];
-      });
       return {
         ...document,
         sequences: document.sequences.map((sequence) => ({
           ...sequence,
           residues: keptColumns.map((column) => sequence.residues[column]).join(""),
         })),
-        annotations,
+        annotations: remapAnnotations(document.annotations, keptColumns),
       };
     }
 

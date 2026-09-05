@@ -1,4 +1,4 @@
-import { AlignmentDocument, CellPosition } from "./model";
+import { AlignmentDocument, CellPosition, CellRange } from "./model";
 
 export type NavigationDirection = "left" | "right" | "up" | "down" | "row-start" | "row-end";
 
@@ -24,5 +24,22 @@ export function moveCellSelection(
   return {
     sequenceId: document.sequences[targetRow].id,
     column: Math.min(selection.column, document.sequences[targetRow].residues.length - 1),
+  };
+}
+
+export function normalizeCellRange(
+  document: AlignmentDocument,
+  anchor: CellPosition,
+  focus: CellPosition,
+): CellRange | null {
+  const anchorRow = document.sequences.findIndex((sequence) => sequence.id === anchor.sequenceId);
+  const focusRow = document.sequences.findIndex((sequence) => sequence.id === focus.sequenceId);
+  if (anchorRow < 0 || focusRow < 0) return null;
+  const firstRow = Math.min(anchorRow, focusRow);
+  const lastRow = Math.max(anchorRow, focusRow);
+  return {
+    sequenceIds: document.sequences.slice(firstRow, lastRow + 1).map((sequence) => sequence.id),
+    start: Math.min(anchor.column, focus.column),
+    end: Math.max(anchor.column, focus.column),
   };
 }

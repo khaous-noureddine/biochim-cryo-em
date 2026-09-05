@@ -14,6 +14,9 @@ Dernière mise à jour : 5 septembre 2026.
 - historique undo/redo ;
 - remplacement d’un résidu, insertion d’un gap et suppression d’une cellule ;
 - navigation de cellule avec les flèches, Home et End ;
+- sélection rectangulaire par Shift-clic ou Shift + flèches ;
+- effacement d’une région en gaps et suppression d’une région avec décalage des
+  lignes sélectionnées, le tout compatible undo/redo ;
 - commandes internes de renommage et déplacement des séquences ;
 - gestionnaire de séquences pour ajouter une ligne vide, renommer, modifier la
   description et la numérotation, réordonner ou supprimer une protéine ;
@@ -48,8 +51,8 @@ Dernière mise à jour : 5 septembre 2026.
 - les annotations existantes ne peuvent pas encore être sélectionnées,
   déplacées, redimensionnées, modifiées ou supprimées directement ;
 - la sélection ne couvre qu’une cellule, sans région, ligne ou colonne ;
-- sélection de régions, copier-coller et modes insertion/remplacement encore
-  incomplets ;
+- sélection complète de lignes/colonnes, glisser-sélectionner, copier-coller et
+  modes insertion/remplacement encore incomplets ;
 - le gestionnaire de séquences ne permet pas encore de coller directement une
   nouvelle séquence ni d’attacher des lignes d’annotation ;
 - les nouveaux imports ALN, MSF, BLC et PIR sont testés sur des fixtures

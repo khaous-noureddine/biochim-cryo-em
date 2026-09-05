@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AlignmentDocument } from "./model";
-import { moveCellSelection } from "./navigation";
+import { moveCellSelection, normalizeCellRange } from "./navigation";
 
 const document: AlignmentDocument = {
   format: "atlas-alignment",
@@ -31,5 +31,12 @@ describe("moveCellSelection", () => {
   it("leaves stale selections unchanged", () => {
     const stale = { sequenceId: "missing", column: 1 };
     expect(moveCellSelection(document, stale, "down")).toBe(stale);
+  });
+
+  it("normalizes a rectangular range in either drag direction", () => {
+    expect(normalizeCellRange(document, { sequenceId: "b", column: 2 }, { sequenceId: "a", column: 0 }))
+      .toEqual({ sequenceIds: ["a", "b"], start: 0, end: 2 });
+    expect(normalizeCellRange(document, { sequenceId: "missing", column: 0 }, { sequenceId: "a", column: 1 }))
+      .toBeNull();
   });
 });
