@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { calculateConservation, parseBlc, parseClustal, parseFasta, parseMsf, parsePir } from "./alignment";
+import {
+  calculateConservation,
+  exportClustal,
+  exportMsf,
+  exportPir,
+  parseBlc,
+  parseClustal,
+  parseFasta,
+  parseMsf,
+  parsePir,
+} from "./alignment";
 
 describe("parseFasta", () => {
   it("creates a versioned Atlas document and pads shorter sequences", () => {
@@ -78,5 +88,29 @@ describe("historical alignment formats", () => {
     expect(() => parseBlc(">a\n>b\nA")).toThrow("Ligne BLC invalide");
     expect(() => parsePir(">P1;a\ndescription\nACD")).toThrow("sans marqueur de fin");
     expect(() => parseMsf("MSF: 3\n//\na ACD")).toThrow("ne déclare aucune séquence");
+  });
+});
+
+describe("alignment exports", () => {
+  const source = ">alpha/5-8 Alpha protein\nAC-D\n>beta Beta protein\nACED";
+
+  it("round-trips PIR sequences, descriptions, gaps, and numbering", () => {
+    const original = parseFasta(source);
+    const reopened = parsePir(exportPir(original));
+    expect(reopened.sequences.map(({ name, description, residues, numberingStart }) => ({ name, description, residues, numberingStart })))
+      .toEqual(original.sequences.map(({ name, description, residues, numberingStart }) => ({ name, description, residues, numberingStart })));
+  });
+
+  it("round-trips ClustalW alignment columns", () => {
+    const original = parseFasta(source);
+    expect(parseClustal(exportClustal(original)).sequences.map((sequence) => sequence.residues))
+      .toEqual(original.sequences.map((sequence) => sequence.residues));
+  });
+
+  it("round-trips MSF sequence order and alignment columns", () => {
+    const original = parseFasta(source);
+    const reopened = parseMsf(exportMsf(original));
+    expect(reopened.sequences.map(({ name, residues }) => ({ name, residues })))
+      .toEqual(original.sequences.map(({ name, residues }) => ({ name, residues })));
   });
 });

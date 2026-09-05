@@ -9,7 +9,7 @@ Dernière mise à jour : 5 septembre 2026.
 - imports FASTA, ClustalW ALN, MSF, BLC et PIR, ainsi qu’un import partiel des
   projets historiques `.aline` ;
 - sauvegarde et réouverture `.atlas` ;
-- export FASTA ;
+- exports FASTA, PIR, MSF et ClustalW ALN ;
 - commandes métier séparées de l’interface ;
 - historique undo/redo ;
 - remplacement d’un résidu, insertion d’un gap et suppression d’une cellule ;
@@ -46,7 +46,8 @@ Dernière mise à jour : 5 septembre 2026.
 - gestion des séquences non exposée dans l’interface ;
 - les nouveaux imports ALN, MSF, BLC et PIR sont testés sur des fixtures
   minimales, mais doivent encore être confrontés à un corpus historique ;
-- formats PDB/mmCIF et formats d’export ALN, MSF et PIR absents ;
+- formats PDB/mmCIF absents ; les exports ALN, MSF et PIR doivent encore être
+  comparés à un corpus d’outils tiers et de fichiers historiques ;
 - consensus, motifs, propriétés protéiques, graphiques et structures
   secondaires automatiques absents ;
 - intégrations MAFFT/MUSCLE, DSSP, PyMOL, UniProt/NCBI et services distants

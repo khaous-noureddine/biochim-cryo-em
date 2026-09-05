@@ -1,7 +1,10 @@
 import { ChangeEvent, KeyboardEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   calculateConservation,
+  exportClustal,
   exportFasta,
+  exportMsf,
+  exportPir,
 } from "./core/alignment";
 import { documentHistoryReducer, createDocumentHistory } from "./core/history";
 import { AnnotationKind, CellPosition, createId } from "./core/model";
@@ -346,7 +349,15 @@ export function App() {
           <button className="primary" onClick={() => inputRef.current?.click()}>Open file</button>
           <input ref={inputRef} type="file" accept=".atlas,.aline,.fa,.fasta,.fas,.faa,.seq,.txt,.aln,.msf,.blc,.pir" hidden onChange={openFile} />
           <button onClick={saveAtlasProject}>Save .atlas</button>
-          <button onClick={() => downloadFile(`${alignment.name}.fasta`, exportFasta(alignment), "text/plain")}>Export FASTA</button>
+          <details className="top-menu">
+            <summary>Export</summary>
+            <div className="top-menu-popover" role="menu" aria-label="Export alignment">
+              <button role="menuitem" onClick={() => downloadFile(`${alignment.name}.fasta`, exportFasta(alignment), "text/plain")}><span>FASTA</span><small>Aligned protein sequences</small></button>
+              <button role="menuitem" onClick={() => downloadFile(`${alignment.name}.pir`, exportPir(alignment), "text/plain")}><span>PIR</span><small>NBRF/PIR sequence format</small></button>
+              <button role="menuitem" onClick={() => downloadFile(`${alignment.name}.msf`, exportMsf(alignment), "text/plain")}><span>MSF</span><small>GCG multiple sequence format</small></button>
+              <button role="menuitem" onClick={() => downloadFile(`${alignment.name}.aln`, exportClustal(alignment), "text/plain")}><span>ClustalW ALN</span><small>Interleaved alignment format</small></button>
+            </div>
+          </details>
         </nav>
       </header>
 

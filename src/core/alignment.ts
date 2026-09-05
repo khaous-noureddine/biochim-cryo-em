@@ -62,7 +62,7 @@ export function parseFasta(source: string, name = "Untitled alignment"): Alignme
         name: sequenceName,
         description: rest.join(" "),
         residues: "",
-        numberingStart: 1,
+        numberingStart: numberingStartFromName(sequenceName),
       };
       sequences.push(current);
       continue;
@@ -196,4 +196,41 @@ export function exportFasta(alignment: Alignment): string {
       `>${name}${description ? ` ${description}` : ""}\n${residues.match(/.{1,80}/g)?.join("\n") ?? ""}`,
     )
     .join("\n");
+}
+
+function exportName(name: string): string {
+  return name.replace(/\s+/g, "_");
+}
+
+function interleavedAlignment(alignment: Alignment, blockSize = 60, gap = "-"): string {
+  const names = alignment.sequences.map((sequence) => exportName(sequence.name));
+  const nameWidth = Math.max(...names.map((sequenceName) => sequenceName.length));
+  const width = alignment.sequences[0]?.residues.length ?? 0;
+  const blocks: string[] = [];
+  for (let start = 0; start < width; start += blockSize) {
+    blocks.push(alignment.sequences.map((sequence, index) => {
+      const residues = sequence.residues.slice(start, start + blockSize).replace(/-/g, gap);
+      return `${names[index].padEnd(nameWidth)}  ${residues}`;
+    }).join("\n"));
+  }
+  return blocks.join("\n\n");
+}
+
+export function exportPir(alignment: Alignment): string {
+  return alignment.sequences.map(({ name, description, residues }) => {
+    const wrapped = residues.match(/.{1,60}/g)?.join("\n") ?? "";
+    return `>P1;${exportName(name)}\n${description}\n${wrapped}*`;
+  }).join("\n");
+}
+
+export function exportClustal(alignment: Alignment): string {
+  return `CLUSTAL W (Atlas Alignement) multiple sequence alignment\n\n${interleavedAlignment(alignment)}\n`;
+}
+
+export function exportMsf(alignment: Alignment): string {
+  const width = alignment.sequences[0]?.residues.length ?? 0;
+  const declarations = alignment.sequences
+    .map((sequence) => ` Name: ${exportName(sequence.name)} Len: ${width} Check: 0 Weight: 1.00`)
+    .join("\n");
+  return `Atlas Alignement MSF: ${width} Type: P Check: 0 ..\n\n${declarations}\n\n//\n\n${interleavedAlignment(alignment)}\n`;
 }

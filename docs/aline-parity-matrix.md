@@ -19,9 +19,9 @@ colonne de vérification.
 | CORE-008 | Import BLC | `ReadBlc` | partiel | fixture historique |
 | CORE-009 | Ancien import BLAST | `ReadBlast` | absent | caractérisation ; probablement remplacé |
 | CORE-010 | Export FASTA | `ExportFasta`, `_ToFasta` | partiel | gaps, sélection, largeur, commentaires |
-| CORE-011 | Export PIR | `ExportPIR`, `_ToPIR` | absent | fixture comparative |
-| CORE-012 | Export MSF | `ExportMSF`, `_ExportMulti` | absent | fixture comparative |
-| CORE-013 | Export ClustalW ALN | `ExportAln`, `_ExportMulti` | absent | fixture comparative |
+| CORE-011 | Export PIR | `ExportPIR`, `_ToPIR` | partiel | fixture comparative |
+| CORE-012 | Export MSF | `ExportMSF`, `_ExportMulti` | partiel | fixture comparative |
+| CORE-013 | Export ClustalW ALN | `ExportAln`, `_ExportMulti` | partiel | fixture comparative |
 | CORE-014 | Export PostScript/EPS | `PrintPS`, transformations PS | absent | remplacé par SVG/PDF fidèle |
 | CORE-015 | Export PNG | `PrintPNG` | absent | comparaison visuelle de références |
 | CORE-016 | Ajouter/supprimer/déplacer une ligne | `InsertRow`, `DeleteRowByN/Y`, `_SeqDrag` | partiel | tests commandes et parcours UI |
