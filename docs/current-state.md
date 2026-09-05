@@ -13,6 +13,7 @@ Dernière mise à jour : 5 septembre 2026.
 - commandes métier séparées de l’interface ;
 - historique undo/redo ;
 - remplacement d’un résidu, insertion d’un gap et suppression d’une cellule ;
+- navigation de cellule avec les flèches, Home et End ;
 - commandes internes de renommage et déplacement des séquences ;
 - gestionnaire de séquences pour ajouter une ligne vide, renommer, modifier la
   description et la numérotation, réordonner ou supprimer une protéine ;
@@ -47,7 +48,8 @@ Dernière mise à jour : 5 septembre 2026.
 - les annotations existantes ne peuvent pas encore être sélectionnées,
   déplacées, redimensionnées, modifiées ou supprimées directement ;
 - la sélection ne couvre qu’une cellule, sans région, ligne ou colonne ;
-- navigation clavier, copier-coller et modes insertion/remplacement incomplets ;
+- sélection de régions, copier-coller et modes insertion/remplacement encore
+  incomplets ;
 - le gestionnaire de séquences ne permet pas encore de coller directement une
   nouvelle séquence ni d’attacher des lignes d’annotation ;
 - les nouveaux imports ALN, MSF, BLC et PIR sont testés sur des fixtures

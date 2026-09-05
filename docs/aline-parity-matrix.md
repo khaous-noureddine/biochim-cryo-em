@@ -28,7 +28,7 @@ colonne de vérification.
 | CORE-017 | Ajouter une séquence et ses métadonnées | `InsertSequence`, `EditTitle`, propriétés | partiel | gestion UI du nom, commentaire et numérotation ; saisie de résidus à compléter |
 | CORE-018 | Attacher des lignes | `AttachRow`, `_AttachmentForX`, `_InsertAttachmentElements` | absent | édition synchronisée de lignes attachées |
 | CORE-019 | Numérotation automatique/fixe et offsets | `_FillSeqnum`, `_SeqStart`, `_SetNumberingType`, `SetNumberOffsets` | partiel | gaps, insertions et codes d'insertion |
-| CORE-020 | Curseur et navigation clavier | `_CursorMove`, `SequenceEditor` | partiel | matrice de raccourcis et limites |
+| CORE-020 | Curseur et navigation clavier | `_CursorMove`, `SequenceEditor` | partiel | flèches/Home/End et maintien de visibilité implémentés ; raccourcis complets à vérifier |
 | CORE-021 | Modes insertion/remplacement/agressif | `SequenceEditor`, `_AggroCheck`, `_ApplyEdits` | partiel | tests différentiels d'édition |
 | CORE-022 | Sélection cellule/région/ligne/colonne | `SelectBox`, `_RubberBand`, `ShadeRegion` | partiel | parcours souris et clavier |
 | CORE-023 | Insertion/suppression de cellules et gaps | `_InsertCells`, `_DeleteCells`, `_DefrayEnds` | partiel | lignes attachées, objets, undo |

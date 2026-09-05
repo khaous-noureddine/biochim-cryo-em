@@ -8,6 +8,7 @@ import {
 } from "./core/alignment";
 import { documentHistoryReducer, createDocumentHistory } from "./core/history";
 import { AnnotationKind, CellPosition, createId } from "./core/model";
+import { moveCellSelection, NavigationDirection } from "./core/navigation";
 import { openAlignmentFile, serializeAtlasProject } from "./core/project";
 import {
   calculateAlscriptConservation,
@@ -168,6 +169,16 @@ export function App() {
     return () => observer.disconnect();
   }, [viewMode, classicCellSize, classicNameWidth]);
 
+  useEffect(() => {
+    if (!selection) return;
+    const frame = requestAnimationFrame(() => {
+      const cell = [...(editorRef.current?.querySelectorAll<HTMLElement>("[data-sequence-id][data-column]") ?? [])]
+        .find((candidate) => candidate.dataset.sequenceId === selection.sequenceId && Number(candidate.dataset.column) === selection.column);
+      cell?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [selection, viewMode]);
+
   async function openFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -196,6 +207,20 @@ export function App() {
 
   function handleEditorKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (!selection) return;
+    const navigationKeys: Partial<Record<string, NavigationDirection>> = {
+      ArrowLeft: "left",
+      ArrowRight: "right",
+      ArrowUp: "up",
+      ArrowDown: "down",
+      Home: "row-start",
+      End: "row-end",
+    };
+    const direction = navigationKeys[event.key];
+    if (direction) {
+      event.preventDefault();
+      setSelection(moveCellSelection(alignment, selection, direction));
+      return;
+    }
     if (/^[a-zA-Z*?.-]$/.test(event.key)) {
       event.preventDefault();
       editSelection(event.key);
@@ -535,6 +560,8 @@ export function App() {
                       return (
                         <button
                           key={column}
+                          data-sequence-id={sequence.id}
+                          data-column={column}
                           className={`residue ${color.className} ${selected ? "selected" : ""}`}
                           style={color.style}
                           title={`${sequence.name} · ${column + 1} · ${residue}`}
@@ -655,6 +682,8 @@ export function App() {
                                 return residue ? (
                                   <button
                                     key={column}
+                                    data-sequence-id={sequence.id}
+                                    data-column={column}
                                     className={`residue ${color.className} ${selected ? "selected" : ""}`}
                                     style={color.style}
                                     title={`${sequence.name} · ${column + 1} · ${residue}`}
