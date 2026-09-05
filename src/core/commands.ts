@@ -15,6 +15,7 @@ export type AlignmentCommand =
   | { type: "clear-all-gap-columns" }
   | { type: "remove-duplicate-sequences"; includeFragments: boolean }
   | { type: "add-annotation"; annotation: AlignmentAnnotation }
+  | { type: "update-annotation"; annotation: AlignmentAnnotation }
   | { type: "delete-annotation"; annotationId: string };
 
 const EDITABLE_RESIDUE = /^[A-Z*?.-]$/;
@@ -57,6 +58,14 @@ function remapAnnotations(
     if (!covered.length) return [];
     return [{ ...annotation, start: newIndex.get(covered[0])!, end: newIndex.get(covered.at(-1)!)! }];
   });
+}
+
+function validAnnotation(document: AlignmentDocument, annotation: AlignmentAnnotation): boolean {
+  const width = document.sequences[0]?.residues.length ?? 0;
+  return (annotation.kind === "helix" || annotation.kind === "coil") &&
+    Number.isInteger(annotation.start) && Number.isInteger(annotation.end) &&
+    annotation.start >= 0 && annotation.end >= annotation.start && annotation.end < width &&
+    (annotation.lane === 0 || annotation.lane === 1) && /^#[0-9a-f]{6}$/i.test(annotation.color);
 }
 
 export function applyAlignmentCommand(
@@ -225,19 +234,20 @@ export function applyAlignmentCommand(
 
     case "add-annotation": {
       const annotation = command.annotation;
-      const width = document.sequences[0]?.residues.length ?? 0;
-      const valid =
-        !document.annotations.some((item) => item.id === annotation.id) &&
-        (annotation.kind === "helix" || annotation.kind === "coil") &&
-        Number.isInteger(annotation.start) &&
-        Number.isInteger(annotation.end) &&
-        annotation.start >= 0 &&
-        annotation.end >= annotation.start &&
-        annotation.end < width &&
-        (annotation.lane === 0 || annotation.lane === 1) &&
-        /^#[0-9a-f]{6}$/i.test(annotation.color);
+      const valid = !document.annotations.some((item) => item.id === annotation.id) && validAnnotation(document, annotation);
       if (!valid) return document;
       return { ...document, annotations: [...document.annotations, annotation] };
+    }
+
+    case "update-annotation": {
+      const annotation = command.annotation;
+      const index = document.annotations.findIndex((item) => item.id === annotation.id);
+      if (index < 0 || !validAnnotation(document, annotation)) return document;
+      const current = document.annotations[index];
+      if (JSON.stringify(current) === JSON.stringify(annotation)) return document;
+      const annotations = [...document.annotations];
+      annotations[index] = annotation;
+      return { ...document, annotations };
     }
 
     case "delete-annotation": {

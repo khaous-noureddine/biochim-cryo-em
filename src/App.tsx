@@ -69,6 +69,8 @@ function AnnotationShape({
   total,
   color,
   preview = false,
+  selected = false,
+  onSelect,
 }: {
   kind: AnnotationKind;
   left: number;
@@ -76,14 +78,20 @@ function AnnotationShape({
   total: number;
   color: string;
   preview?: boolean;
+  selected?: boolean;
+  onSelect?: () => void;
 }) {
   const style = {
     "--annotation-color": color,
     left: `${(left / total) * 100}%`,
     width: `${(length / total) * 100}%`,
   } as React.CSSProperties;
+  const handleClick = (event: ReactMouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    onSelect?.();
+  };
   if (kind === "helix") {
-    return <span className={`annotation-shape helix-shape ${preview ? "preview" : ""}`} style={style} />;
+    return <button type="button" aria-label="Select cylinder annotation" className={`annotation-shape helix-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
   }
   const cycles = Math.max(1, Math.round(length / 2));
   const points = Array.from({ length: 61 }, (_, index) => {
@@ -91,9 +99,11 @@ function AnnotationShape({
     return `${progress * 100},${10 + Math.sin(progress * cycles * Math.PI * 2) * 7}`;
   }).join(" ");
   return (
-    <svg className={`annotation-shape coil-shape ${preview ? "preview" : ""}`} style={style} viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">
-      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="2.6" vectorEffect="non-scaling-stroke" />
-    </svg>
+    <button type="button" aria-label="Select spring annotation" className={`annotation-shape coil-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick}>
+      <svg className="coil-art" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">
+        <polyline points={points} fill="none" stroke="currentColor" strokeWidth="2.6" vectorEffect="non-scaling-stroke" />
+      </svg>
+    </button>
   );
 }
 
@@ -116,6 +126,7 @@ export function App() {
   const [annotationTool, setAnnotationTool] = useState<AnnotationKind | null>(null);
   const [annotationColor, setAnnotationColor] = useState("#ef4444");
   const [annotationStart, setAnnotationStart] = useState<number | null>(null);
+  const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -137,6 +148,7 @@ export function App() {
     () => selection && selectionAnchor ? normalizeCellRange(alignment, selectionAnchor, selection) : null,
     [alignment, selection, selectionAnchor],
   );
+  const selectedAnnotation = alignment.annotations.find((annotation) => annotation.id === selectedAnnotationId) ?? null;
   const classicCellSize = 22 * zoom;
   const classicNameWidth = useMemo(
     () => measureClassicNameWidth(alignment.sequences.map((sequence) => sequence.name), classicCellSize),
@@ -193,6 +205,7 @@ export function App() {
       setSelection(null);
       setSelectionAnchor(null);
       setAnnotationStart(null);
+      setSelectedAnnotationId(null);
       setColorExclusions(new Set());
       setScheme("none");
       setError("");
@@ -356,6 +369,7 @@ export function App() {
   function selectAnnotationTool(tool: AnnotationKind) {
     setAnnotationTool((current) => current === tool ? null : tool);
     setAnnotationStart(null);
+    setSelectedAnnotationId(null);
   }
 
   function chooseAnnotationBoundary(event: ReactMouseEvent<HTMLDivElement>, blockStart: number, blockWidth: number) {
@@ -368,14 +382,16 @@ export function App() {
     }
     const start = Math.min(annotationStart, column);
     const end = Math.max(annotationStart, column);
+    const id = createId();
     dispatch({
       type: "execute",
       command: {
         type: "add-annotation",
-        annotation: { id: createId(), kind: annotationTool, start, end, lane: 0, color: annotationColor },
+        annotation: { id, kind: annotationTool, start, end, lane: 0, color: annotationColor },
       },
     });
     setAnnotationStart(null);
+    setSelectedAnnotationId(id);
   }
 
   function cellColor(
@@ -498,6 +514,20 @@ export function App() {
                 : `Start: ${annotationStart + 1}. Click the end cell.`
               : "Choose a shape, then select its start and end above the alignment."}</p>
           </div>
+          {selectedAnnotation && (
+            <div className="panel-section annotation-properties">
+              <label>Selected shape</label>
+              <div className="annotation-position-fields">
+                <label><span>Start</span><input type="number" min="1" max={selectedAnnotation.end + 1} value={selectedAnnotation.start + 1} onChange={(event) => dispatch({ type: "execute", command: { type: "update-annotation", annotation: { ...selectedAnnotation, start: Math.max(0, Math.min(selectedAnnotation.end, Number(event.target.value) - 1)) } } })} /></label>
+                <label><span>End</span><input type="number" min={selectedAnnotation.start + 1} max={width} value={selectedAnnotation.end + 1} onChange={(event) => dispatch({ type: "execute", command: { type: "update-annotation", annotation: { ...selectedAnnotation, end: Math.max(selectedAnnotation.start, Math.min(width - 1, Number(event.target.value) - 1)) } } })} /></label>
+              </div>
+              <label className="annotation-color"><span>Shape color</span><input type="color" value={selectedAnnotation.color} onChange={(event) => dispatch({ type: "execute", command: { type: "update-annotation", annotation: { ...selectedAnnotation, color: event.target.value } } })} /></label>
+              <button className="danger-button annotation-delete" type="button" onClick={() => {
+                dispatch({ type: "execute", command: { type: "delete-annotation", annotationId: selectedAnnotation.id } });
+                setSelectedAnnotationId(null);
+              }}>Delete shape</button>
+            </div>
+          )}
         </aside>
 
         <button
@@ -641,6 +671,12 @@ export function App() {
                               length={segmentEnd - segmentStart + 1}
                               total={blockWidth}
                               color={annotation.color}
+                              selected={annotation.id === selectedAnnotationId}
+                              onSelect={() => {
+                                setAnnotationTool(null);
+                                setAnnotationStart(null);
+                                setSelectedAnnotationId(annotation.id);
+                              }}
                             />
                           );
                         })}

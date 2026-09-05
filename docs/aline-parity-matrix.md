@@ -39,7 +39,7 @@ colonne de vérification.
 | CORE-028 | Palettes `.alc` et éditeur de palettes | `ReadColour`, `SaveColour`, `CalColours`, `_ApplyCat` | partiel | lecture/écriture des 5 palettes fournies |
 | CORE-029 | Interpolation RGB/HSL | `colourInterpolate`, `colourInterpolateHSL`, `rgb2hsl`, `hsl2rgb` | absent | vecteurs numériques comparatifs |
 | CORE-030 | Création d'objets graphiques | `CreateObject`, `NewObType`, `_GlyphFactory`, `_LingFactory` | partiel | chaque type, propriété et persistance |
-| CORE-031 | Sélection/déplacement/suppression d'objet | `FindObjectAt`, `MoveObject`, `DeleteObjectById/Ptr` | absent | souris, undo et objets liés |
+| CORE-031 | Sélection/déplacement/suppression d'objet | `FindObjectAt`, `MoveObject`, `DeleteObjectById/Ptr` | partiel | sélection, positions, couleur et suppression testées ; déplacement direct et objets liés à compléter |
 | CORE-032 | Ordre des calques | `RaiseLowerObj`, `_GetZList`, `_ConsolidateZ` | absent | superpositions comparatives |
 | CORE-033 | Symboles ponctuels complets | `_GlyphFactory`, définitions `objectdata` | absent | galerie de référence |
 | CORE-034 | Hélices, brins beta, coils et lignes | `_LingFactory`, définitions `objectdata` | partiel | galerie et découpage de blocs |

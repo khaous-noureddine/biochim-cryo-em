@@ -71,6 +71,18 @@ describe("applyAlignmentCommand", () => {
     expect(deleted.annotations).toEqual([]);
   });
 
+  it("updates a graphical annotation and rejects invalid geometry", () => {
+    const original = document();
+    const annotation = { id: "helix-1", kind: "helix" as const, start: 0, end: 2, lane: 0 as const, color: "#ef4444" };
+    const added = applyAlignmentCommand(original, { type: "add-annotation", annotation });
+    const updatedAnnotation = { ...annotation, start: 1, end: 3, color: "#22c55e" };
+    const updated = applyAlignmentCommand(added, { type: "update-annotation", annotation: updatedAnnotation });
+    const invalid = applyAlignmentCommand(updated, { type: "update-annotation", annotation: { ...updatedAnnotation, end: 99 } });
+    expect(updated.annotations).toEqual([updatedAnnotation]);
+    expect(added.annotations).toEqual([annotation]);
+    expect(invalid).toBe(updated);
+  });
+
   it("rejects annotations outside the alignment", () => {
     const original = document();
     const result = applyAlignmentCommand(original, {
