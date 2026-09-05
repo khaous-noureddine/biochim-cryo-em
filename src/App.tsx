@@ -106,6 +106,7 @@ export function App() {
   const [scheme, setScheme] = useState<"residue" | "similarity" | "calcons" | "none">("none");
   const [similarityOptions, setSimilarityOptions] = useState<SimilarityOptions>({ cutoff: 0.5, groups: DEFAULT_SIMILARITY_GROUPS });
   const [similarityDialogOpen, setSimilarityDialogOpen] = useState(false);
+  const [sequenceManagerOpen, setSequenceManagerOpen] = useState(false);
   const [colorExclusions, setColorExclusions] = useState<Set<string>>(() => new Set());
   const [viewMode, setViewMode] = useState<"modern" | "classic">("classic");
   const [repeatNames, setRepeatNames] = useState(true);
@@ -219,6 +220,30 @@ export function App() {
     downloadFile(`${safeName}.atlas`, serializeAtlasProject(alignment), "application/json");
     dispatch({ type: "mark-saved" });
     setNotice("Projet .atlas enregistré");
+  }
+
+  function addBlankSequence() {
+    const usedNames = new Set(alignment.sequences.map((sequence) => sequence.name));
+    let suffix = alignment.sequences.length + 1;
+    while (usedNames.has(`sequence-${suffix}`)) suffix += 1;
+    dispatch({
+      type: "execute",
+      command: {
+        type: "add-sequence",
+        sequence: {
+          id: createId(),
+          name: `sequence-${suffix}`,
+          description: "",
+          residues: "-".repeat(width),
+          numberingStart: 1,
+        },
+      },
+    });
+  }
+
+  function deleteSequence(sequenceId: string) {
+    dispatch({ type: "execute", command: { type: "delete-sequence", sequenceId } });
+    if (selection?.sequenceId === sequenceId) setSelection(null);
   }
 
   function applyColorScheme(nextScheme: "residue" | "similarity" | "calcons" | "none") {
@@ -384,6 +409,7 @@ export function App() {
             <span className="eyebrow">Alignment</span>
             <h1>{alignment.name}{history.dirty ? " •" : ""}</h1>
             <p>{alignment.sequences.length} sequences · {width} positions</p>
+            <button className="manage-sequences" onClick={() => setSequenceManagerOpen(true)}>Manage sequences</button>
           </div>
 
           <div className="panel-section stats">
@@ -699,6 +725,32 @@ export function App() {
               <button className="primary" type="submit">Apply</button>
             </div>
           </form>
+        </div>
+      )}
+      {sequenceManagerOpen && (
+        <div className="dialog-backdrop" role="presentation" onMouseDown={() => setSequenceManagerOpen(false)}>
+          <section className="settings-dialog sequence-manager" aria-labelledby="sequence-manager-title" onMouseDown={(event) => event.stopPropagation()}>
+            <span className="eyebrow">Alignment rows</span>
+            <div className="sequence-manager-heading">
+              <h2 id="sequence-manager-title">Manage sequences</h2>
+              <button className="primary" type="button" onClick={addBlankSequence}>Add sequence</button>
+            </div>
+            <div className="sequence-list">
+              {alignment.sequences.map((sequence, index) => (
+                <article className="sequence-list-row" key={sequence.id}>
+                  <div className="sequence-order-actions">
+                    <button type="button" disabled={index === 0} aria-label={`Move ${sequence.name} up`} onClick={() => dispatch({ type: "execute", command: { type: "move-sequence", sequenceId: sequence.id, toIndex: index - 1 } })}>↑</button>
+                    <button type="button" disabled={index === alignment.sequences.length - 1} aria-label={`Move ${sequence.name} down`} onClick={() => dispatch({ type: "execute", command: { type: "move-sequence", sequenceId: sequence.id, toIndex: index + 1 } })}>↓</button>
+                  </div>
+                  <label><span>Name</span><input className="text-field" defaultValue={sequence.name} onBlur={(event) => dispatch({ type: "execute", command: { type: "update-sequence-properties", sequenceId: sequence.id, name: event.target.value, description: sequence.description, numberingStart: sequence.numberingStart } })} /></label>
+                  <label><span>Description</span><input className="text-field" defaultValue={sequence.description} onBlur={(event) => dispatch({ type: "execute", command: { type: "update-sequence-properties", sequenceId: sequence.id, name: sequence.name, description: event.target.value, numberingStart: sequence.numberingStart } })} /></label>
+                  <label className="numbering-field"><span>Starts at</span><input className="text-field" type="number" min="0" step="1" defaultValue={sequence.numberingStart} onBlur={(event) => dispatch({ type: "execute", command: { type: "update-sequence-properties", sequenceId: sequence.id, name: sequence.name, description: sequence.description, numberingStart: Number(event.target.value) } })} /></label>
+                  <button className="danger-button" type="button" disabled={alignment.sequences.length <= 1} onClick={() => deleteSequence(sequence.id)}>Delete</button>
+                </article>
+              ))}
+            </div>
+            <div className="dialog-actions"><button className="primary" type="button" onClick={() => setSequenceManagerOpen(false)}>Done</button></div>
+          </section>
         </div>
       )}
     </main>

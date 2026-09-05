@@ -81,6 +81,36 @@ describe("applyAlignmentCommand", () => {
     expect(result).toBe(original);
   });
 
+  it("adds, edits, moves, and deletes a sequence without mutating the input", () => {
+    const original = document();
+    const sequence = { id: "seq-c", name: " C ", description: "new", residues: "AC", numberingStart: 8 };
+    const added = applyAlignmentCommand(original, { type: "add-sequence", sequence, atIndex: 1 });
+    const edited = applyAlignmentCommand(added, {
+      type: "update-sequence-properties",
+      sequenceId: "seq-c",
+      name: "Gamma",
+      description: "edited",
+      numberingStart: 12,
+    });
+    const moved = applyAlignmentCommand(edited, { type: "move-sequence", sequenceId: "seq-c", toIndex: 2 });
+    const deleted = applyAlignmentCommand(moved, { type: "delete-sequence", sequenceId: "seq-c" });
+
+    expect(original.sequences).toHaveLength(2);
+    expect(added.sequences[1]).toMatchObject({ name: "C", residues: "AC--", numberingStart: 8 });
+    expect(edited.sequences[1]).toMatchObject({ name: "Gamma", description: "edited", numberingStart: 12 });
+    expect(moved.sequences[2].id).toBe("seq-c");
+    expect(deleted.sequences.map((item) => item.id)).toEqual(["seq-a", "seq-b"]);
+  });
+
+  it("protects the final sequence and rejects invalid additions", () => {
+    const single = { ...document(), sequences: [document().sequences[0]] };
+    expect(applyAlignmentCommand(single, { type: "delete-sequence", sequenceId: "seq-a" })).toBe(single);
+    expect(applyAlignmentCommand(single, {
+      type: "add-sequence",
+      sequence: { id: "bad", name: "", description: "", residues: "AC1", numberingStart: -1 },
+    })).toBe(single);
+  });
+
   it("removes all-gap columns and remaps graphical annotations", () => {
     const original = document();
     original.sequences[1].residues = "AC-D";

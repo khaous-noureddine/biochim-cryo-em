@@ -6,6 +6,9 @@ export type AlignmentCommand =
   | { type: "insert-gap"; position: CellPosition }
   | { type: "delete-cell"; position: CellPosition }
   | { type: "rename-sequence"; sequenceId: string; name: string }
+  | { type: "update-sequence-properties"; sequenceId: string; name: string; description: string; numberingStart: number }
+  | { type: "add-sequence"; sequence: Sequence; atIndex?: number }
+  | { type: "delete-sequence"; sequenceId: string }
   | { type: "move-sequence"; sequenceId: string; toIndex: number }
   | { type: "clear-all-gap-columns" }
   | { type: "remove-duplicate-sequences"; includeFragments: boolean }
@@ -91,6 +94,34 @@ export function applyAlignmentCommand(
       return updateSequence(document, command.sequenceId, (sequence) =>
         sequence.name === name ? sequence : { ...sequence, name },
       );
+    }
+
+    case "update-sequence-properties": {
+      const name = command.name.trim();
+      if (!name || !Number.isInteger(command.numberingStart) || command.numberingStart < 0) return document;
+      return updateSequence(document, command.sequenceId, (sequence) => {
+        if (sequence.name === name && sequence.description === command.description && sequence.numberingStart === command.numberingStart) return sequence;
+        return { ...sequence, name, description: command.description, numberingStart: command.numberingStart };
+      });
+    }
+
+    case "add-sequence": {
+      const sequence = command.sequence;
+      const width = document.sequences[0]?.residues.length ?? sequence.residues.length;
+      if (
+        !sequence.id || document.sequences.some((item) => item.id === sequence.id) ||
+        !sequence.name.trim() || !/^[A-Z*?.-]*$/.test(sequence.residues) ||
+        !Number.isInteger(sequence.numberingStart) || sequence.numberingStart < 0
+      ) return document;
+      const atIndex = Math.min(Math.max(0, command.atIndex ?? document.sequences.length), document.sequences.length);
+      const sequences = [...document.sequences];
+      sequences.splice(atIndex, 0, { ...sequence, name: sequence.name.trim(), residues: sequence.residues.padEnd(width, "-") });
+      return { ...document, sequences: normalizeAlignment(sequences) };
+    }
+
+    case "delete-sequence": {
+      if (document.sequences.length <= 1 || !document.sequences.some((sequence) => sequence.id === command.sequenceId)) return document;
+      return { ...document, sequences: document.sequences.filter((sequence) => sequence.id !== command.sequenceId) };
     }
 
     case "move-sequence": {

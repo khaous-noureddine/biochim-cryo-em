@@ -14,6 +14,8 @@ Dernière mise à jour : 5 septembre 2026.
 - historique undo/redo ;
 - remplacement d’un résidu, insertion d’un gap et suppression d’une cellule ;
 - commandes internes de renommage et déplacement des séquences ;
+- gestionnaire de séquences pour ajouter une ligne vide, renommer, modifier la
+  description et la numérotation, réordonner ou supprimer une protéine ;
 - vue Modern et vue Classic ALINE, cette dernière étant la vue par défaut ;
 - alignements longs découpés en lignes de nage sans défilement horizontal ;
 - choix de répéter les noms dans chaque bloc, activé par défaut ;
@@ -46,7 +48,8 @@ Dernière mise à jour : 5 septembre 2026.
   déplacées, redimensionnées, modifiées ou supprimées directement ;
 - la sélection ne couvre qu’une cellule, sans région, ligne ou colonne ;
 - navigation clavier, copier-coller et modes insertion/remplacement incomplets ;
-- gestion des séquences non exposée dans l’interface ;
+- le gestionnaire de séquences ne permet pas encore de coller directement une
+  nouvelle séquence ni d’attacher des lignes d’annotation ;
 - les nouveaux imports ALN, MSF, BLC et PIR sont testés sur des fixtures
   minimales, mais doivent encore être confrontés à un corpus historique ;
 - formats PDB/mmCIF absents ; les exports ALN, MSF et PIR doivent encore être

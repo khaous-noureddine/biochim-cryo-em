@@ -47,6 +47,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .eyebrow, .panel-section > label { display: block; color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
 .document-heading h1 { margin: 8px 0; font-size: 22px; line-height: 1.25; overflow-wrap: anywhere; }
 .document-heading p { margin: 0; color: var(--muted); font-size: 12px; }
+.manage-sequences { width: 100%; margin-top: 15px; }
 .panel-section { margin-top: 38px; }
 .panel-section > label { margin-bottom: 13px; color: #74857f; }
 .stats div { display: flex; justify-content: space-between; margin: 12px 0; color: var(--muted); font-size: 12px; }.stats strong { color: #dce8e4; }
@@ -168,6 +169,17 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .text-field { width: 100%; padding: 10px 11px; border: 1px solid #385048; border-radius: 8px; outline: none; color: #e9f1ef; background: #0b1512; }
 .text-field:focus { border-color: var(--accent); }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 25px; }
+.sequence-manager { width: min(900px, 100%); max-height: min(760px, calc(100vh - 40px)); display: flex; flex-direction: column; }
+.sequence-manager-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.sequence-manager-heading h2 { margin-bottom: 16px; }
+.sequence-list { min-height: 0; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; }
+.sequence-list-row { display: grid; grid-template-columns: auto minmax(130px, 1fr) minmax(180px, 1.6fr) 90px auto; align-items: end; gap: 8px; padding: 11px; border-bottom: 1px solid var(--line); }
+.sequence-list-row:last-child { border-bottom: 0; }
+.sequence-list-row label span { display: block; margin-bottom: 5px; color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
+.sequence-order-actions { display: flex; gap: 4px; }
+.sequence-order-actions button { padding: 9px 10px; }
+.danger-button { color: #ffaaa4; border-color: #663b38; }
+.danger-button:hover:not(:disabled) { background: #3b211f; }
 
 @media (max-width: 1200px) { .editor-toolbar { flex-wrap: wrap; }.alignment-scroll { height: calc(100vh - 205px); } }
 @media (max-width: 1050px) { .editor-card { margin: 14px; }.alignment-grid { grid-template-columns: 180px max-content; } }

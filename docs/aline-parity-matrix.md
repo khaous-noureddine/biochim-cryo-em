@@ -24,8 +24,8 @@ colonne de vérification.
 | CORE-013 | Export ClustalW ALN | `ExportAln`, `_ExportMulti` | partiel | fixture comparative |
 | CORE-014 | Export PostScript/EPS | `PrintPS`, transformations PS | absent | remplacé par SVG/PDF fidèle |
 | CORE-015 | Export PNG | `PrintPNG` | absent | comparaison visuelle de références |
-| CORE-016 | Ajouter/supprimer/déplacer une ligne | `InsertRow`, `DeleteRowByN/Y`, `_SeqDrag` | partiel | tests commandes et parcours UI |
-| CORE-017 | Ajouter une séquence et ses métadonnées | `InsertSequence`, `EditTitle`, propriétés | partiel | nom, commentaire, position, numérotation |
+| CORE-016 | Ajouter/supprimer/déplacer une ligne | `InsertRow`, `DeleteRowByN/Y`, `_SeqDrag` | partiel | commandes testées ; parcours UI et lignes spéciales à compléter |
+| CORE-017 | Ajouter une séquence et ses métadonnées | `InsertSequence`, `EditTitle`, propriétés | partiel | gestion UI du nom, commentaire et numérotation ; saisie de résidus à compléter |
 | CORE-018 | Attacher des lignes | `AttachRow`, `_AttachmentForX`, `_InsertAttachmentElements` | absent | édition synchronisée de lignes attachées |
 | CORE-019 | Numérotation automatique/fixe et offsets | `_FillSeqnum`, `_SeqStart`, `_SetNumberingType`, `SetNumberOffsets` | partiel | gaps, insertions et codes d'insertion |
 | CORE-020 | Curseur et navigation clavier | `_CursorMove`, `SequenceEditor` | partiel | matrice de raccourcis et limites |
