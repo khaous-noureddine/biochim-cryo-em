@@ -43,7 +43,7 @@ colonne de vérification.
 | CORE-032 | Ordre des calques | `RaiseLowerObj`, `_GetZList`, `_ConsolidateZ` | absent | superpositions comparatives |
 | CORE-033 | Symboles ponctuels complets | `_GlyphFactory`, définitions `objectdata` | partiel | 14 types historiques créables en un clic, éditables et persistés ; galerie visuelle de référence à valider |
 | CORE-034 | Hélices, brins beta, coils et lignes | `_LingFactory`, définitions `objectdata` | partiel | types `Helix`, `Helix2`, `Strand`, `Strand2`, coil, trait plein/pointillé, connecteurs haut/bas et soulignement créables, éditables, persistés et testés ; comparaison visuelle de référence à finaliser |
-| CORE-035 | Boîtes, rectangles et textes | `Box`, `Rect`, `DrawText` | partiel | boîtes/rectangles 2D créables depuis une sélection, rendus, éditables, remappés et persistés ; textes à ajouter |
+| CORE-035 | Boîtes, rectangles et textes | `Box`, `Rect`, `DrawText` | partiel | boîtes/rectangles 2D et textes simples/contourés créables, rendus, éditables, remappés et persistés ; validation visuelle de parité à compléter |
 | CORE-036 | Graphiques génériques | `_CreateGraph`, `InsertGraph`, fonctions `*Graph` | absent | chaque type, seuil, plage et log |
 | CORE-037 | Menus, raccourcis et actions configurables | `_BuildMenu`, bindings, `setaction` | partiel | inventaire des commandes UI |
 | CORE-038 | Configuration utilisateur/système | `PullInConfigFiles`, `ConfigDialog`, `_WriteGoodConfig` | absent | migrations et persistance multiplateforme |

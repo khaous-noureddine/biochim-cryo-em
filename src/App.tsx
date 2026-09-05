@@ -7,7 +7,7 @@ import {
   exportPir,
 } from "./core/alignment";
 import { documentHistoryReducer, createDocumentHistory } from "./core/history";
-import { AnnotationKind, CellPosition, createId, isPointAnnotationKind, POINT_ANNOTATION_KINDS, PointAnnotationKind, RegionKind } from "./core/model";
+import { AnnotationKind, CellPosition, createId, isPointAnnotationKind, POINT_ANNOTATION_KINDS, PointAnnotationKind, RegionKind, TextAnnotation } from "./core/model";
 import { moveCellSelection, NavigationDirection, normalizeCellRange } from "./core/navigation";
 import { openAlignmentFile, serializeAtlasProject } from "./core/project";
 import {
@@ -155,6 +155,32 @@ function AnnotationShape({
   );
 }
 
+function TextAnnotationShape({ annotation, blockStart, blockWidth, selected, onSelect }: { annotation: TextAnnotation; blockStart: number; blockWidth: number; selected: boolean; onSelect: () => void }) {
+  const alignTransform = annotation.align === "center" ? "translateX(-50%)" : annotation.align === "right" ? "translateX(-100%)" : "none";
+  return (
+    <button
+      type="button"
+      aria-label={`Select text annotation ${annotation.text}`}
+      className={`text-annotation-shape ${annotation.kind} ${selected ? "selected" : ""}`}
+      style={{
+        "--text-outline-color": annotation.outlineColor,
+        "--text-outline-width": `${annotation.kind === "outline-text" ? annotation.outlineWidth : 0}px`,
+        left: `calc(${annotation.column - blockStart + 0.5} * var(--cell-size))`,
+        color: annotation.color,
+        fontFamily: annotation.fontFamily,
+        fontSize: `${annotation.fontSize}px`,
+        fontWeight: annotation.fontWeight,
+        fontStyle: annotation.italic ? "italic" : "normal",
+        transform: alignTransform,
+        maxWidth: `calc(${blockWidth} * var(--cell-size))`,
+      } as React.CSSProperties}
+      onClick={(event) => { event.stopPropagation(); onSelect(); }}
+    >
+      {annotation.text}
+    </button>
+  );
+}
+
 export function App() {
   const [history, dispatch] = useReducer(
     documentHistoryReducer,
@@ -172,10 +198,15 @@ export function App() {
   const [classicWidths, setClassicWidths] = useState({ first: 60, continuation: 70 });
   const [sidebarWidth, setSidebarWidth] = useState(258);
   const [annotationTool, setAnnotationTool] = useState<AnnotationKind | null>(null);
+  const [textTool, setTextTool] = useState<"text" | "outline-text" | null>(null);
+  const [textDraft, setTextDraft] = useState("Annotation");
+  const [textColor, setTextColor] = useState("#111111");
+  const [textOutlineColor, setTextOutlineColor] = useState("#ffffff");
   const [annotationColor, setAnnotationColor] = useState("#ef4444");
   const [annotationStart, setAnnotationStart] = useState<number | null>(null);
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null);
   const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
+  const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
   const [regionLineColor, setRegionLineColor] = useState("#111111");
   const [regionFillColor, setRegionFillColor] = useState("#facc15");
   const [zoom, setZoom] = useState(1);
@@ -201,6 +232,7 @@ export function App() {
   );
   const selectedAnnotation = alignment.annotations.find((annotation) => annotation.id === selectedAnnotationId) ?? null;
   const selectedGraphicRegion = alignment.regions.find((region) => region.id === selectedRegionId) ?? null;
+  const selectedTextAnnotation = alignment.textAnnotations.find((annotation) => annotation.id === selectedTextId) ?? null;
   const classicCellSize = 22 * zoom;
   const classicNameWidth = useMemo(
     () => measureClassicNameWidth(alignment.sequences.map((sequence) => sequence.name), classicCellSize),
@@ -259,6 +291,7 @@ export function App() {
       setAnnotationStart(null);
       setSelectedAnnotationId(null);
       setSelectedRegionId(null);
+      setSelectedTextId(null);
       setColorExclusions(new Set());
       setScheme("none");
       setError("");
@@ -469,12 +502,31 @@ export function App() {
     setAnnotationTool((current) => current === tool ? null : tool);
     setAnnotationStart(null);
     setSelectedAnnotationId(null);
+    setTextTool(null);
+    setSelectedTextId(null);
   }
 
-  function chooseAnnotationBoundary(event: ReactMouseEvent<HTMLDivElement>, blockStart: number, blockWidth: number) {
-    if (!annotationTool || width === 0) return;
+  function selectTextTool(tool: "text" | "outline-text") {
+    setTextTool((current) => current === tool ? null : tool);
+    setAnnotationTool(null);
+    setAnnotationStart(null);
+    setSelectedAnnotationId(null);
+    setSelectedTextId(null);
+  }
+
+  function chooseAnnotationBoundary(event: ReactMouseEvent<HTMLDivElement>, blockStart: number, blockWidth: number, lane: 0 | 1) {
+    if ((!annotationTool && !textTool) || width === 0) return;
     event.preventDefault();
     const column = annotationColumn(event, blockStart, blockWidth);
+    if (textTool) {
+      if (!textDraft.trim()) return;
+      const id = createId();
+      dispatch({ type: "execute", command: { type: "add-text-annotation", annotation: { id, kind: textTool, column, lane, text: textDraft.trim(), color: textColor, outlineColor: textOutlineColor, outlineWidth: textTool === "outline-text" ? 2 : 0, fontFamily: "Arial", fontSize: 14, fontWeight: "normal", italic: false, align: "center" } } });
+      setSelectedTextId(id);
+      setSelectedRegionId(null);
+      return;
+    }
+    if (!annotationTool) return;
     if (isPointAnnotationKind(annotationTool)) {
       const id = createId();
       dispatch({
@@ -656,6 +708,15 @@ export function App() {
                 {POINT_ANNOTATION_KINDS.map((kind) => <option value={kind} key={kind}>{POINT_SYMBOLS[kind].glyph} {POINT_SYMBOLS[kind].label}</option>)}
               </select>
             </label>
+            <div className="text-tool-editor">
+              <label><span>Annotation text</span><input className="text-field" value={textDraft} maxLength={500} onChange={(event) => setTextDraft(event.target.value)} /></label>
+              <div className="shape-tools">
+                <button type="button" className={textTool === "text" ? "active" : ""} disabled={!textDraft.trim()} onClick={() => selectTextTool("text")}><span className="text-tool-icon">T</span><span>Text</span></button>
+                <button type="button" className={textTool === "outline-text" ? "active" : ""} disabled={!textDraft.trim()} onClick={() => selectTextTool("outline-text")}><span className="text-tool-icon outline">T</span><span>Outline text</span></button>
+              </div>
+              <label className="annotation-color"><span>Text color</span><input type="color" value={textColor} onChange={(event) => setTextColor(event.target.value)} /></label>
+              <label className="annotation-color"><span>Text outline</span><input type="color" value={textOutlineColor} onChange={(event) => setTextOutlineColor(event.target.value)} /></label>
+            </div>
             <label className="annotation-color">
               <span>Shape color</span>
               <input type="color" value={annotationColor} onChange={(event) => setAnnotationColor(event.target.value)} />
@@ -704,6 +765,24 @@ export function App() {
                 dispatch({ type: "execute", command: { type: "delete-graphic-region", regionId: selectedGraphicRegion.id } });
                 setSelectedRegionId(null);
               }}>Delete region</button>
+            </div>
+          )}
+          {selectedTextAnnotation && (
+            <div className="panel-section annotation-properties">
+              <label>Selected text</label>
+              <input className="text-field" value={selectedTextAnnotation.text} maxLength={500} onChange={(event) => dispatch({ type: "execute", command: { type: "update-text-annotation", annotation: { ...selectedTextAnnotation, text: event.target.value } } })} />
+              <div className="annotation-position-fields">
+                <label><span>Position</span><input type="number" min="1" max={width} value={selectedTextAnnotation.column + 1} onChange={(event) => dispatch({ type: "execute", command: { type: "update-text-annotation", annotation: { ...selectedTextAnnotation, column: Math.max(0, Math.min(width - 1, Number(event.target.value) - 1)) } } })} /></label>
+                <label><span>Size</span><input type="number" min="6" max="96" value={selectedTextAnnotation.fontSize} onChange={(event) => dispatch({ type: "execute", command: { type: "update-text-annotation", annotation: { ...selectedTextAnnotation, fontSize: Math.max(6, Math.min(96, Number(event.target.value))) } } })} /></label>
+              </div>
+              <label className="annotation-color"><span>Color</span><input type="color" value={selectedTextAnnotation.color} onChange={(event) => dispatch({ type: "execute", command: { type: "update-text-annotation", annotation: { ...selectedTextAnnotation, color: event.target.value } } })} /></label>
+              <label className="annotation-color"><span>Outline</span><input type="color" value={selectedTextAnnotation.outlineColor} onChange={(event) => dispatch({ type: "execute", command: { type: "update-text-annotation", annotation: { ...selectedTextAnnotation, outlineColor: event.target.value } } })} /></label>
+              <div className="text-style-row">
+                <select aria-label="Text alignment" value={selectedTextAnnotation.align} onChange={(event) => dispatch({ type: "execute", command: { type: "update-text-annotation", annotation: { ...selectedTextAnnotation, align: event.target.value as TextAnnotation["align"] } } })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select>
+                <button type="button" className={selectedTextAnnotation.fontWeight === "bold" ? "active" : ""} onClick={() => dispatch({ type: "execute", command: { type: "update-text-annotation", annotation: { ...selectedTextAnnotation, fontWeight: selectedTextAnnotation.fontWeight === "bold" ? "normal" : "bold" } } })}>Bold</button>
+                <button type="button" className={selectedTextAnnotation.italic ? "active" : ""} onClick={() => dispatch({ type: "execute", command: { type: "update-text-annotation", annotation: { ...selectedTextAnnotation, italic: !selectedTextAnnotation.italic } } })}>Italic</button>
+              </div>
+              <button className="danger-button annotation-delete" type="button" onClick={() => { dispatch({ type: "execute", command: { type: "delete-text-annotation", annotationId: selectedTextAnnotation.id } }); setSelectedTextId(null); }}>Delete text</button>
             </div>
           )}
         </aside>
@@ -866,14 +945,19 @@ export function App() {
                           aria-hidden="true"
                         />
                       )}
+                      {alignment.textAnnotations.filter((annotation) => annotation.lane === lane && annotation.column >= start && annotation.column <= blockEnd).map((annotation) => (
+                        <TextAnnotationShape key={`${annotation.id}-${start}`} annotation={annotation} blockStart={start} blockWidth={blockWidth} selected={annotation.id === selectedTextId} onSelect={() => { setTextTool(null); setAnnotationTool(null); setAnnotationStart(null); setSelectedAnnotationId(null); setSelectedRegionId(null); setSelectedTextId(annotation.id); }} />
+                      ))}
                     </>
                   );
-                  const topLane = (lane: 0 | 1, interactive = false) => (
+                  const topLane = (lane: 0 | 1) => {
+                    const interactive = lane === 0 ? Boolean(annotationTool) : Boolean(textTool);
+                    return (
                     <div className={`classic-row classic-annotation-lane top${continuationClass}`} key={`${start}-top-${lane}`} aria-label={`Annotation lane ${lane + 1}`}>
                       <span className="classic-name-spacer" />
                       <div
-                        className={`classic-cells annotation-cells ${interactive && annotationTool ? "drawing" : ""}`}
-                        onClick={interactive ? (event) => chooseAnnotationBoundary(event, start, blockWidth) : undefined}
+                        className={`classic-cells annotation-cells ${interactive ? "drawing" : ""}`}
+                        onClick={interactive ? (event) => chooseAnnotationBoundary(event, start, blockWidth, lane) : undefined}
                       >
                         {Array.from({ length: blockWidth }, (_, offset) => (
                           <span className="classic-empty" key={start + offset} />
@@ -882,7 +966,8 @@ export function App() {
                       </div>
                       <span className="classic-end-spacer" />
                     </div>
-                  );
+                    );
+                  };
                   const emptyLane = (lane: string, position: "top" | "bottom") => (
                     <div className={`classic-row classic-annotation-lane ${position}${continuationClass}`} key={`${start}-${lane}`} aria-label={`Annotation lane ${lane}`}>
                       <span className="classic-name-spacer" />
@@ -910,7 +995,7 @@ export function App() {
                         </div>
                         <span className="classic-end-spacer" />
                       </div>
-                      {topLane(0, true)}
+                      {topLane(0)}
                       {topLane(1)}
 
                       {alignment.sequences.map((sequence, row) => {

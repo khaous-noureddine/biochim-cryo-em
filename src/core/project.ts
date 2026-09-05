@@ -10,6 +10,7 @@ import {
   isAnnotationKind,
   isPointAnnotationKind,
   Sequence,
+  TextAnnotation,
 } from "./model";
 
 export type OpenedAlignment = {
@@ -112,6 +113,31 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     if (!Number.isInteger(region.lineWidth) || (region.lineWidth as number) < 0 || (region.lineWidth as number) > 12) throw new Error(`Épaisseur de la région ${index + 1} invalide.`);
     return { id, kind: region.kind, sequenceIds, start, end, lineColor, fillColor, lineWidth: region.lineWidth as number };
   });
+  const rawTextAnnotations = project.textAnnotations ?? [];
+  if (!Array.isArray(rawTextAnnotations)) throw new Error("La liste des textes du projet .atlas est invalide.");
+  const textIds = new Set<string>();
+  const textAnnotations: TextAnnotation[] = rawTextAnnotations.map((item, index) => {
+    if (!item || typeof item !== "object") throw new Error(`Texte ${index + 1} invalide.`);
+    const annotation = item as Record<string, unknown>;
+    const id = requireString(annotation.id, `Identifiant du texte ${index + 1}`);
+    if (textIds.has(id)) throw new Error(`Identifiant de texte dupliqué : ${id}.`);
+    textIds.add(id);
+    if (annotation.kind !== "text" && annotation.kind !== "outline-text") throw new Error(`Type du texte ${index + 1} invalide.`);
+    if (!Number.isInteger(annotation.column) || (annotation.column as number) < 0 || (annotation.column as number) >= alignmentWidth) throw new Error(`Position du texte ${index + 1} invalide.`);
+    if (annotation.lane !== 0 && annotation.lane !== 1) throw new Error(`Piste du texte ${index + 1} invalide.`);
+    const text = requireString(annotation.text, `Contenu du texte ${index + 1}`);
+    if (text.length > 500) throw new Error(`Contenu du texte ${index + 1} trop long.`);
+    const color = requireString(annotation.color, `Couleur du texte ${index + 1}`);
+    const outlineColor = requireString(annotation.outlineColor, `Couleur de contour du texte ${index + 1}`);
+    if (!/^#[0-9a-f]{6}$/i.test(color) || !/^#[0-9a-f]{6}$/i.test(outlineColor)) throw new Error(`Couleur du texte ${index + 1} invalide.`);
+    if (!Number.isInteger(annotation.outlineWidth) || (annotation.outlineWidth as number) < 0 || (annotation.outlineWidth as number) > 8) throw new Error(`Contour du texte ${index + 1} invalide.`);
+    const fontFamily = requireString(annotation.fontFamily, `Police du texte ${index + 1}`);
+    if (!Number.isInteger(annotation.fontSize) || (annotation.fontSize as number) < 6 || (annotation.fontSize as number) > 96) throw new Error(`Taille du texte ${index + 1} invalide.`);
+    if (annotation.fontWeight !== "normal" && annotation.fontWeight !== "bold") throw new Error(`Graisse du texte ${index + 1} invalide.`);
+    if (typeof annotation.italic !== "boolean") throw new Error(`Style du texte ${index + 1} invalide.`);
+    if (annotation.align !== "left" && annotation.align !== "center" && annotation.align !== "right") throw new Error(`Alignement du texte ${index + 1} invalide.`);
+    return { id, kind: annotation.kind, column: annotation.column as number, lane: annotation.lane, text, color, outlineColor, outlineWidth: annotation.outlineWidth as number, fontFamily, fontSize: annotation.fontSize as number, fontWeight: annotation.fontWeight, italic: annotation.italic, align: annotation.align };
+  });
 
   return {
     format: ATLAS_DOCUMENT_FORMAT,
@@ -121,6 +147,7 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     sequences: normalizeAlignment(sequences),
     annotations,
     regions,
+    textAnnotations,
   };
 }
 

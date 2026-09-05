@@ -41,13 +41,16 @@ Dernière mise à jour : 6 septembre 2026.
 - création d’une boîte remplie ou d’un rectangle de contour depuis la sélection
   rectangulaire de résidus, rendu dans les vues Classic et Modern, puis édition
   des bornes, couleurs et épaisseur ou suppression avec undo/redo ;
+- annotations `Text` et `OutlineText` placées en un clic sur la troisième piste,
+  avec contenu, position, alignement, police, taille, graisse, italique, couleur
+  et contour persistés et éditables ;
 - nettoyage undo/redo des colonnes entièrement composées de gaps ;
 - suppression des séquences dupliquées et, en option, des fragments contenus
   dans une séquence précédente.
 
 ## Vérification actuelle
 
-- 61 tests Vitest couvrent le modèle, les commandes, l’historique, les
+- 62 tests Vitest couvrent le modèle, les commandes, l’historique, les
   colorations et le format de projet ;
 - le build TypeScript/Vite passe ;
 - les principaux changements d’interface ont été contrôlés dans le navigateur.
@@ -59,9 +62,8 @@ Dernière mise à jour : 6 septembre 2026.
 - les objets linéaires `helix`, `helix-alt`, `strand`, `strand-alt`, `coil`,
   `line`, `dashed-line`, `connector-up`, `connector-down` et `underline`
   existent dans le modèle Atlas ; les 14 glyphes ponctuels existent également,
-  tandis que les régions `box` et `rectangle` disposent du modèle, des
-  commandes, de la persistance et de l’outil visuel ; les textes restent à
-  intégrer ;
+  tandis que les régions `box` et `rectangle` et les textes simples/contourés
+  disposent du modèle, des commandes, de la persistance et de l’outil visuel ;
 - les annotations existantes ne peuvent pas encore être déplacées ou
   redimensionnées directement par glisser-déposer, ni changer de calque ;
 - la sélection rectangulaire de cellules existe, mais les sélections complètes

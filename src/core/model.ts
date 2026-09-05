@@ -73,6 +73,22 @@ export type AlignmentRegion = {
   lineWidth: number;
 };
 
+export type TextAnnotation = {
+  id: string;
+  kind: "text" | "outline-text";
+  column: number;
+  lane: 0 | 1;
+  text: string;
+  color: string;
+  outlineColor: string;
+  outlineWidth: number;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: "normal" | "bold";
+  italic: boolean;
+  align: "left" | "center" | "right";
+};
+
 export type AlignmentDocument = {
   format: typeof ATLAS_DOCUMENT_FORMAT;
   version: typeof ATLAS_DOCUMENT_VERSION;
@@ -81,6 +97,7 @@ export type AlignmentDocument = {
   sequences: Sequence[];
   annotations: AlignmentAnnotation[];
   regions: AlignmentRegion[];
+  textAnnotations: TextAnnotation[];
 };
 
 export type CellPosition = {
@@ -110,5 +127,6 @@ export function createAlignmentDocument(
     sequences,
     annotations: [],
     regions: [],
+    textAnnotations: [],
   };
 }

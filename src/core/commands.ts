@@ -1,5 +1,5 @@
 import { normalizeAlignment } from "./alignment";
-import { AlignmentAnnotation, AlignmentDocument, AlignmentRegion, CellPosition, CellRange, isAnnotationKind, isPointAnnotationKind, Sequence } from "./model";
+import { AlignmentAnnotation, AlignmentDocument, AlignmentRegion, CellPosition, CellRange, isAnnotationKind, isPointAnnotationKind, Sequence, TextAnnotation } from "./model";
 
 export type AlignmentCommand =
   | { type: "replace-residue"; position: CellPosition; residue: string }
@@ -19,7 +19,10 @@ export type AlignmentCommand =
   | { type: "delete-annotation"; annotationId: string }
   | { type: "add-region"; region: AlignmentRegion }
   | { type: "update-region"; region: AlignmentRegion }
-  | { type: "delete-graphic-region"; regionId: string };
+  | { type: "delete-graphic-region"; regionId: string }
+  | { type: "add-text-annotation"; annotation: TextAnnotation }
+  | { type: "update-text-annotation"; annotation: TextAnnotation }
+  | { type: "delete-text-annotation"; annotationId: string };
 
 const EDITABLE_RESIDUE = /^[A-Z*?.-]$/;
 
@@ -79,6 +82,14 @@ function keepRegionSequences(regions: AlignmentRegion[], survivingIds: Set<strin
   });
 }
 
+function remapTextAnnotations(annotations: TextAnnotation[], keptColumns: number[]): TextAnnotation[] {
+  const newIndex = new Map(keptColumns.map((column, index) => [column, index]));
+  return annotations.flatMap((annotation) => {
+    const column = newIndex.get(annotation.column);
+    return column === undefined ? [] : [{ ...annotation, column }];
+  });
+}
+
 function validAnnotation(document: AlignmentDocument, annotation: AlignmentAnnotation): boolean {
   const width = document.sequences[0]?.residues.length ?? 0;
   return isAnnotationKind(annotation.kind) && (!isPointAnnotationKind(annotation.kind) || annotation.start === annotation.end) &&
@@ -96,6 +107,18 @@ function validRegion(document: AlignmentDocument, region: AlignmentRegion): bool
     Number.isInteger(region.start) && Number.isInteger(region.end) && region.start >= 0 && region.end >= region.start && region.end < width &&
     /^#[0-9a-f]{6}$/i.test(region.lineColor) && /^#[0-9a-f]{6}$/i.test(region.fillColor) &&
     Number.isInteger(region.lineWidth) && region.lineWidth >= 0 && region.lineWidth <= 12;
+}
+
+function validTextAnnotation(document: AlignmentDocument, annotation: TextAnnotation): boolean {
+  const width = document.sequences[0]?.residues.length ?? 0;
+  return (annotation.kind === "text" || annotation.kind === "outline-text") &&
+    Number.isInteger(annotation.column) && annotation.column >= 0 && annotation.column < width &&
+    (annotation.lane === 0 || annotation.lane === 1) && annotation.text.trim().length > 0 && annotation.text.length <= 500 &&
+    /^#[0-9a-f]{6}$/i.test(annotation.color) && /^#[0-9a-f]{6}$/i.test(annotation.outlineColor) &&
+    Number.isInteger(annotation.outlineWidth) && annotation.outlineWidth >= 0 && annotation.outlineWidth <= 8 &&
+    annotation.fontFamily.trim().length > 0 && Number.isInteger(annotation.fontSize) && annotation.fontSize >= 6 && annotation.fontSize <= 96 &&
+    (annotation.fontWeight === "normal" || annotation.fontWeight === "bold") && typeof annotation.italic === "boolean" &&
+    (annotation.align === "left" || annotation.align === "center" || annotation.align === "right");
 }
 
 export function applyAlignmentCommand(
@@ -176,7 +199,7 @@ export function applyAlignmentCommand(
       const keptColumns = Array.from({ length: oldWidth }, (_, column) => column)
         .filter((column) => column < command.range.start || column > command.range.end);
       if (!keptColumns.length) sequences = sequences.map((sequence) => ({ ...sequence, residues: "-" }));
-      return { ...document, sequences, annotations: remapAnnotations(document.annotations, keptColumns), regions: remapRegions(document.regions, keptColumns) };
+      return { ...document, sequences, annotations: remapAnnotations(document.annotations, keptColumns), regions: remapRegions(document.regions, keptColumns), textAnnotations: remapTextAnnotations(document.textAnnotations, keptColumns) };
     }
 
     case "rename-sequence": {
@@ -245,6 +268,7 @@ export function applyAlignmentCommand(
         })),
         annotations: remapAnnotations(document.annotations, keptColumns),
         regions: remapRegions(document.regions, keptColumns),
+        textAnnotations: remapTextAnnotations(document.textAnnotations, keptColumns),
       };
     }
 
@@ -303,6 +327,21 @@ export function applyAlignmentCommand(
     case "delete-graphic-region": {
       if (!document.regions.some((region) => region.id === command.regionId)) return document;
       return { ...document, regions: document.regions.filter((region) => region.id !== command.regionId) };
+    }
+    case "add-text-annotation": {
+      if (document.textAnnotations.some((annotation) => annotation.id === command.annotation.id) || !validTextAnnotation(document, command.annotation)) return document;
+      return { ...document, textAnnotations: [...document.textAnnotations, command.annotation] };
+    }
+    case "update-text-annotation": {
+      const index = document.textAnnotations.findIndex((annotation) => annotation.id === command.annotation.id);
+      if (index < 0 || !validTextAnnotation(document, command.annotation)) return document;
+      const textAnnotations = [...document.textAnnotations];
+      textAnnotations[index] = command.annotation;
+      return { ...document, textAnnotations };
+    }
+    case "delete-text-annotation": {
+      if (!document.textAnnotations.some((annotation) => annotation.id === command.annotationId)) return document;
+      return { ...document, textAnnotations: document.textAnnotations.filter((annotation) => annotation.id !== command.annotationId) };
     }
   }
 }

@@ -68,6 +68,14 @@ traits et glyphes des pistes supérieures restent dans `annotations`.
 **Compatibilité :** un fichier `.atlas` version 1 sans champ `regions` reste
 valide et reçoit une liste vide lors de son ouverture.
 
+## D-010 — Textes attachés aux pistes d’annotation
+
+**Décision :** `Text` et `OutlineText` sont des objets distincts des structures
+linéaires. Ils occupent une position d’ancrage sur une piste et conservent leur
+contenu, alignement, police, taille, graisse, italique, couleur et contour. Par
+défaut, leur outil dessine sur la troisième ligne supérieure réservée aux
+annotations libres.
+
 ## Décisions encore ouvertes
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

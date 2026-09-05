@@ -9,6 +9,7 @@ const document: AlignmentDocument = {
   name: "Navigation",
   annotations: [],
   regions: [],
+  textAnnotations: [],
   sequences: [
     { id: "a", name: "A", description: "", residues: "ACD", numberingStart: 1 },
     { id: "b", name: "B", description: "", residues: "A--", numberingStart: 1 },

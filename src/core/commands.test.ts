@@ -10,6 +10,7 @@ function document(): AlignmentDocument {
     name: "Test alignment",
     annotations: [],
     regions: [],
+    textAnnotations: [],
     sequences: [
       { id: "seq-a", name: "A", description: "", residues: "AC-D", numberingStart: 1 },
       { id: "seq-b", name: "B", description: "", residues: "ACED", numberingStart: 1 },
@@ -121,6 +122,17 @@ describe("applyAlignmentCommand", () => {
     expect(applyAlignmentCommand(original, { type: "add-region", region })).toBe(original);
   });
 
+  it("creates, updates and deletes text annotations", () => {
+    const original = document();
+    const annotation = { id: "text-1", kind: "text" as const, column: 1, lane: 0 as const, text: "Active site", color: "#111111", outlineColor: "#ffffff", outlineWidth: 0, fontFamily: "Arial", fontSize: 14, fontWeight: "normal" as const, italic: false, align: "left" as const };
+    const added = applyAlignmentCommand(original, { type: "add-text-annotation", annotation });
+    expect(added.textAnnotations).toEqual([annotation]);
+    const updatedAnnotation = { ...annotation, kind: "outline-text" as const, outlineWidth: 2, fontWeight: "bold" as const };
+    const updated = applyAlignmentCommand(added, { type: "update-text-annotation", annotation: updatedAnnotation });
+    expect(updated.textAnnotations).toEqual([updatedAnnotation]);
+    expect(applyAlignmentCommand(updated, { type: "delete-text-annotation", annotationId: annotation.id }).textAnnotations).toEqual([]);
+  });
+
   it("rejects annotations outside the alignment", () => {
     const original = document();
     const result = applyAlignmentCommand(original, {
@@ -162,6 +174,10 @@ describe("applyAlignmentCommand", () => {
       { id: "box", kind: "box", sequenceIds: ["seq-a", "seq-b"], start: 1, end: 3, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2 },
       { id: "removed-box", kind: "rectangle", sequenceIds: ["seq-a"], start: 1, end: 1, lineColor: "#111111", fillColor: "#ffffff", lineWidth: 1 },
     ];
+    original.textAnnotations = [
+      { id: "kept-text", kind: "text", column: 3, lane: 1, text: "Keep", color: "#111111", outlineColor: "#ffffff", outlineWidth: 0, fontFamily: "Arial", fontSize: 14, fontWeight: "normal", italic: false, align: "center" },
+      { id: "removed-text", kind: "text", column: 1, lane: 1, text: "Remove", color: "#111111", outlineColor: "#ffffff", outlineWidth: 0, fontFamily: "Arial", fontSize: 14, fontWeight: "normal", italic: false, align: "center" },
+    ];
     const result = applyAlignmentCommand(original, {
       type: "delete-region",
       range: { sequenceIds: ["seq-a", "seq-b"], start: 1, end: 1 },
@@ -169,6 +185,7 @@ describe("applyAlignmentCommand", () => {
     expect(result.sequences.map((sequence) => sequence.residues)).toEqual(["A-D", "AED"]);
     expect(result.annotations).toEqual([{ id: "helix", kind: "helix", start: 1, end: 2, lane: 0, color: "#ef4444" }]);
     expect(result.regions).toEqual([{ id: "box", kind: "box", sequenceIds: ["seq-a", "seq-b"], start: 1, end: 2, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2 }]);
+    expect(result.textAnnotations).toEqual([{ id: "kept-text", kind: "text", column: 2, lane: 1, text: "Keep", color: "#111111", outlineColor: "#ffffff", outlineWidth: 0, fontFamily: "Arial", fontSize: 14, fontWeight: "normal", italic: false, align: "center" }]);
   });
 
   it("keeps a valid placeholder column when deleting the whole alignment", () => {
