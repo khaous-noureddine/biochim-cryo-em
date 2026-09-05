@@ -76,6 +76,13 @@ contenu, alignement, police, taille, graisse, italique, couleur et contour. Par
 défaut, leur outil dessine sur la troisième ligne supérieure réservée aux
 annotations libres.
 
+## D-011 — Ordre global des objets graphiques
+
+**Décision :** structures, glyphes, régions et textes partagent un même ordre
+de calques numérique. Les objets plus anciens sans `zIndex` restent lisibles ;
+la première opération de réordonnancement consolide l’ensemble en rangs
+contigus, comme `_ConsolidateZ` dans ALINE.
+
 ## Décisions encore ouvertes
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

@@ -133,6 +133,21 @@ describe("applyAlignmentCommand", () => {
     expect(applyAlignmentCommand(updated, { type: "delete-text-annotation", annotationId: annotation.id }).textAnnotations).toEqual([]);
   });
 
+  it("reorders graphic objects across annotation families", () => {
+    const original = document();
+    original.annotations = [{ id: "shape", kind: "helix", start: 0, end: 2, lane: 0, color: "#ef4444", zIndex: 1 }];
+    original.regions = [{ id: "region", kind: "box", sequenceIds: ["seq-a"], start: 0, end: 2, lineColor: "#111111", fillColor: "#facc15", lineWidth: 1, zIndex: 2 }];
+    original.textAnnotations = [{ id: "text", kind: "text", column: 1, lane: 1, text: "Label", color: "#111111", outlineColor: "#ffffff", outlineWidth: 0, fontFamily: "Arial", fontSize: 14, fontWeight: "normal", italic: false, align: "center", zIndex: 3 }];
+
+    const front = applyAlignmentCommand(original, { type: "change-object-layer", objectId: "shape", direction: "front" });
+    expect(front.annotations[0].zIndex).toBe(3);
+    expect(front.regions[0].zIndex).toBe(1);
+    expect(front.textAnnotations[0].zIndex).toBe(2);
+    const backward = applyAlignmentCommand(front, { type: "change-object-layer", objectId: "shape", direction: "backward" });
+    expect(backward.annotations[0].zIndex).toBe(2);
+    expect(backward.textAnnotations[0].zIndex).toBe(3);
+  });
+
   it("rejects annotations outside the alignment", () => {
     const original = document();
     const result = applyAlignmentCommand(original, {

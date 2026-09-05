@@ -7,7 +7,7 @@ import {
   exportPir,
 } from "./core/alignment";
 import { documentHistoryReducer, createDocumentHistory } from "./core/history";
-import { AnnotationKind, CellPosition, createId, isPointAnnotationKind, POINT_ANNOTATION_KINDS, PointAnnotationKind, RegionKind, TextAnnotation } from "./core/model";
+import { AnnotationKind, CellPosition, createId, isPointAnnotationKind, nextGraphicZIndex, POINT_ANNOTATION_KINDS, PointAnnotationKind, RegionKind, TextAnnotation } from "./core/model";
 import { moveCellSelection, NavigationDirection, normalizeCellRange } from "./core/navigation";
 import { openAlignmentFile, serializeAtlasProject } from "./core/project";
 import {
@@ -85,6 +85,7 @@ function AnnotationShape({
   length,
   total,
   color,
+  zIndex,
   preview = false,
   selected = false,
   onSelect,
@@ -94,6 +95,7 @@ function AnnotationShape({
   length: number;
   total: number;
   color: string;
+  zIndex?: number;
   preview?: boolean;
   selected?: boolean;
   onSelect?: () => void;
@@ -102,6 +104,7 @@ function AnnotationShape({
     "--annotation-color": color,
     left: `${(left / total) * 100}%`,
     width: `${(length / total) * 100}%`,
+    zIndex,
   } as React.CSSProperties;
   const handleClick = (event: ReactMouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -173,11 +176,23 @@ function TextAnnotationShape({ annotation, blockStart, blockWidth, selected, onS
         fontStyle: annotation.italic ? "italic" : "normal",
         transform: alignTransform,
         maxWidth: `calc(${blockWidth} * var(--cell-size))`,
+        zIndex: annotation.zIndex,
       } as React.CSSProperties}
       onClick={(event) => { event.stopPropagation(); onSelect(); }}
     >
       {annotation.text}
     </button>
+  );
+}
+
+function LayerControls({ objectId, onChange }: { objectId: string; onChange: (objectId: string, direction: "front" | "forward" | "backward" | "back") => void }) {
+  return (
+    <div className="layer-controls" aria-label="Layer order">
+      <button type="button" title="Send to back" onClick={() => onChange(objectId, "back")}>⇤</button>
+      <button type="button" title="Move backward" onClick={() => onChange(objectId, "backward")}>←</button>
+      <button type="button" title="Move forward" onClick={() => onChange(objectId, "forward")}>→</button>
+      <button type="button" title="Bring to front" onClick={() => onChange(objectId, "front")}>⇥</button>
+    </div>
   );
 }
 
@@ -313,14 +328,14 @@ export function App() {
   function selectCell(event: ReactMouseEvent<HTMLButtonElement>, position: CellPosition) {
     if (!event.shiftKey || !selectionAnchor) setSelectionAnchor(position);
     setSelection(position);
-    const region = [...alignment.regions].reverse().find((candidate) => candidate.sequenceIds.includes(position.sequenceId) && position.column >= candidate.start && position.column <= candidate.end);
+    const region = [...alignment.regions].sort((left, right) => (right.zIndex ?? 0) - (left.zIndex ?? 0)).find((candidate) => candidate.sequenceIds.includes(position.sequenceId) && position.column >= candidate.start && position.column <= candidate.end);
     setSelectedRegionId(region?.id ?? null);
     if (region) setSelectedAnnotationId(null);
     editorRef.current?.focus();
   }
 
   function regionCellAppearance(sequenceId: string, column: number): { className: string; style?: React.CSSProperties } {
-    const region = [...alignment.regions].reverse().find((candidate) => candidate.sequenceIds.includes(sequenceId) && column >= candidate.start && column <= candidate.end);
+    const region = [...alignment.regions].sort((left, right) => (right.zIndex ?? 0) - (left.zIndex ?? 0)).find((candidate) => candidate.sequenceIds.includes(sequenceId) && column >= candidate.start && column <= candidate.end);
     if (!region) return { className: "" };
     const orderedIds = alignment.sequences.map((sequence) => sequence.id).filter((id) => region.sequenceIds.includes(id));
     const edges = [
@@ -335,6 +350,7 @@ export function App() {
         "--region-line": region.lineColor,
         "--region-fill": region.fillColor,
         "--region-width": `${region.lineWidth}px`,
+        zIndex: region.zIndex,
       } as React.CSSProperties,
     };
   }
@@ -408,11 +424,16 @@ export function App() {
           lineColor: regionLineColor,
           fillColor: regionFillColor,
           lineWidth: 2,
+          zIndex: nextGraphicZIndex(alignment),
         },
       },
     });
     setSelectedRegionId(id);
     setSelectedAnnotationId(null);
+  }
+
+  function changeObjectLayer(objectId: string, direction: "front" | "forward" | "backward" | "back") {
+    dispatch({ type: "execute", command: { type: "change-object-layer", objectId, direction } });
   }
 
   function saveAtlasProject() {
@@ -521,7 +542,7 @@ export function App() {
     if (textTool) {
       if (!textDraft.trim()) return;
       const id = createId();
-      dispatch({ type: "execute", command: { type: "add-text-annotation", annotation: { id, kind: textTool, column, lane, text: textDraft.trim(), color: textColor, outlineColor: textOutlineColor, outlineWidth: textTool === "outline-text" ? 2 : 0, fontFamily: "Arial", fontSize: 14, fontWeight: "normal", italic: false, align: "center" } } });
+      dispatch({ type: "execute", command: { type: "add-text-annotation", annotation: { id, kind: textTool, column, lane, text: textDraft.trim(), color: textColor, outlineColor: textOutlineColor, outlineWidth: textTool === "outline-text" ? 2 : 0, fontFamily: "Arial", fontSize: 14, fontWeight: "normal", italic: false, align: "center", zIndex: nextGraphicZIndex(alignment) } } });
       setSelectedTextId(id);
       setSelectedRegionId(null);
       return;
@@ -533,7 +554,7 @@ export function App() {
         type: "execute",
         command: {
           type: "add-annotation",
-          annotation: { id, kind: annotationTool, start: column, end: column, lane: 0, color: annotationColor },
+          annotation: { id, kind: annotationTool, start: column, end: column, lane: 0, color: annotationColor, zIndex: nextGraphicZIndex(alignment) },
         },
       });
       setSelectedAnnotationId(id);
@@ -550,7 +571,7 @@ export function App() {
       type: "execute",
       command: {
         type: "add-annotation",
-        annotation: { id, kind: annotationTool, start, end, lane: 0, color: annotationColor },
+        annotation: { id, kind: annotationTool, start, end, lane: 0, color: annotationColor, zIndex: nextGraphicZIndex(alignment) },
       },
     });
     setAnnotationStart(null);
@@ -735,6 +756,7 @@ export function App() {
                 <label><span>End</span><input type="number" min={selectedAnnotation.start + 1} max={width} value={selectedAnnotation.end + 1} onChange={(event) => dispatch({ type: "execute", command: { type: "update-annotation", annotation: { ...selectedAnnotation, end: Math.max(selectedAnnotation.start, Math.min(width - 1, Number(event.target.value) - 1)) } } })} /></label>
               </div>
               <label className="annotation-color"><span>Shape color</span><input type="color" value={selectedAnnotation.color} onChange={(event) => dispatch({ type: "execute", command: { type: "update-annotation", annotation: { ...selectedAnnotation, color: event.target.value } } })} /></label>
+              <LayerControls objectId={selectedAnnotation.id} onChange={changeObjectLayer} />
               <button className="danger-button annotation-delete" type="button" onClick={() => {
                 dispatch({ type: "execute", command: { type: "delete-annotation", annotationId: selectedAnnotation.id } });
                 setSelectedAnnotationId(null);
@@ -761,6 +783,7 @@ export function App() {
               <label className="annotation-color"><span>Outline</span><input type="color" value={selectedGraphicRegion.lineColor} onChange={(event) => dispatch({ type: "execute", command: { type: "update-region", region: { ...selectedGraphicRegion, lineColor: event.target.value } } })} /></label>
               <label className="annotation-color"><span>Fill</span><input type="color" value={selectedGraphicRegion.fillColor} onChange={(event) => dispatch({ type: "execute", command: { type: "update-region", region: { ...selectedGraphicRegion, fillColor: event.target.value } } })} /></label>
               <label className="region-width"><span>Line width</span><input type="number" min="0" max="12" value={selectedGraphicRegion.lineWidth} onChange={(event) => dispatch({ type: "execute", command: { type: "update-region", region: { ...selectedGraphicRegion, lineWidth: Math.max(0, Math.min(12, Number(event.target.value))) } } })} /></label>
+              <LayerControls objectId={selectedGraphicRegion.id} onChange={changeObjectLayer} />
               <button className="danger-button annotation-delete" type="button" onClick={() => {
                 dispatch({ type: "execute", command: { type: "delete-graphic-region", regionId: selectedGraphicRegion.id } });
                 setSelectedRegionId(null);
@@ -782,6 +805,7 @@ export function App() {
                 <button type="button" className={selectedTextAnnotation.fontWeight === "bold" ? "active" : ""} onClick={() => dispatch({ type: "execute", command: { type: "update-text-annotation", annotation: { ...selectedTextAnnotation, fontWeight: selectedTextAnnotation.fontWeight === "bold" ? "normal" : "bold" } } })}>Bold</button>
                 <button type="button" className={selectedTextAnnotation.italic ? "active" : ""} onClick={() => dispatch({ type: "execute", command: { type: "update-text-annotation", annotation: { ...selectedTextAnnotation, italic: !selectedTextAnnotation.italic } } })}>Italic</button>
               </div>
+              <LayerControls objectId={selectedTextAnnotation.id} onChange={changeObjectLayer} />
               <button className="danger-button annotation-delete" type="button" onClick={() => { dispatch({ type: "execute", command: { type: "delete-text-annotation", annotationId: selectedTextAnnotation.id } }); setSelectedTextId(null); }}>Delete text</button>
             </div>
           )}
@@ -929,6 +953,7 @@ export function App() {
                               length={segmentEnd - segmentStart + 1}
                               total={blockWidth}
                               color={annotation.color}
+                              zIndex={annotation.zIndex}
                               selected={annotation.id === selectedAnnotationId}
                               onSelect={() => {
                                 setAnnotationTool(null);

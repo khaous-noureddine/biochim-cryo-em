@@ -30,6 +30,12 @@ function requireString(value: unknown, label: string): string {
   return value;
 }
 
+function optionalZIndex(value: unknown, label: string): number | undefined {
+  if (value === undefined) return undefined;
+  if (!Number.isInteger(value) || (value as number) < 0 || (value as number) > Number.MAX_SAFE_INTEGER) throw new Error(`${label} invalide.`);
+  return value as number;
+}
+
 export function serializeAtlasProject(document: AlignmentDocument): string {
   return `${JSON.stringify(document, null, 2)}\n`;
 }
@@ -88,7 +94,8 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     if (annotation.lane !== 0 && annotation.lane !== 1) throw new Error(`Piste de l’annotation ${index + 1} invalide.`);
     const color = requireString(annotation.color, `Couleur de l’annotation ${index + 1}`);
     if (!/^#[0-9a-f]{6}$/i.test(color)) throw new Error(`Couleur de l’annotation ${index + 1} invalide.`);
-    return { id, kind: annotation.kind, start, end, lane: annotation.lane, color };
+    const zIndex = optionalZIndex(annotation.zIndex, `Calque de l’annotation ${index + 1}`);
+    return { id, kind: annotation.kind, start, end, lane: annotation.lane, color, ...(zIndex === undefined ? {} : { zIndex }) };
   });
   const rawRegions = project.regions ?? [];
   if (!Array.isArray(rawRegions)) throw new Error("La liste des régions du projet .atlas est invalide.");
@@ -111,7 +118,8 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     const fillColor = requireString(region.fillColor, `Couleur de remplissage de la région ${index + 1}`);
     if (!/^#[0-9a-f]{6}$/i.test(lineColor) || !/^#[0-9a-f]{6}$/i.test(fillColor)) throw new Error(`Couleur de la région ${index + 1} invalide.`);
     if (!Number.isInteger(region.lineWidth) || (region.lineWidth as number) < 0 || (region.lineWidth as number) > 12) throw new Error(`Épaisseur de la région ${index + 1} invalide.`);
-    return { id, kind: region.kind, sequenceIds, start, end, lineColor, fillColor, lineWidth: region.lineWidth as number };
+    const zIndex = optionalZIndex(region.zIndex, `Calque de la région ${index + 1}`);
+    return { id, kind: region.kind, sequenceIds, start, end, lineColor, fillColor, lineWidth: region.lineWidth as number, ...(zIndex === undefined ? {} : { zIndex }) };
   });
   const rawTextAnnotations = project.textAnnotations ?? [];
   if (!Array.isArray(rawTextAnnotations)) throw new Error("La liste des textes du projet .atlas est invalide.");
@@ -136,7 +144,8 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     if (annotation.fontWeight !== "normal" && annotation.fontWeight !== "bold") throw new Error(`Graisse du texte ${index + 1} invalide.`);
     if (typeof annotation.italic !== "boolean") throw new Error(`Style du texte ${index + 1} invalide.`);
     if (annotation.align !== "left" && annotation.align !== "center" && annotation.align !== "right") throw new Error(`Alignement du texte ${index + 1} invalide.`);
-    return { id, kind: annotation.kind, column: annotation.column as number, lane: annotation.lane, text, color, outlineColor, outlineWidth: annotation.outlineWidth as number, fontFamily, fontSize: annotation.fontSize as number, fontWeight: annotation.fontWeight, italic: annotation.italic, align: annotation.align };
+    const zIndex = optionalZIndex(annotation.zIndex, `Calque du texte ${index + 1}`);
+    return { id, kind: annotation.kind, column: annotation.column as number, lane: annotation.lane, text, color, outlineColor, outlineWidth: annotation.outlineWidth as number, fontFamily, fontSize: annotation.fontSize as number, fontWeight: annotation.fontWeight, italic: annotation.italic, align: annotation.align, ...(zIndex === undefined ? {} : { zIndex }) };
   });
 
   return {

@@ -58,6 +58,7 @@ export type AlignmentAnnotation = {
   end: number;
   lane: 0 | 1;
   color: string;
+  zIndex?: number;
 };
 
 export type RegionKind = "box" | "rectangle";
@@ -71,6 +72,7 @@ export type AlignmentRegion = {
   lineColor: string;
   fillColor: string;
   lineWidth: number;
+  zIndex?: number;
 };
 
 export type TextAnnotation = {
@@ -87,7 +89,15 @@ export type TextAnnotation = {
   fontWeight: "normal" | "bold";
   italic: boolean;
   align: "left" | "center" | "right";
+  zIndex?: number;
 };
+
+export type GraphicObject = AlignmentAnnotation | AlignmentRegion | TextAnnotation;
+
+export function nextGraphicZIndex(document: AlignmentDocument): number {
+  const objects: GraphicObject[] = [...document.annotations, ...document.regions, ...document.textAnnotations];
+  return objects.reduce((maximum, object) => Math.max(maximum, object.zIndex ?? 0), 0) + 1;
+}
 
 export type AlignmentDocument = {
   format: typeof ATLAS_DOCUMENT_FORMAT;

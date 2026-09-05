@@ -22,9 +22,14 @@ export type AlignmentCommand =
   | { type: "delete-graphic-region"; regionId: string }
   | { type: "add-text-annotation"; annotation: TextAnnotation }
   | { type: "update-text-annotation"; annotation: TextAnnotation }
-  | { type: "delete-text-annotation"; annotationId: string };
+  | { type: "delete-text-annotation"; annotationId: string }
+  | { type: "change-object-layer"; objectId: string; direction: "front" | "forward" | "backward" | "back" };
 
 const EDITABLE_RESIDUE = /^[A-Z*?.-]$/;
+
+function validZIndex(value: number | undefined): boolean {
+  return value === undefined || (Number.isInteger(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER);
+}
 
 function updateSequence(
   document: AlignmentDocument,
@@ -95,7 +100,7 @@ function validAnnotation(document: AlignmentDocument, annotation: AlignmentAnnot
   return isAnnotationKind(annotation.kind) && (!isPointAnnotationKind(annotation.kind) || annotation.start === annotation.end) &&
     Number.isInteger(annotation.start) && Number.isInteger(annotation.end) &&
     annotation.start >= 0 && annotation.end >= annotation.start && annotation.end < width &&
-    (annotation.lane === 0 || annotation.lane === 1) && /^#[0-9a-f]{6}$/i.test(annotation.color);
+    (annotation.lane === 0 || annotation.lane === 1) && /^#[0-9a-f]{6}$/i.test(annotation.color) && validZIndex(annotation.zIndex);
 }
 
 function validRegion(document: AlignmentDocument, region: AlignmentRegion): boolean {
@@ -106,7 +111,7 @@ function validRegion(document: AlignmentDocument, region: AlignmentRegion): bool
     region.sequenceIds.every((id) => sequenceIds.has(id)) &&
     Number.isInteger(region.start) && Number.isInteger(region.end) && region.start >= 0 && region.end >= region.start && region.end < width &&
     /^#[0-9a-f]{6}$/i.test(region.lineColor) && /^#[0-9a-f]{6}$/i.test(region.fillColor) &&
-    Number.isInteger(region.lineWidth) && region.lineWidth >= 0 && region.lineWidth <= 12;
+    Number.isInteger(region.lineWidth) && region.lineWidth >= 0 && region.lineWidth <= 12 && validZIndex(region.zIndex);
 }
 
 function validTextAnnotation(document: AlignmentDocument, annotation: TextAnnotation): boolean {
@@ -118,7 +123,32 @@ function validTextAnnotation(document: AlignmentDocument, annotation: TextAnnota
     Number.isInteger(annotation.outlineWidth) && annotation.outlineWidth >= 0 && annotation.outlineWidth <= 8 &&
     annotation.fontFamily.trim().length > 0 && Number.isInteger(annotation.fontSize) && annotation.fontSize >= 6 && annotation.fontSize <= 96 &&
     (annotation.fontWeight === "normal" || annotation.fontWeight === "bold") && typeof annotation.italic === "boolean" &&
-    (annotation.align === "left" || annotation.align === "center" || annotation.align === "right");
+    (annotation.align === "left" || annotation.align === "center" || annotation.align === "right") && validZIndex(annotation.zIndex);
+}
+
+function changeObjectLayer(document: AlignmentDocument, objectId: string, direction: "front" | "forward" | "backward" | "back"): AlignmentDocument {
+  const objects = [
+    ...document.annotations.map((object, fallback) => ({ family: "annotation" as const, object, fallback })),
+    ...document.regions.map((object, fallback) => ({ family: "region" as const, object, fallback: document.annotations.length + fallback })),
+    ...document.textAnnotations.map((object, fallback) => ({ family: "text" as const, object, fallback: document.annotations.length + document.regions.length + fallback })),
+  ].sort((left, right) => (left.object.zIndex ?? left.fallback) - (right.object.zIndex ?? right.fallback));
+  const index = objects.findIndex((entry) => entry.object.id === objectId);
+  if (index < 0 || objects.filter((entry) => entry.object.id === objectId).length !== 1 || objects.length < 2) return document;
+  let destination = index;
+  if (direction === "front") destination = objects.length - 1;
+  else if (direction === "forward") destination = Math.min(objects.length - 1, index + 1);
+  else if (direction === "backward") destination = Math.max(0, index - 1);
+  else destination = 0;
+  if (destination === index) return document;
+  const [entry] = objects.splice(index, 1);
+  objects.splice(destination, 0, entry);
+  const ranks = new Map(objects.map((item, rank) => [item.object.id, rank + 1]));
+  return {
+    ...document,
+    annotations: document.annotations.map((object) => ({ ...object, zIndex: ranks.get(object.id)! })),
+    regions: document.regions.map((object) => ({ ...object, zIndex: ranks.get(object.id)! })),
+    textAnnotations: document.textAnnotations.map((object) => ({ ...object, zIndex: ranks.get(object.id)! })),
+  };
 }
 
 export function applyAlignmentCommand(
@@ -343,5 +373,7 @@ export function applyAlignmentCommand(
       if (!document.textAnnotations.some((annotation) => annotation.id === command.annotationId)) return document;
       return { ...document, textAnnotations: document.textAnnotations.filter((annotation) => annotation.id !== command.annotationId) };
     }
+    case "change-object-layer":
+      return changeObjectLayer(document, command.objectId, command.direction);
   }
 }

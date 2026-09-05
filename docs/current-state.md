@@ -44,13 +44,15 @@ Dernière mise à jour : 6 septembre 2026.
 - annotations `Text` et `OutlineText` placées en un clic sur la troisième piste,
   avec contenu, position, alignement, police, taille, graisse, italique, couleur
   et contour persistés et éditables ;
+- ordre de calques global partagé par structures, glyphes, régions et textes,
+  avec déplacement d’un cran ou directement au premier/dernier plan ;
 - nettoyage undo/redo des colonnes entièrement composées de gaps ;
 - suppression des séquences dupliquées et, en option, des fragments contenus
   dans une séquence précédente.
 
 ## Vérification actuelle
 
-- 62 tests Vitest couvrent le modèle, les commandes, l’historique, les
+- 63 tests Vitest couvrent le modèle, les commandes, l’historique, les
   colorations et le format de projet ;
 - le build TypeScript/Vite passe ;
 - les principaux changements d’interface ont été contrôlés dans le navigateur.

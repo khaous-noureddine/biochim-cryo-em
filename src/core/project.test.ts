@@ -15,9 +15,9 @@ describe("Atlas project files", () => {
     document.annotations.push({ id: "connect-up-1", kind: "connector-up", start: 0, end: 1, lane: 0, color: "#111111" });
     document.annotations.push({ id: "connect-down-1", kind: "connector-down", start: 1, end: 2, lane: 1, color: "#111111" });
     document.annotations.push({ id: "underline-1", kind: "underline", start: 0, end: 2, lane: 1, color: "#ef4444" });
-    document.annotations.push({ id: "star-1", kind: "star", start: 1, end: 1, lane: 1, color: "#facc15" });
-    document.regions.push({ id: "box-1", kind: "box", sequenceIds: document.sequences.map((sequence) => sequence.id), start: 0, end: 1, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2 });
-    document.textAnnotations.push({ id: "text-1", kind: "outline-text", column: 1, lane: 0, text: "active site", color: "#ffffff", outlineColor: "#111111", outlineWidth: 2, fontFamily: "Arial", fontSize: 14, fontWeight: "bold", italic: false, align: "center" });
+    document.annotations.push({ id: "star-1", kind: "star", start: 1, end: 1, lane: 1, color: "#facc15", zIndex: 1 });
+    document.regions.push({ id: "box-1", kind: "box", sequenceIds: document.sequences.map((sequence) => sequence.id), start: 0, end: 1, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2, zIndex: 2 });
+    document.textAnnotations.push({ id: "text-1", kind: "outline-text", column: 1, lane: 0, text: "active site", color: "#ffffff", outlineColor: "#111111", outlineWidth: 2, fontFamily: "Arial", fontSize: 14, fontWeight: "bold", italic: false, align: "center", zIndex: 3 });
     expect(parseAtlasProject(serializeAtlasProject(document))).toEqual(document);
   });
 

@@ -162,6 +162,8 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .text-style-row select { min-width: 0; padding: 7px; border: 1px solid var(--line); border-radius: 6px; color: var(--foreground); background: #14231f; }
 .text-style-row button { padding: 7px; }
 .text-style-row button.active { border-color: var(--accent); color: var(--accent); }
+.layer-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; }
+.layer-controls button { padding: 6px; font-size: 14px; }
 .residue.graphic-region.box-region { background-image: linear-gradient(color-mix(in srgb, var(--region-fill) 48%, transparent), color-mix(in srgb, var(--region-fill) 48%, transparent)); }
 .residue.graphic-region.region-top { border-top: var(--region-width) solid var(--region-line); }
 .residue.graphic-region.region-right { border-right: var(--region-width) solid var(--region-line); }
