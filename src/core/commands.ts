@@ -62,7 +62,7 @@ function remapAnnotations(
 
 function validAnnotation(document: AlignmentDocument, annotation: AlignmentAnnotation): boolean {
   const width = document.sequences[0]?.residues.length ?? 0;
-  return (annotation.kind === "helix" || annotation.kind === "coil") &&
+  return (annotation.kind === "helix" || annotation.kind === "strand" || annotation.kind === "coil") &&
     Number.isInteger(annotation.start) && Number.isInteger(annotation.end) &&
     annotation.start >= 0 && annotation.end >= annotation.start && annotation.end < width &&
     (annotation.lane === 0 || annotation.lane === 1) && /^#[0-9a-f]{6}$/i.test(annotation.color);

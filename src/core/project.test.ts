@@ -7,6 +7,7 @@ describe("Atlas project files", () => {
   it("round-trips an Atlas document", () => {
     const document = parseFasta(">alpha\nACD\n>beta\nAC-", "Example");
     document.annotations.push({ id: "helix-1", kind: "helix", start: 0, end: 2, lane: 0, color: "#ef4444" });
+    document.annotations.push({ id: "strand-1", kind: "strand", start: 0, end: 1, lane: 0, color: "#2563eb" });
     expect(parseAtlasProject(serializeAtlasProject(document))).toEqual(document);
   });
 

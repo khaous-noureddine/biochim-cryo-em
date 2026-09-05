@@ -93,6 +93,9 @@ function AnnotationShape({
   if (kind === "helix") {
     return <button type="button" aria-label="Select cylinder annotation" className={`annotation-shape helix-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
   }
+  if (kind === "strand") {
+    return <button type="button" aria-label="Select beta strand annotation" className={`annotation-shape strand-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
+  }
   const cycles = Math.max(1, Math.round(length / 2));
   const points = Array.from({ length: 61 }, (_, index) => {
     const progress = index / 60;
@@ -496,6 +499,10 @@ export function App() {
               <button className={annotationTool === "helix" ? "active" : ""} onClick={() => selectAnnotationTool("helix")}>
                 <span className="tool-icon cylinder-icon" />
                 <span>Cylinder</span>
+              </button>
+              <button className={annotationTool === "strand" ? "active" : ""} onClick={() => selectAnnotationTool("strand")}>
+                <span className="tool-icon strand-icon" />
+                <span>Beta strand</span>
               </button>
               <button className={annotationTool === "coil" ? "active" : ""} onClick={() => selectAnnotationTool("coil")}>
                 <svg className="tool-icon spring-icon" viewBox="0 0 44 16" aria-hidden="true">

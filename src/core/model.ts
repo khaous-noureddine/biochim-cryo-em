@@ -9,7 +9,7 @@ export type Sequence = {
   numberingStart: number;
 };
 
-export type AnnotationKind = "helix" | "coil";
+export type AnnotationKind = "helix" | "strand" | "coil";
 
 export type AlignmentAnnotation = {
   id: string;

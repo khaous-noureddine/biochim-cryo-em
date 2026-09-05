@@ -28,11 +28,11 @@ Dernière mise à jour : 6 septembre 2026.
 - taille des cellules réglable ;
 - colorations monochrome, par type de résidu, par similarité et
   ALSCRIPT/Calcons ;
-- outils Cylinder et Spring avec choix de couleur ;
+- outils Cylinder, Beta strand et Spring avec choix de couleur ;
 - placement des structures par une case de départ et une case de fin sur la
   deuxième ligne située au-dessus des séquences ;
-- persistance des cylindres et ressorts dans `.atlas` ;
-- sélection d’un cylindre ou ressort existant, modification précise de ses
+- persistance des cylindres, flèches de brin beta et ressorts dans `.atlas` ;
+- sélection d’un cylindre, brin beta ou ressort existant, modification précise de ses
   positions et de sa couleur, et suppression avec undo/redo ;
 - nettoyage undo/redo des colonnes entièrement composées de gaps ;
 - suppression des séquences dupliquées et, en option, des fragments contenus
@@ -49,7 +49,7 @@ Dernière mise à jour : 6 septembre 2026.
 
 - l’import `.aline` récupère les séquences et la numérotation, mais ignore
   encore les objets graphiques historiques ;
-- seuls les objets `helix` et `coil` existent dans le modèle Atlas ;
+- seuls les objets `helix`, `strand` et `coil` existent dans le modèle Atlas ;
 - les annotations existantes ne peuvent pas encore être déplacées ou
   redimensionnées directement par glisser-déposer, ni changer de calque ;
 - la sélection ne couvre qu’une cellule, sans région, ligne ou colonne ;

@@ -116,8 +116,10 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .annotation-start-marker { position: absolute; z-index: 3; width: var(--cell-size); height: var(--cell-size); border: 2px solid #0f766e; background: rgba(20, 184, 166, .18); pointer-events: none; }
 .helix-shape { top: 16%; height: 68%; border: 1px solid color-mix(in srgb, var(--annotation-color) 72%, #111); border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--annotation-color) 55%, white), var(--annotation-color) 48%, color-mix(in srgb, var(--annotation-color) 72%, black)); box-shadow: inset 2px 0 2px rgba(255,255,255,.38), 0 1px 1px rgba(0,0,0,.22); }
 .helix-shape::before { position: absolute; top: -1px; bottom: -1px; left: -1px; width: min(calc(var(--cell-size) * .48), 45%); border: 1px solid color-mix(in srgb, var(--annotation-color) 72%, #111); border-radius: 50%; background: color-mix(in srgb, var(--annotation-color) 70%, white); content: ""; }
+.strand-shape { top: 24%; height: 52%; background: var(--annotation-color); clip-path: polygon(0 28%, 72% 28%, 72% 0, 100% 50%, 72% 100%, 72% 72%, 0 72%); filter: drop-shadow(0 1px 0 rgba(0,0,0,.28)); }
 .coil-shape { top: 5%; height: 90%; overflow: visible; color: var(--annotation-color); filter: drop-shadow(0 1px 0 rgba(0,0,0,.22)); }
 .coil-art { display: block; width: 100%; height: 100%; overflow: visible; }
+.strand-icon { position: relative; height: 10px; background: currentColor; clip-path: polygon(0 30%, 68% 30%, 68% 0, 100% 50%, 68% 100%, 68% 70%, 0 70%); }
 .annotation-position-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .annotation-position-fields label span { display: block; margin-bottom: 5px; color: var(--muted); font-size: 9px; text-transform: uppercase; }
 .annotation-position-fields input { width: 100%; padding: 7px; border: 1px solid var(--line); border-radius: 6px; color: var(--foreground); background: #14231f; }

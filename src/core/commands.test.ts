@@ -83,6 +83,12 @@ describe("applyAlignmentCommand", () => {
     expect(invalid).toBe(updated);
   });
 
+  it("accepts beta-strand annotations", () => {
+    const original = document();
+    const annotation = { id: "strand-1", kind: "strand" as const, start: 0, end: 3, lane: 0 as const, color: "#2563eb" };
+    expect(applyAlignmentCommand(original, { type: "add-annotation", annotation }).annotations).toEqual([annotation]);
+  });
+
   it("rejects annotations outside the alignment", () => {
     const original = document();
     const result = applyAlignmentCommand(original, {
