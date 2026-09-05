@@ -38,6 +38,9 @@ Dernière mise à jour : 6 septembre 2026.
   `.atlas` ;
 - sélection de toute structure existante, modification précise de ses positions
   et de sa couleur, et suppression avec undo/redo ;
+- création d’une boîte remplie ou d’un rectangle de contour depuis la sélection
+  rectangulaire de résidus, rendu dans les vues Classic et Modern, puis édition
+  des bornes, couleurs et épaisseur ou suppression avec undo/redo ;
 - nettoyage undo/redo des colonnes entièrement composées de gaps ;
 - suppression des séquences dupliquées et, en option, des fragments contenus
   dans une séquence précédente.
@@ -56,9 +59,9 @@ Dernière mise à jour : 6 septembre 2026.
 - les objets linéaires `helix`, `helix-alt`, `strand`, `strand-alt`, `coil`,
   `line`, `dashed-line`, `connector-up`, `connector-down` et `underline`
   existent dans le modèle Atlas ; les 14 glyphes ponctuels existent également,
-  tandis que les régions `box` et `rectangle` disposent maintenant du modèle,
-  des commandes et de la persistance mais pas encore de l’outil visuel ; les
-  textes restent à intégrer ;
+  tandis que les régions `box` et `rectangle` disposent du modèle, des
+  commandes, de la persistance et de l’outil visuel ; les textes restent à
+  intégrer ;
 - les annotations existantes ne peuvent pas encore être déplacées ou
   redimensionnées directement par glisser-déposer, ni changer de calque ;
 - la sélection rectangulaire de cellules existe, mais les sélections complètes

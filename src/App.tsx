@@ -7,7 +7,7 @@ import {
   exportPir,
 } from "./core/alignment";
 import { documentHistoryReducer, createDocumentHistory } from "./core/history";
-import { AnnotationKind, CellPosition, createId, isPointAnnotationKind, POINT_ANNOTATION_KINDS, PointAnnotationKind } from "./core/model";
+import { AnnotationKind, CellPosition, createId, isPointAnnotationKind, POINT_ANNOTATION_KINDS, PointAnnotationKind, RegionKind } from "./core/model";
 import { moveCellSelection, NavigationDirection, normalizeCellRange } from "./core/navigation";
 import { openAlignmentFile, serializeAtlasProject } from "./core/project";
 import {
@@ -175,6 +175,9 @@ export function App() {
   const [annotationColor, setAnnotationColor] = useState("#ef4444");
   const [annotationStart, setAnnotationStart] = useState<number | null>(null);
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null);
+  const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
+  const [regionLineColor, setRegionLineColor] = useState("#111111");
+  const [regionFillColor, setRegionFillColor] = useState("#facc15");
   const [zoom, setZoom] = useState(1);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -197,6 +200,7 @@ export function App() {
     [alignment, selection, selectionAnchor],
   );
   const selectedAnnotation = alignment.annotations.find((annotation) => annotation.id === selectedAnnotationId) ?? null;
+  const selectedGraphicRegion = alignment.regions.find((region) => region.id === selectedRegionId) ?? null;
   const classicCellSize = 22 * zoom;
   const classicNameWidth = useMemo(
     () => measureClassicNameWidth(alignment.sequences.map((sequence) => sequence.name), classicCellSize),
@@ -254,6 +258,7 @@ export function App() {
       setSelectionAnchor(null);
       setAnnotationStart(null);
       setSelectedAnnotationId(null);
+      setSelectedRegionId(null);
       setColorExclusions(new Set());
       setScheme("none");
       setError("");
@@ -275,7 +280,30 @@ export function App() {
   function selectCell(event: ReactMouseEvent<HTMLButtonElement>, position: CellPosition) {
     if (!event.shiftKey || !selectionAnchor) setSelectionAnchor(position);
     setSelection(position);
+    const region = [...alignment.regions].reverse().find((candidate) => candidate.sequenceIds.includes(position.sequenceId) && position.column >= candidate.start && position.column <= candidate.end);
+    setSelectedRegionId(region?.id ?? null);
+    if (region) setSelectedAnnotationId(null);
     editorRef.current?.focus();
+  }
+
+  function regionCellAppearance(sequenceId: string, column: number): { className: string; style?: React.CSSProperties } {
+    const region = [...alignment.regions].reverse().find((candidate) => candidate.sequenceIds.includes(sequenceId) && column >= candidate.start && column <= candidate.end);
+    if (!region) return { className: "" };
+    const orderedIds = alignment.sequences.map((sequence) => sequence.id).filter((id) => region.sequenceIds.includes(id));
+    const edges = [
+      column === region.start ? "region-left" : "",
+      column === region.end ? "region-right" : "",
+      sequenceId === orderedIds[0] ? "region-top" : "",
+      sequenceId === orderedIds.at(-1) ? "region-bottom" : "",
+    ].filter(Boolean).join(" ");
+    return {
+      className: `graphic-region ${region.kind}-region ${edges} ${region.id === selectedRegionId ? "selected-region" : ""}`,
+      style: {
+        "--region-line": region.lineColor,
+        "--region-fill": region.fillColor,
+        "--region-width": `${region.lineWidth}px`,
+      } as React.CSSProperties,
+    };
   }
 
   function cellIsInSelectedRange(sequenceId: string, column: number): boolean {
@@ -329,6 +357,29 @@ export function App() {
     };
     setSelection(nextSelection);
     setSelectionAnchor(nextSelection);
+  }
+
+  function createGraphicRegion(kind: RegionKind) {
+    if (!selectedRange) return;
+    const id = createId();
+    dispatch({
+      type: "execute",
+      command: {
+        type: "add-region",
+        region: {
+          id,
+          kind,
+          sequenceIds: selectedRange.sequenceIds,
+          start: selectedRange.start,
+          end: selectedRange.end,
+          lineColor: regionLineColor,
+          fillColor: regionFillColor,
+          lineWidth: 2,
+        },
+      },
+    });
+    setSelectedRegionId(id);
+    setSelectedAnnotationId(null);
   }
 
   function saveAtlasProject() {
@@ -629,6 +680,32 @@ export function App() {
               }}>Delete shape</button>
             </div>
           )}
+          <div className="panel-section region-tools">
+            <label>Regions</label>
+            <div className="shape-tools">
+              <button type="button" disabled={!selectedRange} onClick={() => createGraphicRegion("box")}><span className="tool-icon box-icon" /><span>Filled box</span></button>
+              <button type="button" disabled={!selectedRange} onClick={() => createGraphicRegion("rectangle")}><span className="tool-icon rectangle-icon" /><span>Rectangle</span></button>
+            </div>
+            <label className="annotation-color"><span>Outline</span><input type="color" value={regionLineColor} onChange={(event) => setRegionLineColor(event.target.value)} /></label>
+            <label className="annotation-color"><span>Fill</span><input type="color" value={regionFillColor} onChange={(event) => setRegionFillColor(event.target.value)} /></label>
+            <p>Select a rectangle of residues with Shift, then create a region.</p>
+          </div>
+          {selectedGraphicRegion && (
+            <div className="panel-section annotation-properties">
+              <label>Selected region</label>
+              <div className="annotation-position-fields">
+                <label><span>Start</span><input type="number" min="1" max={selectedGraphicRegion.end + 1} value={selectedGraphicRegion.start + 1} onChange={(event) => dispatch({ type: "execute", command: { type: "update-region", region: { ...selectedGraphicRegion, start: Math.max(0, Math.min(selectedGraphicRegion.end, Number(event.target.value) - 1)) } } })} /></label>
+                <label><span>End</span><input type="number" min={selectedGraphicRegion.start + 1} max={width} value={selectedGraphicRegion.end + 1} onChange={(event) => dispatch({ type: "execute", command: { type: "update-region", region: { ...selectedGraphicRegion, end: Math.max(selectedGraphicRegion.start, Math.min(width - 1, Number(event.target.value) - 1)) } } })} /></label>
+              </div>
+              <label className="annotation-color"><span>Outline</span><input type="color" value={selectedGraphicRegion.lineColor} onChange={(event) => dispatch({ type: "execute", command: { type: "update-region", region: { ...selectedGraphicRegion, lineColor: event.target.value } } })} /></label>
+              <label className="annotation-color"><span>Fill</span><input type="color" value={selectedGraphicRegion.fillColor} onChange={(event) => dispatch({ type: "execute", command: { type: "update-region", region: { ...selectedGraphicRegion, fillColor: event.target.value } } })} /></label>
+              <label className="region-width"><span>Line width</span><input type="number" min="0" max="12" value={selectedGraphicRegion.lineWidth} onChange={(event) => dispatch({ type: "execute", command: { type: "update-region", region: { ...selectedGraphicRegion, lineWidth: Math.max(0, Math.min(12, Number(event.target.value))) } } })} /></label>
+              <button className="danger-button annotation-delete" type="button" onClick={() => {
+                dispatch({ type: "execute", command: { type: "delete-graphic-region", regionId: selectedGraphicRegion.id } });
+                setSelectedRegionId(null);
+              }}>Delete region</button>
+            </div>
+          )}
         </aside>
 
         <button
@@ -724,13 +801,14 @@ export function App() {
                       const color = cellColor(sequence.id, row, column, residue);
                       const selected = selection?.sequenceId === sequence.id && selection.column === column;
                       const inSelectedRange = cellIsInSelectedRange(sequence.id, column);
+                      const region = regionCellAppearance(sequence.id, column);
                       return (
                         <button
                           key={column}
                           data-sequence-id={sequence.id}
                           data-column={column}
-                          className={`residue ${color.className} ${inSelectedRange ? "range-selected" : ""} ${selected ? "selected" : ""}`}
-                          style={color.style}
+                          className={`residue ${color.className} ${region.className} ${inSelectedRange ? "range-selected" : ""} ${selected ? "selected" : ""}`}
+                          style={{ ...color.style, ...region.style }}
                           title={`${sequence.name} · ${column + 1} · ${residue}`}
                           onClick={(event) => selectCell(event, { sequenceId: sequence.id, column })}
                         >
@@ -850,13 +928,14 @@ export function App() {
                                 const color = cellColor(sequence.id, row, column, residue);
                                 const selected = selection?.sequenceId === sequence.id && selection.column === column;
                                 const inSelectedRange = cellIsInSelectedRange(sequence.id, column);
+                                const region = regionCellAppearance(sequence.id, column);
                                 return residue ? (
                                   <button
                                     key={column}
                                     data-sequence-id={sequence.id}
                                     data-column={column}
-                                    className={`residue ${color.className} ${inSelectedRange ? "range-selected" : ""} ${selected ? "selected" : ""}`}
-                                    style={color.style}
+                                    className={`residue ${color.className} ${region.className} ${inSelectedRange ? "range-selected" : ""} ${selected ? "selected" : ""}`}
+                                    style={{ ...color.style, ...region.style }}
                                     title={`${sequence.name} · ${column + 1} · ${residue}`}
                                     onClick={(event) => selectCell(event, { sequenceId: sequence.id, column })}
                                   >
