@@ -10,6 +10,9 @@ describe("Atlas project files", () => {
     document.annotations.push({ id: "strand-1", kind: "strand", start: 0, end: 1, lane: 0, color: "#2563eb" });
     document.annotations.push({ id: "line-1", kind: "line", start: 0, end: 2, lane: 1, color: "#111111" });
     document.annotations.push({ id: "dashed-1", kind: "dashed-line", start: 1, end: 2, lane: 1, color: "#64748b" });
+    document.annotations.push({ id: "connect-up-1", kind: "connector-up", start: 0, end: 1, lane: 0, color: "#111111" });
+    document.annotations.push({ id: "connect-down-1", kind: "connector-down", start: 1, end: 2, lane: 1, color: "#111111" });
+    document.annotations.push({ id: "underline-1", kind: "underline", start: 0, end: 2, lane: 1, color: "#ef4444" });
     expect(parseAtlasProject(serializeAtlasProject(document))).toEqual(document);
   });
 

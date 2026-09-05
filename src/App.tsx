@@ -96,8 +96,8 @@ function AnnotationShape({
   if (kind === "strand") {
     return <button type="button" aria-label="Select beta strand annotation" className={`annotation-shape strand-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
   }
-  if (kind === "line" || kind === "dashed-line") {
-    return <button type="button" aria-label={`Select ${kind === "line" ? "line" : "dashed line"} annotation`} className={`annotation-shape ${kind}-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
+  if (["line", "dashed-line", "connector-up", "connector-down", "underline"].includes(kind)) {
+    return <button type="button" aria-label={`Select ${kind} annotation`} className={`annotation-shape ${kind}-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
   }
   const cycles = Math.max(1, Math.round(length / 2));
   const points = Array.from({ length: 61 }, (_, index) => {
@@ -520,6 +520,18 @@ export function App() {
               <button className={annotationTool === "dashed-line" ? "active" : ""} onClick={() => selectAnnotationTool("dashed-line")}>
                 <span className="tool-icon dashed-line-icon" />
                 <span>Dashed</span>
+              </button>
+              <button className={annotationTool === "connector-up" ? "active" : ""} onClick={() => selectAnnotationTool("connector-up")}>
+                <span className="tool-icon connector-up-icon" />
+                <span>Connect up</span>
+              </button>
+              <button className={annotationTool === "connector-down" ? "active" : ""} onClick={() => selectAnnotationTool("connector-down")}>
+                <span className="tool-icon connector-down-icon" />
+                <span>Connect down</span>
+              </button>
+              <button className={annotationTool === "underline" ? "active" : ""} onClick={() => selectAnnotationTool("underline")}>
+                <span className="tool-icon underline-icon" />
+                <span>Underline</span>
               </button>
             </div>
             <label className="annotation-color">

@@ -119,11 +119,20 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .strand-shape { top: 24%; height: 52%; background: var(--annotation-color); clip-path: polygon(0 28%, 72% 28%, 72% 0, 100% 50%, 72% 100%, 72% 72%, 0 72%); filter: drop-shadow(0 1px 0 rgba(0,0,0,.28)); }
 .line-shape, .dashed-line-shape { top: calc(50% - 1px); height: 2px; border: 0; border-radius: 0; background: var(--annotation-color); }
 .dashed-line-shape { background: repeating-linear-gradient(90deg, var(--annotation-color) 0 45%, transparent 45% 70%); }
+.connector-up-shape, .connector-down-shape { top: 12%; height: 76%; border: 0; border-radius: 0; background: linear-gradient(var(--annotation-color), var(--annotation-color)) center / 100% 2px no-repeat; }
+.connector-up-shape::before, .connector-down-shape::before, .connector-up-shape::after, .connector-down-shape::after { position: absolute; left: 0; width: 7px; height: 50%; background: var(--annotation-color); content: ""; }
+.connector-up-shape::after, .connector-down-shape::after { right: 0; left: auto; }
+.connector-up-shape::before, .connector-up-shape::after { top: 0; clip-path: polygon(50% 0, 100% 30%, 64% 30%, 64% 100%, 36% 100%, 36% 30%, 0 30%); }
+.connector-down-shape::before, .connector-down-shape::after { bottom: 0; clip-path: polygon(36% 0, 64% 0, 64% 70%, 100% 70%, 50% 100%, 0 70%, 36% 70%); }
+.underline-shape { top: auto; bottom: 10%; height: 2px; border: 0; border-radius: 0; background: var(--annotation-color); }
 .coil-shape { top: 5%; height: 90%; overflow: visible; color: var(--annotation-color); filter: drop-shadow(0 1px 0 rgba(0,0,0,.22)); }
 .coil-art { display: block; width: 100%; height: 100%; overflow: visible; }
 .strand-icon { position: relative; height: 10px; background: currentColor; clip-path: polygon(0 30%, 68% 30%, 68% 0, 100% 50%, 68% 100%, 68% 70%, 0 70%); }
 .line-icon, .dashed-line-icon { height: 2px; margin: 6px 0; background: currentColor; }
 .dashed-line-icon { background: repeating-linear-gradient(90deg, currentColor 0 7px, transparent 7px 11px); }
+.connector-up-icon, .connector-down-icon { height: 13px; border: solid currentColor; border-width: 2px 2px 0; }
+.connector-down-icon { border-width: 0 2px 2px; }
+.underline-icon { height: 13px; border-bottom: 2px solid currentColor; }
 .annotation-position-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .annotation-position-fields label span { display: block; margin-bottom: 5px; color: var(--muted); font-size: 9px; text-transform: uppercase; }
 .annotation-position-fields input { width: 100%; padding: 7px; border: 1px solid var(--line); border-radius: 6px; color: var(--foreground); background: #14231f; }
