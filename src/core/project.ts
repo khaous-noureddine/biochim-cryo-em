@@ -2,6 +2,7 @@ import { normalizeAlignment, parseBlc, parseClustal, parseFasta, parseMsf, parse
 import {
   AlignmentAnnotation,
   AlignmentDocument,
+  AlignmentRegion,
   ATLAS_DOCUMENT_FORMAT,
   ATLAS_DOCUMENT_VERSION,
   createAlignmentDocument,
@@ -88,6 +89,29 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     if (!/^#[0-9a-f]{6}$/i.test(color)) throw new Error(`Couleur de l’annotation ${index + 1} invalide.`);
     return { id, kind: annotation.kind, start, end, lane: annotation.lane, color };
   });
+  const rawRegions = project.regions ?? [];
+  if (!Array.isArray(rawRegions)) throw new Error("La liste des régions du projet .atlas est invalide.");
+  const regionIds = new Set<string>();
+  const regions: AlignmentRegion[] = rawRegions.map((item, index) => {
+    if (!item || typeof item !== "object") throw new Error(`Région ${index + 1} invalide.`);
+    const region = item as Record<string, unknown>;
+    const id = requireString(region.id, `Identifiant de la région ${index + 1}`);
+    if (regionIds.has(id)) throw new Error(`Identifiant de région dupliqué : ${id}.`);
+    regionIds.add(id);
+    if (region.kind !== "box" && region.kind !== "rectangle") throw new Error(`Type de région ${index + 1} invalide.`);
+    if (!Array.isArray(region.sequenceIds) || !region.sequenceIds.length || region.sequenceIds.some((entry) => typeof entry !== "string" || !ids.has(entry))) throw new Error(`Séquences de la région ${index + 1} invalides.`);
+    const sequenceIds = region.sequenceIds as string[];
+    if (new Set(sequenceIds).size !== sequenceIds.length) throw new Error(`Séquences dupliquées dans la région ${index + 1}.`);
+    if (!Number.isInteger(region.start) || !Number.isInteger(region.end)) throw new Error(`Position de la région ${index + 1} invalide.`);
+    const start = region.start as number;
+    const end = region.end as number;
+    if (start < 0 || end < start || end >= alignmentWidth) throw new Error(`Étendue de la région ${index + 1} invalide.`);
+    const lineColor = requireString(region.lineColor, `Couleur de contour de la région ${index + 1}`);
+    const fillColor = requireString(region.fillColor, `Couleur de remplissage de la région ${index + 1}`);
+    if (!/^#[0-9a-f]{6}$/i.test(lineColor) || !/^#[0-9a-f]{6}$/i.test(fillColor)) throw new Error(`Couleur de la région ${index + 1} invalide.`);
+    if (!Number.isInteger(region.lineWidth) || (region.lineWidth as number) < 0 || (region.lineWidth as number) > 12) throw new Error(`Épaisseur de la région ${index + 1} invalide.`);
+    return { id, kind: region.kind, sequenceIds, start, end, lineColor, fillColor, lineWidth: region.lineWidth as number };
+  });
 
   return {
     format: ATLAS_DOCUMENT_FORMAT,
@@ -96,6 +120,7 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     name: requireString(project.name, "Nom du projet"),
     sequences: normalizeAlignment(sequences),
     annotations,
+    regions,
   };
 }
 

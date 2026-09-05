@@ -44,7 +44,7 @@ Dernière mise à jour : 6 septembre 2026.
 
 ## Vérification actuelle
 
-- 59 tests Vitest couvrent le modèle, les commandes, l’historique, les
+- 61 tests Vitest couvrent le modèle, les commandes, l’historique, les
   colorations et le format de projet ;
 - le build TypeScript/Vite passe ;
 - les principaux changements d’interface ont été contrôlés dans le navigateur.
@@ -56,7 +56,9 @@ Dernière mise à jour : 6 septembre 2026.
 - les objets linéaires `helix`, `helix-alt`, `strand`, `strand-alt`, `coil`,
   `line`, `dashed-line`, `connector-up`, `connector-down` et `underline`
   existent dans le modèle Atlas ; les 14 glyphes ponctuels existent également,
-  tandis que les régions et textes restent à intégrer ;
+  tandis que les régions `box` et `rectangle` disposent maintenant du modèle,
+  des commandes et de la persistance mais pas encore de l’outil visuel ; les
+  textes restent à intégrer ;
 - les annotations existantes ne peuvent pas encore être déplacées ou
   redimensionnées directement par glisser-déposer, ni changer de calque ;
 - la sélection rectangulaire de cellules existe, mais les sélections complètes

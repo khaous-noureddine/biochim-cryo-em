@@ -58,6 +58,16 @@ introduit avec le modèle Atlas version 2 comme ligne d’annotation attachable,
 afin de préserver sa sémantique et son export sans contaminer les analyses qui
 doivent uniquement utiliser les séquences protéiques.
 
+## D-009 — Régions 2D distinctes des annotations linéaires
+
+**Décision :** les boîtes et rectangles sont stockés dans
+`AlignmentDocument.regions`, avec leurs séquences cibles, leurs bornes, leurs
+couleurs de contour et de remplissage, et leur épaisseur. Les structures,
+traits et glyphes des pistes supérieures restent dans `annotations`.
+
+**Compatibilité :** un fichier `.atlas` version 1 sans champ `regions` reste
+valide et reçoit une liste vide lors de son ouverture.
+
 ## Décisions encore ouvertes
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

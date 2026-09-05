@@ -9,6 +9,7 @@ function document(): AlignmentDocument {
     id: "document-1",
     name: "Test alignment",
     annotations: [],
+    regions: [],
     sequences: [
       { id: "seq-a", name: "A", description: "", residues: "AC-D", numberingStart: 1 },
       { id: "seq-b", name: "B", description: "", residues: "ACED", numberingStart: 1 },
@@ -103,6 +104,23 @@ describe("applyAlignmentCommand", () => {
     expect(applyAlignmentCommand(updated, { type: "update-annotation", annotation: { ...symbol, end: 3 } })).toBe(updated);
   });
 
+  it("creates, updates and deletes validated graphic regions", () => {
+    const original = document();
+    const region = { id: "box-1", kind: "box" as const, sequenceIds: ["seq-a", "seq-b"], start: 0, end: 2, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2 };
+    const added = applyAlignmentCommand(original, { type: "add-region", region });
+    expect(added.regions).toEqual([region]);
+    const updatedRegion = { ...region, kind: "rectangle" as const, fillColor: "#ffffff" };
+    const updated = applyAlignmentCommand(added, { type: "update-region", region: updatedRegion });
+    expect(updated.regions).toEqual([updatedRegion]);
+    expect(applyAlignmentCommand(updated, { type: "delete-graphic-region", regionId: region.id }).regions).toEqual([]);
+  });
+
+  it("rejects graphic regions with unknown sequences", () => {
+    const original = document();
+    const region = { id: "bad", kind: "box" as const, sequenceIds: ["missing"], start: 0, end: 1, lineColor: "#111111", fillColor: "#ffffff", lineWidth: 1 };
+    expect(applyAlignmentCommand(original, { type: "add-region", region })).toBe(original);
+  });
+
   it("rejects annotations outside the alignment", () => {
     const original = document();
     const result = applyAlignmentCommand(original, {
@@ -140,12 +158,17 @@ describe("applyAlignmentCommand", () => {
       { id: "helix", kind: "helix", start: 1, end: 3, lane: 0, color: "#ef4444" },
       { id: "removed", kind: "coil", start: 1, end: 1, lane: 0, color: "#3b82f6" },
     ];
+    original.regions = [
+      { id: "box", kind: "box", sequenceIds: ["seq-a", "seq-b"], start: 1, end: 3, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2 },
+      { id: "removed-box", kind: "rectangle", sequenceIds: ["seq-a"], start: 1, end: 1, lineColor: "#111111", fillColor: "#ffffff", lineWidth: 1 },
+    ];
     const result = applyAlignmentCommand(original, {
       type: "delete-region",
       range: { sequenceIds: ["seq-a", "seq-b"], start: 1, end: 1 },
     });
     expect(result.sequences.map((sequence) => sequence.residues)).toEqual(["A-D", "AED"]);
     expect(result.annotations).toEqual([{ id: "helix", kind: "helix", start: 1, end: 2, lane: 0, color: "#ef4444" }]);
+    expect(result.regions).toEqual([{ id: "box", kind: "box", sequenceIds: ["seq-a", "seq-b"], start: 1, end: 2, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2 }]);
   });
 
   it("keeps a valid placeholder column when deleting the whole alignment", () => {
@@ -194,12 +217,14 @@ describe("applyAlignmentCommand", () => {
       { id: "helix", kind: "helix", start: 1, end: 3, lane: 0, color: "#ef4444" },
       { id: "removed", kind: "coil", start: 2, end: 2, lane: 0, color: "#3b82f6" },
     ];
+    original.regions = [{ id: "box", kind: "box", sequenceIds: ["seq-a", "seq-b"], start: 1, end: 3, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2 }];
     const result = applyAlignmentCommand(original, { type: "clear-all-gap-columns" });
 
     expect(result.sequences.map((sequence) => sequence.residues)).toEqual(["ACD", "ACD"]);
     expect(result.annotations).toEqual([
       { id: "helix", kind: "helix", start: 1, end: 2, lane: 0, color: "#ef4444" },
     ]);
+    expect(result.regions[0]).toMatchObject({ start: 1, end: 2 });
     expect(original.sequences[0].residues).toBe("AC-D");
   });
 

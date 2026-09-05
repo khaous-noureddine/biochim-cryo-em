@@ -60,6 +60,19 @@ export type AlignmentAnnotation = {
   color: string;
 };
 
+export type RegionKind = "box" | "rectangle";
+
+export type AlignmentRegion = {
+  id: string;
+  kind: RegionKind;
+  sequenceIds: string[];
+  start: number;
+  end: number;
+  lineColor: string;
+  fillColor: string;
+  lineWidth: number;
+};
+
 export type AlignmentDocument = {
   format: typeof ATLAS_DOCUMENT_FORMAT;
   version: typeof ATLAS_DOCUMENT_VERSION;
@@ -67,6 +80,7 @@ export type AlignmentDocument = {
   name: string;
   sequences: Sequence[];
   annotations: AlignmentAnnotation[];
+  regions: AlignmentRegion[];
 };
 
 export type CellPosition = {
@@ -95,5 +109,6 @@ export function createAlignmentDocument(
     name,
     sequences,
     annotations: [],
+    regions: [],
   };
 }

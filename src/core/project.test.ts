@@ -16,6 +16,7 @@ describe("Atlas project files", () => {
     document.annotations.push({ id: "connect-down-1", kind: "connector-down", start: 1, end: 2, lane: 1, color: "#111111" });
     document.annotations.push({ id: "underline-1", kind: "underline", start: 0, end: 2, lane: 1, color: "#ef4444" });
     document.annotations.push({ id: "star-1", kind: "star", start: 1, end: 1, lane: 1, color: "#facc15" });
+    document.regions.push({ id: "box-1", kind: "box", sequenceIds: document.sequences.map((sequence) => sequence.id), start: 0, end: 1, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2 });
     expect(parseAtlasProject(serializeAtlasProject(document))).toEqual(document);
   });
 
@@ -23,7 +24,8 @@ describe("Atlas project files", () => {
     const document = parseFasta(">alpha\nACD", "Example");
     const legacy = JSON.parse(serializeAtlasProject(document));
     delete legacy.annotations;
-    expect(parseAtlasProject(JSON.stringify(legacy)).annotations).toEqual([]);
+    delete legacy.regions;
+    expect(parseAtlasProject(JSON.stringify(legacy))).toMatchObject({ annotations: [], regions: [] });
   });
 
   it("rejects an unsupported Atlas version", () => {

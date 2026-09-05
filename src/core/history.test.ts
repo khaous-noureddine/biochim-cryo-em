@@ -8,6 +8,7 @@ const document: AlignmentDocument = {
   id: "document-1",
   name: "History",
   annotations: [],
+  regions: [],
   sequences: [
     { id: "seq-a", name: "A", description: "", residues: "AC", numberingStart: 1 },
   ],

@@ -1,5 +1,5 @@
 import { normalizeAlignment } from "./alignment";
-import { AlignmentAnnotation, AlignmentDocument, CellPosition, CellRange, isAnnotationKind, isPointAnnotationKind, Sequence } from "./model";
+import { AlignmentAnnotation, AlignmentDocument, AlignmentRegion, CellPosition, CellRange, isAnnotationKind, isPointAnnotationKind, Sequence } from "./model";
 
 export type AlignmentCommand =
   | { type: "replace-residue"; position: CellPosition; residue: string }
@@ -16,7 +16,10 @@ export type AlignmentCommand =
   | { type: "remove-duplicate-sequences"; includeFragments: boolean }
   | { type: "add-annotation"; annotation: AlignmentAnnotation }
   | { type: "update-annotation"; annotation: AlignmentAnnotation }
-  | { type: "delete-annotation"; annotationId: string };
+  | { type: "delete-annotation"; annotationId: string }
+  | { type: "add-region"; region: AlignmentRegion }
+  | { type: "update-region"; region: AlignmentRegion }
+  | { type: "delete-graphic-region"; regionId: string };
 
 const EDITABLE_RESIDUE = /^[A-Z*?.-]$/;
 
@@ -60,12 +63,39 @@ function remapAnnotations(
   });
 }
 
+function remapRegions(regions: AlignmentRegion[], keptColumns: number[]): AlignmentRegion[] {
+  const newIndex = new Map(keptColumns.map((column, index) => [column, index]));
+  return regions.flatMap((region) => {
+    const covered = keptColumns.filter((column) => column >= region.start && column <= region.end);
+    if (!covered.length) return [];
+    return [{ ...region, start: newIndex.get(covered[0])!, end: newIndex.get(covered.at(-1)!)! }];
+  });
+}
+
+function keepRegionSequences(regions: AlignmentRegion[], survivingIds: Set<string>): AlignmentRegion[] {
+  return regions.flatMap((region) => {
+    const sequenceIds = region.sequenceIds.filter((id) => survivingIds.has(id));
+    return sequenceIds.length ? [{ ...region, sequenceIds }] : [];
+  });
+}
+
 function validAnnotation(document: AlignmentDocument, annotation: AlignmentAnnotation): boolean {
   const width = document.sequences[0]?.residues.length ?? 0;
   return isAnnotationKind(annotation.kind) && (!isPointAnnotationKind(annotation.kind) || annotation.start === annotation.end) &&
     Number.isInteger(annotation.start) && Number.isInteger(annotation.end) &&
     annotation.start >= 0 && annotation.end >= annotation.start && annotation.end < width &&
     (annotation.lane === 0 || annotation.lane === 1) && /^#[0-9a-f]{6}$/i.test(annotation.color);
+}
+
+function validRegion(document: AlignmentDocument, region: AlignmentRegion): boolean {
+  const width = document.sequences[0]?.residues.length ?? 0;
+  const sequenceIds = new Set(document.sequences.map((sequence) => sequence.id));
+  return (region.kind === "box" || region.kind === "rectangle") &&
+    region.sequenceIds.length > 0 && new Set(region.sequenceIds).size === region.sequenceIds.length &&
+    region.sequenceIds.every((id) => sequenceIds.has(id)) &&
+    Number.isInteger(region.start) && Number.isInteger(region.end) && region.start >= 0 && region.end >= region.start && region.end < width &&
+    /^#[0-9a-f]{6}$/i.test(region.lineColor) && /^#[0-9a-f]{6}$/i.test(region.fillColor) &&
+    Number.isInteger(region.lineWidth) && region.lineWidth >= 0 && region.lineWidth <= 12;
 }
 
 export function applyAlignmentCommand(
@@ -146,7 +176,7 @@ export function applyAlignmentCommand(
       const keptColumns = Array.from({ length: oldWidth }, (_, column) => column)
         .filter((column) => column < command.range.start || column > command.range.end);
       if (!keptColumns.length) sequences = sequences.map((sequence) => ({ ...sequence, residues: "-" }));
-      return { ...document, sequences, annotations: remapAnnotations(document.annotations, keptColumns) };
+      return { ...document, sequences, annotations: remapAnnotations(document.annotations, keptColumns), regions: remapRegions(document.regions, keptColumns) };
     }
 
     case "rename-sequence": {
@@ -182,7 +212,8 @@ export function applyAlignmentCommand(
 
     case "delete-sequence": {
       if (document.sequences.length <= 1 || !document.sequences.some((sequence) => sequence.id === command.sequenceId)) return document;
-      return { ...document, sequences: document.sequences.filter((sequence) => sequence.id !== command.sequenceId) };
+      const sequences = document.sequences.filter((sequence) => sequence.id !== command.sequenceId);
+      return { ...document, sequences, regions: keepRegionSequences(document.regions, new Set(sequences.map((sequence) => sequence.id))) };
     }
 
     case "move-sequence": {
@@ -213,6 +244,7 @@ export function applyAlignmentCommand(
           residues: keptColumns.map((column) => sequence.residues[column]).join(""),
         })),
         annotations: remapAnnotations(document.annotations, keptColumns),
+        regions: remapRegions(document.regions, keptColumns),
       };
     }
 
@@ -229,7 +261,7 @@ export function applyAlignmentCommand(
         );
       });
       if (survivors.length === document.sequences.length) return document;
-      return { ...document, sequences: survivors };
+      return { ...document, sequences: survivors, regions: keepRegionSequences(document.regions, new Set(survivors.map((sequence) => sequence.id))) };
     }
 
     case "add-annotation": {
@@ -256,6 +288,21 @@ export function applyAlignmentCommand(
         ...document,
         annotations: document.annotations.filter((annotation) => annotation.id !== command.annotationId),
       };
+    }
+    case "add-region": {
+      if (document.regions.some((region) => region.id === command.region.id) || !validRegion(document, command.region)) return document;
+      return { ...document, regions: [...document.regions, command.region] };
+    }
+    case "update-region": {
+      const index = document.regions.findIndex((region) => region.id === command.region.id);
+      if (index < 0 || !validRegion(document, command.region)) return document;
+      const regions = [...document.regions];
+      regions[index] = command.region;
+      return { ...document, regions };
+    }
+    case "delete-graphic-region": {
+      if (!document.regions.some((region) => region.id === command.regionId)) return document;
+      return { ...document, regions: document.regions.filter((region) => region.id !== command.regionId) };
     }
   }
 }
