@@ -17,9 +17,9 @@ Pour chaque capacité ALINE :
 
 ## Phase 0 — Spécification exécutable de la parité
 
-- [ ] convertir l’inventaire existant en matrice cœur/plugin avec un identifiant
+- [x] convertir l’inventaire existant en matrice cœur/plugin avec un identifiant
   stable par fonctionnalité ;
-- [ ] associer chaque entrée aux fonctions Perl et fichiers concernés ;
+- [x] associer chaque entrée aux fonctions Perl et fichiers concernés ;
 - [ ] définir pour chaque entrée un test, une fixture ou une procédure manuelle ;
 - [ ] caractériser complètement le format `.aline`, y compris objets,
   graphiques, couleurs, attachements et préférences de document ;

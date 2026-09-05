@@ -67,7 +67,8 @@ Par ordre de priorité :
 2. code du cœur historique et code de chaque plugin ;
 3. fichiers d’exemple historiques ;
 4. inventaires fonctionnels dans `docs/` ;
-5. décisions produit consignées dans `decisions.md`.
+5. matrice de livraison `aline-parity-matrix.md` ;
+6. décisions produit consignées dans `decisions.md`.
 
 En cas d’ambiguïté biologique, la décision doit être signalée pour validation
 par le spécialiste du domaine au lieu d’être silencieusement inventée.
