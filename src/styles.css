@@ -105,7 +105,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .residue.range-selected { box-shadow: inset 0 0 0 2px rgba(45, 212, 191, .68); }
 .residue.selected { position: relative; z-index: 3; outline: 2px solid var(--accent); outline-offset: -2px; box-shadow: inset 0 0 0 1px #07110e; }
 .residue.residue.hydrophobic { color: #f1c776; background: #493d21; }.residue.residue.acidic { color: #ff9d96; background: #4b2725; }.residue.residue.basic { color: #9bd7ff; background: #223c4a; }.residue.residue.polar { color: #bba8f5; background: #352d50; }.residue.residue.special { color: #82dfb8; background: #214637; }.residue.residue.unknown { color: #86938f; background: #26312e; }
-.residue.similarity, .residue.calcons { color: var(--foreground); background: color-mix(in srgb, #050505 calc(var(--strength) * 100%), #fff); font-weight: 600; }
+.residue.similarity, .residue.calcons { color: var(--foreground); font-weight: 600; }
 .residue.none { background: #16231f; }
 
 /* ALINE-inspired wrapped view */
@@ -214,7 +214,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .classic-view .residue.residue.aa-Q,
 .classic-view .residue.residue.aa-S,
 .classic-view .residue.residue.aa-T { color: #c026ae; }
-.classic-view .residue.similarity, .classic-view .residue.calcons { color: var(--foreground); background: color-mix(in srgb, #000 calc(var(--strength) * 100%), #fff); font-weight: 700; }
+.classic-view .residue.similarity, .classic-view .residue.calcons { color: var(--foreground); font-weight: 700; }
 .classic-view .residue.none { color: #111; background: #fff; }
 .classic-view .residue.range-selected { background: #d8f3ff; box-shadow: inset 0 0 0 1px #1894c4; }
 .classic-view .residue.selected { outline-color: #1769ff; box-shadow: inset 0 0 0 1px #fff; }

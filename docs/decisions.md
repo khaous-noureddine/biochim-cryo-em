@@ -91,6 +91,15 @@ le schéma calculé sans le détruire, suivent les résidus lors des insertions 
 suppression et sont enregistrées dans `.atlas`. Cette représentation évite de
 dupliquer un style pour chaque cellule non modifiée.
 
+## D-013 — Lire les palettes ALINE sans évaluer leur code Perl
+
+**Décision :** les fichiers `.alc` historiques ressemblent à du code Perl et
+ALINE les charge avec `eval`. Atlas n’exécute jamais leur contenu : un parseur
+restreint extrait uniquement les catégories attendues, normalise les couleurs
+Tk 16 bits et rejette les fichiers sans structure valide. La sauvegarde reste
+compatible avec ALINE, tandis que l’ouverture d’une palette provenant d’un
+tiers ne peut pas déclencher de code arbitraire.
+
 ## Décisions encore ouvertes
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

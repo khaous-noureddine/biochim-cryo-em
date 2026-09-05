@@ -1,0 +1,122 @@
+export type PaletteCategory = {
+  threshold: number;
+  fill: string;
+  line: string;
+  lineWidth: number;
+  text: string;
+  fontSize: number;
+  fontFamily: string;
+  fontSlant: string;
+  fontWeight: string;
+};
+
+export type ColourPalette = {
+  name: string;
+  categories: PaletteCategory[];
+};
+
+const CATEGORY_PATTERN = /\[\s*(\d*\.?\d+)\s*,\s*\[\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'?([\d.]+)'?\s*,\s*'([^']*)'\s*,\s*(\d+)\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*\]\s*\]/g;
+
+export const DEFAULT_GREYSCALE_PALETTE: ColourPalette = {
+  name: "Greyscale",
+  categories: Array.from({ length: 10 }, (_, index) => {
+    const threshold = (index + 1) / 10;
+    const channel = Math.round(255 * (1 - threshold));
+    const fill = `#${channel.toString(16).padStart(2, "0").repeat(3)}`;
+    return { threshold, fill, line: fill, lineWidth: 0, text: threshold >= 0.6 ? "#ffffff" : "#000000", fontSize: 12, fontFamily: "Helvetica", fontSlant: "R", fontWeight: "Bold" };
+  }),
+};
+
+export function normalizeAlineColor(value: string): string {
+  const color = value.trim().toLowerCase();
+  if (/^#[0-9a-f]{12}$/.test(color)) {
+    return `#${color.slice(1, 3)}${color.slice(5, 7)}${color.slice(9, 11)}`;
+  }
+  if (/^#[0-9a-f]{6}$/.test(color)) return color;
+  if (color === "black" || color === "white") return color === "black" ? "#000000" : "#ffffff";
+  const grey = color.match(/^gr(?:e|a)y(\d{1,3})$/);
+  if (grey) {
+    const channel = Math.round(255 * Math.max(0, Math.min(100, Number(grey[1]))) / 100);
+    return `#${channel.toString(16).padStart(2, "0").repeat(3)}`;
+  }
+  throw new Error(`Couleur ALINE non prise en charge : ${value}`);
+}
+
+export function parseAlinePalette(source: string, filename = "palette.alc"): ColourPalette {
+  if (!/@categories\s*=\s*\(/.test(source)) throw new Error("Ce fichier ne contient pas de palette ALINE valide.");
+  const categories: PaletteCategory[] = [];
+  for (const match of source.matchAll(CATEGORY_PATTERN)) {
+    const threshold = Number(match[1]);
+    if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) throw new Error("Seuil de palette ALINE invalide.");
+    categories.push({
+      threshold,
+      fill: normalizeAlineColor(match[2]),
+      line: normalizeAlineColor(match[3]),
+      lineWidth: Number(match[4]),
+      text: normalizeAlineColor(match[5]),
+      fontSize: Number(match[6]),
+      fontFamily: match[7],
+      fontSlant: match[8],
+      fontWeight: match[9],
+    });
+  }
+  if (!categories.length) throw new Error("La palette ALINE ne contient aucune catégorie lisible.");
+  categories.sort((left, right) => left.threshold - right.threshold);
+  return { name: filename.replace(/\.alc$/i, ""), categories };
+}
+
+function toAlineColor(color: string): string {
+  const normalized = normalizeAlineColor(color).slice(1);
+  return `#${normalized.slice(0, 2).repeat(2)}${normalized.slice(2, 4).repeat(2)}${normalized.slice(4, 6).repeat(2)}`.toUpperCase();
+}
+
+export function serializeAlinePalette(palette: ColourPalette): string {
+  const rows = [...palette.categories].sort((a, b) => a.threshold - b.threshold).map((category) =>
+    `    [${category.threshold.toFixed(3)},['${toAlineColor(category.fill)}','${toAlineColor(category.line)}',${category.lineWidth},'${toAlineColor(category.text)}',${category.fontSize},'${category.fontFamily.replaceAll("'", "\\'")}','${category.fontSlant.replaceAll("'", "\\'")}','${category.fontWeight.replaceAll("'", "\\'")}']],`,
+  );
+  return `### Atlas Alignement\n### Colour scheme for alignments\n@categories=(\n${rows.join("\n")}\n);\n`;
+}
+
+export function paletteStyle(palette: ColourPalette, score: number): { backgroundColor: string; color: string } {
+  const category = palette.categories.find((candidate) => score <= candidate.threshold) ?? palette.categories.at(-1);
+  if (!category) return { backgroundColor: "#ffffff", color: "#000000" };
+  return { backgroundColor: category.fill, color: category.text };
+}
+
+export function interpolateRgb(start: string, end: string, amount: number): string {
+  const colors = [normalizeAlineColor(start), normalizeAlineColor(end)].map((color) => [1, 3, 5].map((offset) => parseInt(color.slice(offset, offset + 2), 16)));
+  return `#${colors[0].map((channel, index) => Math.round(channel + (colors[1][index] - channel) * amount).toString(16).padStart(2, "0")).join("")}`;
+}
+
+function rgbToHsl(color: string): [number, number, number] {
+  const [red, green, blue] = [1, 3, 5].map((offset) => parseInt(normalizeAlineColor(color).slice(offset, offset + 2), 16) / 255);
+  const maximum = Math.max(red, green, blue);
+  const minimum = Math.min(red, green, blue);
+  const lightness = (maximum + minimum) / 2;
+  if (maximum === minimum) return [0, 0, lightness];
+  const delta = maximum - minimum;
+  const saturation = lightness < 0.5 ? delta / (maximum + minimum) : delta / (2 - maximum - minimum);
+  const hueBase = maximum === red ? (green - blue) / delta : maximum === green ? 2 + (blue - red) / delta : 4 + (red - green) / delta;
+  return [(hueBase / 6 + 1) % 1, saturation, lightness];
+}
+
+function hslToRgb([hue, saturation, lightness]: [number, number, number]): [number, number, number] {
+  if (saturation === 0) return [lightness, lightness, lightness];
+  const second = lightness < 0.5 ? lightness * (1 + saturation) : saturation + lightness * (1 - saturation);
+  const first = 2 * lightness - second;
+  const channel = (position: number) => {
+    const value = (position + 1) % 1;
+    if (value * 6 < 1) return first + (second - first) * value * 6;
+    if (value * 2 < 1) return second;
+    if (value * 3 < 2) return first + (second - first) * (2 / 3 - value) * 6;
+    return first;
+  };
+  return [channel(hue + 1 / 3), channel(hue), channel(hue - 1 / 3)];
+}
+
+export function interpolateHsl(start: string, end: string, amount: number): string {
+  const from = rgbToHsl(start);
+  const to = rgbToHsl(end);
+  const channels = hslToRgb(from.map((channel, index) => channel + (to[index] - channel) * amount) as [number, number, number]);
+  return `#${channels.map((channel) => Math.round(channel * 255).toString(16).padStart(2, "0")).join("")}`;
+}

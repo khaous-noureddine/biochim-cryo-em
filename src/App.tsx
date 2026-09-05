@@ -17,6 +17,7 @@ import {
   SimilarityOptions,
 } from "./core/coloring";
 import { demoAlignment } from "./data/demo";
+import { ColourPalette, DEFAULT_GREYSCALE_PALETTE, paletteStyle, parseAlinePalette, serializeAlinePalette } from "./core/palette";
 
 const residueGroups: Record<string, string> = {
   A: "hydrophobic", V: "hydrophobic", I: "hydrophobic", L: "hydrophobic", M: "hydrophobic", F: "hydrophobic", W: "hydrophobic", Y: "hydrophobic",
@@ -210,6 +211,7 @@ export function App() {
   const [colorExclusions, setColorExclusions] = useState<Set<string>>(() => new Set());
   const [manualForeground, setManualForeground] = useState("#111111");
   const [manualBackground, setManualBackground] = useState("#facc15");
+  const [colourPalette, setColourPalette] = useState<ColourPalette>(DEFAULT_GREYSCALE_PALETTE);
   const [viewMode, setViewMode] = useState<"modern" | "classic">("classic");
   const [repeatNames, setRepeatNames] = useState(true);
   const [classicWidths, setClassicWidths] = useState({ first: 60, continuation: 70 });
@@ -232,6 +234,7 @@ export function App() {
   const [selection, setSelection] = useState<CellPosition | null>(null);
   const [selectionAnchor, setSelectionAnchor] = useState<CellPosition | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const paletteInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLElement>(null);
   const classicViewRef = useRef<HTMLDivElement>(null);
   const colorsMenuRef = useRef<HTMLDetailsElement>(null);
@@ -504,6 +507,28 @@ export function App() {
     setSimilarityDialogOpen(true);
   }
 
+  async function openPalette(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const palette = parseAlinePalette(await file.text(), file.name);
+      setColourPalette(palette);
+      setNotice(`Palette ${palette.name} chargée (${palette.categories.length} niveaux)`);
+      setError("");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Impossible d’ouvrir cette palette.");
+    } finally {
+      event.target.value = "";
+      colorsMenuRef.current?.removeAttribute("open");
+    }
+  }
+
+  function savePalette() {
+    const safeName = colourPalette.name.replace(/[^a-z0-9._-]+/gi, "-") || "atlas-colours";
+    downloadFile(`${safeName}.alc`, serializeAlinePalette(colourPalette), "text/plain");
+    colorsMenuRef.current?.removeAttribute("open");
+  }
+
   function startSidebarResize(event: ReactPointerEvent<HTMLButtonElement>) {
     sidebarResizeRef.current = { startX: event.clientX, startWidth: sidebarWidth };
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -607,7 +632,7 @@ export function App() {
       if (strength === null || strength === undefined) result = { className: "none" };
       else {
         const displayStrength = strength >= 0.999 ? 1 : Math.floor(strength * 10) / 10;
-        result = { className: scheme, style: { "--strength": displayStrength, "--foreground": displayStrength >= 0.6 ? "#fff" : "#111" } as React.CSSProperties };
+        result = { className: scheme, style: { "--strength": displayStrength, "--foreground": paletteStyle(colourPalette, displayStrength).color, ...paletteStyle(colourPalette, displayStrength) } as React.CSSProperties };
       }
     }
     const manual = cellStyleMap.get(`${sequenceId}:${column}`);
@@ -649,6 +674,14 @@ export function App() {
               <button role="menuitem" onClick={resetAllColors}>
                 <span>Reset all</span><small>Return to monochrome</small>
               </button>
+              <div className="menu-separator" />
+              <button role="menuitem" onClick={() => paletteInputRef.current?.click()}>
+                <span>Load Colour Scheme…</span><small>{colourPalette.name} · {colourPalette.categories.length} levels</small>
+              </button>
+              <button role="menuitem" onClick={savePalette}>
+                <span>Save Colour Scheme…</span><small>Export an ALINE-compatible .alc file</small>
+              </button>
+              <input ref={paletteInputRef} type="file" accept=".alc" hidden onChange={openPalette} />
             </div>
           </details>
           <details className="top-menu">
