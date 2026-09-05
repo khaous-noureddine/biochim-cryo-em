@@ -11,7 +11,9 @@ export type Sequence = {
 
 export const ANNOTATION_KINDS = [
   "helix",
+  "helix-alt",
   "strand",
+  "strand-alt",
   "coil",
   "line",
   "dashed-line",

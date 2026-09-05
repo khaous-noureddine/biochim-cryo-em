@@ -93,8 +93,26 @@ function AnnotationShape({
   if (kind === "helix") {
     return <button type="button" aria-label="Select cylinder annotation" className={`annotation-shape helix-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
   }
+  if (kind === "helix-alt") {
+    const cycles = Math.max(1, Math.round(length / 2));
+    const points = Array.from({ length: 81 }, (_, index) => {
+      const progress = index / 80;
+      return `${progress * 100},${10 + Math.sin(progress * cycles * Math.PI * 2) * 6}`;
+    }).join(" ");
+    return (
+      <button type="button" aria-label="Select alternate helix annotation" className={`annotation-shape helix-alt-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick}>
+        <svg className="helix-alt-art" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">
+          <polyline points={points} fill="none" stroke="currentColor" strokeWidth="7" vectorEffect="non-scaling-stroke" />
+          <polyline points={points} fill="none" stroke="rgba(255,255,255,.38)" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+        </svg>
+      </button>
+    );
+  }
   if (kind === "strand") {
     return <button type="button" aria-label="Select beta strand annotation" className={`annotation-shape strand-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
+  }
+  if (kind === "strand-alt") {
+    return <button type="button" aria-label="Select alternate beta strand annotation" className={`annotation-shape strand-alt-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
   }
   if (["line", "dashed-line", "connector-up", "connector-down", "underline"].includes(kind)) {
     return <button type="button" aria-label={`Select ${kind} annotation`} className={`annotation-shape ${kind}-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
@@ -503,9 +521,17 @@ export function App() {
                 <span className="tool-icon cylinder-icon" />
                 <span>Cylinder</span>
               </button>
+              <button className={annotationTool === "helix-alt" ? "active" : ""} onClick={() => selectAnnotationTool("helix-alt")}>
+                <span className="tool-icon helix-alt-icon" />
+                <span>Helix ribbon</span>
+              </button>
               <button className={annotationTool === "strand" ? "active" : ""} onClick={() => selectAnnotationTool("strand")}>
                 <span className="tool-icon strand-icon" />
                 <span>Beta strand</span>
+              </button>
+              <button className={annotationTool === "strand-alt" ? "active" : ""} onClick={() => selectAnnotationTool("strand-alt")}>
+                <span className="tool-icon strand-alt-icon" />
+                <span>Strand ribbon</span>
               </button>
               <button className={annotationTool === "coil" ? "active" : ""} onClick={() => selectAnnotationTool("coil")}>
                 <svg className="tool-icon spring-icon" viewBox="0 0 44 16" aria-hidden="true">

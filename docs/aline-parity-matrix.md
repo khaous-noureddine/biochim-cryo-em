@@ -42,7 +42,7 @@ colonne de vérification.
 | CORE-031 | Sélection/déplacement/suppression d'objet | `FindObjectAt`, `MoveObject`, `DeleteObjectById/Ptr` | partiel | sélection, positions, couleur et suppression testées ; déplacement direct et objets liés à compléter |
 | CORE-032 | Ordre des calques | `RaiseLowerObj`, `_GetZList`, `_ConsolidateZ` | absent | superpositions comparatives |
 | CORE-033 | Symboles ponctuels complets | `_GlyphFactory`, définitions `objectdata` | absent | galerie de référence |
-| CORE-034 | Hélices, brins beta, coils et lignes | `_LingFactory`, définitions `objectdata` | partiel | hélice, brin beta, coil, trait plein/pointillé, connecteurs haut/bas et soulignement créables, éditables, persistés et testés ; variantes `Helix2` et `Strand2` à reproduire |
+| CORE-034 | Hélices, brins beta, coils et lignes | `_LingFactory`, définitions `objectdata` | partiel | types `Helix`, `Helix2`, `Strand`, `Strand2`, coil, trait plein/pointillé, connecteurs haut/bas et soulignement créables, éditables, persistés et testés ; comparaison visuelle de référence à finaliser |
 | CORE-035 | Boîtes, rectangles et textes | `Box`, `Rect`, `DrawText` | absent | styles, alignements et polices |
 | CORE-036 | Graphiques génériques | `_CreateGraph`, `InsertGraph`, fonctions `*Graph` | absent | chaque type, seuil, plage et log |
 | CORE-037 | Menus, raccourcis et actions configurables | `_BuildMenu`, bindings, `setaction` | partiel | inventaire des commandes UI |

@@ -28,8 +28,8 @@ Dernière mise à jour : 6 septembre 2026.
 - taille des cellules réglable ;
 - colorations monochrome, par type de résidu, par similarité et
   ALSCRIPT/Calcons ;
-- outils Cylinder, Beta strand, Spring, Line, Dashed line, Connect up,
-  Connect down et Underline avec choix de couleur ;
+- outils Cylinder, Helix ribbon, Beta strand, Strand ribbon, Spring, Line,
+  Dashed line, Connect up, Connect down et Underline avec choix de couleur ;
 - placement des structures par une case de départ et une case de fin sur la
   deuxième ligne située au-dessus des séquences ;
 - persistance des cylindres, flèches de brin beta, ressorts et traits dans
@@ -42,7 +42,7 @@ Dernière mise à jour : 6 septembre 2026.
 
 ## Vérification actuelle
 
-- 55 tests Vitest couvrent le modèle, les commandes, l’historique, les
+- 57 tests Vitest couvrent le modèle, les commandes, l’historique, les
   colorations et le format de projet ;
 - le build TypeScript/Vite passe ;
 - les principaux changements d’interface ont été contrôlés dans le navigateur.
@@ -51,9 +51,10 @@ Dernière mise à jour : 6 septembre 2026.
 
 - l’import `.aline` récupère les séquences et la numérotation, mais ignore
   encore les objets graphiques historiques ;
-- les objets linéaires `helix`, `strand`, `coil`, `line`, `dashed-line`,
-  `connector-up`, `connector-down` et `underline` existent dans le modèle
-  Atlas ; les glyphes, régions et textes restent à intégrer ;
+- les objets linéaires `helix`, `helix-alt`, `strand`, `strand-alt`, `coil`,
+  `line`, `dashed-line`, `connector-up`, `connector-down` et `underline`
+  existent dans le modèle Atlas ; les glyphes, régions et textes restent à
+  intégrer ;
 - les annotations existantes ne peuvent pas encore être déplacées ou
   redimensionnées directement par glisser-déposer, ni changer de calque ;
 - la sélection rectangulaire de cellules existe, mais les sélections complètes
