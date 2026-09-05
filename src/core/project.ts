@@ -1,4 +1,4 @@
-import { normalizeAlignment, parseFasta } from "./alignment";
+import { normalizeAlignment, parseBlc, parseClustal, parseFasta, parseMsf, parsePir } from "./alignment";
 import {
   AlignmentAnnotation,
   AlignmentDocument,
@@ -11,14 +11,14 @@ import {
 
 export type OpenedAlignment = {
   document: AlignmentDocument;
-  kind: "atlas" | "aline" | "fasta";
+  kind: "atlas" | "aline" | "fasta" | "clustal" | "msf" | "blc" | "pir";
   warnings: string[];
 };
 
 const VALID_RESIDUES = /^[A-Z*?.-]+$/;
 
 function fileStem(filename: string): string {
-  return filename.replace(/\.(atlas|aline|fasta|faa|fas|fa|seq|txt)$/i, "") || "Untitled alignment";
+  return filename.replace(/\.(atlas|aline|fasta|faa|fas|fa|seq|txt|aln|msf|blc|pir)$/i, "") || "Untitled alignment";
 }
 
 function requireString(value: unknown, label: string): string {
@@ -183,13 +183,26 @@ export function parseLegacyAline(source: string, name = "Imported ALINE project"
 
 export function openAlignmentFile(source: string, filename: string): OpenedAlignment {
   const lowerName = filename.toLowerCase();
+  const name = fileStem(filename);
   if (lowerName.endsWith(".atlas") || source.trimStart().startsWith("{")) {
     return { document: parseAtlasProject(source), kind: "atlas", warnings: [] };
   }
   if (lowerName.endsWith(".aline") || source.startsWith("Aline 1.0 packed state")) {
-    return parseLegacyAline(source, fileStem(filename));
+    return parseLegacyAline(source, name);
+  }
+  if (lowerName.endsWith(".aln") || /^\s*CLUSTAL(?:\s|$)/i.test(source)) {
+    return { document: parseClustal(source, name), kind: "clustal", warnings: [] };
+  }
+  if (lowerName.endsWith(".msf") || /\bMSF\s*:/i.test(source.slice(0, 2000))) {
+    return { document: parseMsf(source, name), kind: "msf", warnings: [] };
+  }
+  if (lowerName.endsWith(".pir") || /^>..;/m.test(source)) {
+    return { document: parsePir(source, name), kind: "pir", warnings: [] };
+  }
+  if (lowerName.endsWith(".blc")) {
+    return { document: parseBlc(source, name), kind: "blc", warnings: [] };
   }
   const trimmed = source.trim();
-  const fastaSource = trimmed.startsWith(">") ? source : `>${fileStem(filename)}\n${trimmed}`;
-  return { document: parseFasta(fastaSource, fileStem(filename)), kind: "fasta", warnings: [] };
+  const fastaSource = trimmed.startsWith(">") ? source : `>${name}\n${trimmed}`;
+  return { document: parseFasta(fastaSource, name), kind: "fasta", warnings: [] };
 }

@@ -344,7 +344,7 @@ export function App() {
             </div>
           </details>
           <button className="primary" onClick={() => inputRef.current?.click()}>Open file</button>
-          <input ref={inputRef} type="file" accept=".atlas,.aline,.fa,.fasta,.fas,.faa,.seq,.txt" hidden onChange={openFile} />
+          <input ref={inputRef} type="file" accept=".atlas,.aline,.fa,.fasta,.fas,.faa,.seq,.txt,.aln,.msf,.blc,.pir" hidden onChange={openFile} />
           <button onClick={saveAtlasProject}>Save .atlas</button>
           <button onClick={() => downloadFile(`${alignment.name}.fasta`, exportFasta(alignment), "text/plain")}>Export FASTA</button>
         </nav>

@@ -36,6 +36,18 @@ describe("sequence files", () => {
     const result = openAlignmentFile("ACDE FGHI\nK", "protein.seq");
     expect(result.document.sequences[0]).toMatchObject({ name: "protein", residues: "ACDEFGHIK" });
   });
+
+  it.each([
+    ["alignment.aln", "CLUSTAL W\n\na AC-D\nb ACED\n", "clustal"],
+    ["alignment.msf", "MSF: 4\n Name: a Len: 4\n Name: b Len: 4\n//\na AC-D\nb ACED\n", "msf"],
+    ["alignment.blc", ">a\n>b\nAA\nCC\n-E\nDD\n", "blc"],
+    ["alignment.pir", ">P1;a\nA protein\nAC-D*\n>P1;b\nB protein\nACED*\n", "pir"],
+  ])("detects and opens %s", (filename, source, kind) => {
+    const result = openAlignmentFile(source, filename);
+    expect(result.kind).toBe(kind);
+    expect(result.document.sequences).toHaveLength(2);
+    expect(result.document.sequences.map((sequence) => sequence.residues)).toEqual(["AC-D", "ACED"]);
+  });
 });
 
 describe("legacy ALINE projects", () => {

@@ -14,9 +14,9 @@ colonne de vérification.
 | CORE-003 | Détection des changements non sauvegardés | `ShouldaSavedEh`, `_Shutdown` | partiel | tests dirty/saved et fermeture |
 | CORE-004 | Historique multi-niveaux | `PDumpData`, `DumpData`, `UndumpData`, `SkipUndoData` | partiel | undo/redo de chaque commande métier |
 | CORE-005 | Import FASTA | `ReadFasta` | reproduit | fixtures valides et invalides |
-| CORE-006 | Import MSF | `ReadMsf` | absent | fixtures historiques et export tiers |
-| CORE-007 | Import ClustalW ALN | `ReadAln` | absent | fixtures historiques et export tiers |
-| CORE-008 | Import BLC | `ReadBlc` | absent | fixture historique |
+| CORE-006 | Import MSF | `ReadMsf` | partiel | fixtures historiques et export tiers |
+| CORE-007 | Import ClustalW ALN | `ReadAln` | partiel | fixtures historiques et export tiers |
+| CORE-008 | Import BLC | `ReadBlc` | partiel | fixture historique |
 | CORE-009 | Ancien import BLAST | `ReadBlast` | absent | caractérisation ; probablement remplacé |
 | CORE-010 | Export FASTA | `ExportFasta`, `_ToFasta` | partiel | gaps, sélection, largeur, commentaires |
 | CORE-011 | Export PIR | `ExportPIR`, `_ToPIR` | absent | fixture comparative |
@@ -66,7 +66,7 @@ colonne de vérification.
 | PLUG-009 | `eAddBlast` | BLAST puis insertion/réalignement de résultats | absent | remplacement API moderne et fixture |
 | PLUG-010 | `eSeqList` | Gestionnaire de lignes, import et récupération DB | partiel | parcours complet de gestion |
 | PLUG-011 | `fInputPDB` | Import PDB/ENT par chaîne avec gaps et numéros d'insertion | absent | corpus PDB comparatif |
-| PLUG-012 | `fInputPIR` | Import PIR | absent | corpus PIR comparatif |
+| PLUG-012 | `fInputPIR` | Import PIR | partiel | corpus PIR comparatif |
 | PLUG-013 | `mDefaultCM` | Menus contextuels adaptés au type ciblé | absent | matrice cible × commandes |
 | PLUG-014 | `mDefaultTooltips` | Infobulles titres, commentaires et numéros biologiques | partiel | contenu et modificateur Shift |
 | PLUG-015 | `sPrint` | Aperçu, papier, orientation, marges et impression | absent | PDF/impression sur trois OS |

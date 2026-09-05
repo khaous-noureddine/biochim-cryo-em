@@ -6,7 +6,8 @@ Dernière mise à jour : 5 septembre 2026.
 
 - application React et TypeScript construite avec Vite ;
 - modèle de document `.atlas` version 1 ;
-- import FASTA et import partiel des projets historiques `.aline` ;
+- imports FASTA, ClustalW ALN, MSF, BLC et PIR, ainsi qu’un import partiel des
+  projets historiques `.aline` ;
 - sauvegarde et réouverture `.atlas` ;
 - export FASTA ;
 - commandes métier séparées de l’interface ;
@@ -43,7 +44,9 @@ Dernière mise à jour : 5 septembre 2026.
 - la sélection ne couvre qu’une cellule, sans région, ligne ou colonne ;
 - navigation clavier, copier-coller et modes insertion/remplacement incomplets ;
 - gestion des séquences non exposée dans l’interface ;
-- formats ALN, MSF, BLC, PIR, PDB et formats d’export correspondants absents ;
+- les nouveaux imports ALN, MSF, BLC et PIR sont testés sur des fixtures
+  minimales, mais doivent encore être confrontés à un corpus historique ;
+- formats PDB/mmCIF et formats d’export ALN, MSF et PIR absents ;
 - consensus, motifs, propriétés protéiques, graphiques et structures
   secondaires automatiques absents ;
 - intégrations MAFFT/MUSCLE, DSSP, PyMOL, UniProt/NCBI et services distants
