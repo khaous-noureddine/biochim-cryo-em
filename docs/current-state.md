@@ -25,7 +25,10 @@ Dernière mise à jour : 5 septembre 2026.
 - outils Cylinder et Spring avec choix de couleur ;
 - placement des structures par une case de départ et une case de fin sur la
   deuxième ligne située au-dessus des séquences ;
-- persistance des cylindres et ressorts dans `.atlas`.
+- persistance des cylindres et ressorts dans `.atlas` ;
+- nettoyage undo/redo des colonnes entièrement composées de gaps ;
+- suppression des séquences dupliquées et, en option, des fragments contenus
+  dans une séquence précédente.
 
 ## Vérification actuelle
 

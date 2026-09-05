@@ -80,14 +80,14 @@ colonne de vérification.
 | PLUG-023 | `tAlignment` | Contraintes d'alignement depuis fichier | absent | fixture de contraintes |
 | PLUG-024 | `tAlignment` | Réalignement d'une ligne | absent | conservation de la relation aux autres lignes |
 | PLUG-025 | `tAlignment` | Alignement régional et structurel LSQMAN | absent | code historique incomplet : décision requise |
-| PLUG-026 | `tClearGapCols` | Suppression des colonnes entièrement vides | absent | gaps multiples, annotations, undo |
+| PLUG-026 | `tClearGapCols` | Suppression des colonnes entièrement vides | reproduit | tests gaps multiples, annotations et undo |
 | PLUG-027 | `tCorrMutations` | Mutations corrélées par identité/charge/hydrophobicité | absent | jeux de données et clusters attendus |
 | PLUG-028 | `tFixDbnames` | Nettoyage des noms UniProt/GenBank | absent | table de noms historiques/modernes |
 | PLUG-029 | `tMatchPattern` | Recherche texte, regex, PROSITE et motifs prédéfinis | absent | positions, gaps, navigation et marquage |
 | PLUG-030 | `tPymolColors` | Export de script PyMOL depuis les couleurs | absent | script exécuté sur fixture PDB |
 | PLUG-031 | `tRunChainsaw` | Modèle MR depuis alignement et PDB | absent | remplacement maintenu à décider |
 | PLUG-032 | `tUnattachAll` | Attacher/détacher toutes les lignes | absent | clusters sans cycles |
-| PLUG-033 | `tUndupe` | Supprimer doublons et fragments | absent | jeux de séquences comparatifs |
+| PLUG-033 | `tUndupe` | Supprimer doublons et fragments | reproduit | tests doublons espacés par gaps et fragments |
 | PLUG-034 | `mKeycodeTest.inactive` | Diagnostic de codes clavier, désactivé | absent | écart accepté probable |
 
 ## Totaux initiaux

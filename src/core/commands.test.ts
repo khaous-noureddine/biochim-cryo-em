@@ -80,4 +80,54 @@ describe("applyAlignmentCommand", () => {
 
     expect(result).toBe(original);
   });
+
+  it("removes all-gap columns and remaps graphical annotations", () => {
+    const original = document();
+    original.sequences[1].residues = "AC-D";
+    original.annotations = [
+      { id: "helix", kind: "helix", start: 1, end: 3, lane: 0, color: "#ef4444" },
+      { id: "removed", kind: "coil", start: 2, end: 2, lane: 0, color: "#3b82f6" },
+    ];
+    const result = applyAlignmentCommand(original, { type: "clear-all-gap-columns" });
+
+    expect(result.sequences.map((sequence) => sequence.residues)).toEqual(["ACD", "ACD"]);
+    expect(result.annotations).toEqual([
+      { id: "helix", kind: "helix", start: 1, end: 2, lane: 0, color: "#ef4444" },
+    ]);
+    expect(original.sequences[0].residues).toBe("AC-D");
+  });
+
+  it("removes duplicate ungapped sequences while keeping the first row", () => {
+    const original = document();
+    original.sequences.push({ id: "seq-c", name: "C", description: "", residues: "A-C-D", numberingStart: 1 });
+    original.sequences = [
+      { ...original.sequences[0], residues: "AC-D-" },
+      { ...original.sequences[1], residues: "A-CD-" },
+      original.sequences[2],
+    ];
+    const result = applyAlignmentCommand(original, { type: "remove-duplicate-sequences", includeFragments: false });
+    expect(result.sequences.map((sequence) => sequence.id)).toEqual(["seq-a"]);
+  });
+
+  it("optionally removes sequences contained inside an earlier sequence", () => {
+    const original = document();
+    original.sequences = [
+      { ...original.sequences[0], residues: "ACDEFG" },
+      { ...original.sequences[1], residues: "--CDE-" },
+    ];
+    const duplicatesOnly = applyAlignmentCommand(original, { type: "remove-duplicate-sequences", includeFragments: false });
+    const withFragments = applyAlignmentCommand(original, { type: "remove-duplicate-sequences", includeFragments: true });
+    expect(duplicatesOnly.sequences).toHaveLength(2);
+    expect(withFragments.sequences.map((sequence) => sequence.id)).toEqual(["seq-a"]);
+  });
+
+  it("removes a fragment even when it precedes the complete sequence", () => {
+    const original = document();
+    original.sequences = [
+      { ...original.sequences[0], residues: "--CDE-" },
+      { ...original.sequences[1], residues: "ACDEFG" },
+    ];
+    const result = applyAlignmentCommand(original, { type: "remove-duplicate-sequences", includeFragments: true });
+    expect(result.sequences.map((sequence) => sequence.id)).toEqual(["seq-b"]);
+  });
 });

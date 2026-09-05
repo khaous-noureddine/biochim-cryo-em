@@ -7,6 +7,8 @@ export type AlignmentCommand =
   | { type: "delete-cell"; position: CellPosition }
   | { type: "rename-sequence"; sequenceId: string; name: string }
   | { type: "move-sequence"; sequenceId: string; toIndex: number }
+  | { type: "clear-all-gap-columns" }
+  | { type: "remove-duplicate-sequences"; includeFragments: boolean }
   | { type: "add-annotation"; annotation: AlignmentAnnotation }
   | { type: "delete-annotation"; annotationId: string };
 
@@ -105,6 +107,47 @@ export function applyAlignmentCommand(
       const [sequence] = sequences.splice(fromIndex, 1);
       sequences.splice(toIndex, 0, sequence);
       return { ...document, sequences };
+    }
+
+    case "clear-all-gap-columns": {
+      const width = document.sequences[0]?.residues.length ?? 0;
+      const keptColumns = Array.from({ length: width }, (_, column) => column)
+        .filter((column) => document.sequences.some((sequence) => sequence.residues[column] !== "-"));
+      if (keptColumns.length === width) return document;
+      const newIndex = new Map(keptColumns.map((column, index) => [column, index]));
+      const annotations = document.annotations.flatMap((annotation) => {
+        const covered = keptColumns.filter((column) => column >= annotation.start && column <= annotation.end);
+        if (!covered.length) return [];
+        return [{
+          ...annotation,
+          start: newIndex.get(covered[0])!,
+          end: newIndex.get(covered.at(-1)!)!,
+        }];
+      });
+      return {
+        ...document,
+        sequences: document.sequences.map((sequence) => ({
+          ...sequence,
+          residues: keptColumns.map((column) => sequence.residues[column]).join(""),
+        })),
+        annotations,
+      };
+    }
+
+    case "remove-duplicate-sequences": {
+      const rawSequences = document.sequences.map((sequence) => sequence.residues.replace(/-/g, ""));
+      const firstOccurrence = new Map<string, number>();
+      rawSequences.forEach((raw, index) => { if (raw && !firstOccurrence.has(raw)) firstOccurrence.set(raw, index); });
+      const survivors = document.sequences.filter((_, index) => {
+        const raw = rawSequences[index];
+        if (!raw) return true;
+        if (firstOccurrence.get(raw) !== index) return false;
+        return !command.includeFragments || !rawSequences.some(
+          (candidate, candidateIndex) => candidateIndex !== index && candidate.length > raw.length && candidate.includes(raw),
+        );
+      });
+      if (survivors.length === document.sequences.length) return document;
+      return { ...document, sequences: survivors };
     }
 
     case "add-annotation": {

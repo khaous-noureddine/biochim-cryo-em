@@ -74,4 +74,24 @@ describe("documentHistoryReducer", () => {
     expect(beforeSave.dirty).toBe(true);
     expect(backToSave.dirty).toBe(false);
   });
+
+  it("undoes and redoes an alignment-wide cleanup as one operation", () => {
+    const withGapColumn: AlignmentDocument = {
+      ...document,
+      sequences: [
+        { ...document.sequences[0], residues: "A-C" },
+        { id: "seq-b", name: "B", description: "", residues: "A-G", numberingStart: 1 },
+      ],
+    };
+    const cleaned = documentHistoryReducer(createDocumentHistory(withGapColumn), {
+      type: "execute",
+      command: { type: "clear-all-gap-columns" },
+    });
+    const undone = documentHistoryReducer(cleaned, { type: "undo" });
+    const redone = documentHistoryReducer(undone, { type: "redo" });
+
+    expect(cleaned.present.sequences.map((sequence) => sequence.residues)).toEqual(["AC", "AG"]);
+    expect(undone.present).toBe(withGapColumn);
+    expect(redone.present).toBe(cleaned.present);
+  });
 });

@@ -346,6 +346,20 @@ export function App() {
               </button>
             </div>
           </details>
+          <details className="top-menu">
+            <summary>Tools</summary>
+            <div className="top-menu-popover" role="menu" aria-label="Alignment tools">
+              <button role="menuitem" onClick={() => dispatch({ type: "execute", command: { type: "clear-all-gap-columns" } })}>
+                <span>Clear all-gap columns</span><small>Remove columns containing only gaps</small>
+              </button>
+              <button role="menuitem" onClick={() => dispatch({ type: "execute", command: { type: "remove-duplicate-sequences", includeFragments: false } })}>
+                <span>Remove duplicate sequences</span><small>Keep the first identical ungapped sequence</small>
+              </button>
+              <button role="menuitem" onClick={() => dispatch({ type: "execute", command: { type: "remove-duplicate-sequences", includeFragments: true } })}>
+                <span>Remove dupes and fragments</span><small>Also remove sequences contained in earlier rows</small>
+              </button>
+            </div>
+          </details>
           <button className="primary" onClick={() => inputRef.current?.click()}>Open file</button>
           <input ref={inputRef} type="file" accept=".atlas,.aline,.fa,.fasta,.fas,.faa,.seq,.txt,.aln,.msf,.blc,.pir" hidden onChange={openFile} />
           <button onClick={saveAtlasProject}>Save .atlas</button>

@@ -50,6 +50,14 @@ Perl/Tk. Les opérations essentielles appartiennent au cœur moderne. Les outils
 externes et fonctions spécialisées utilisent des modules avec des contrats
 stables, pouvant évoluer vers un système d’extensions contrôlé.
 
+## D-008 — Consensus comme ligne d’annotation riche
+
+**Décision :** ne pas stocker le consensus ALINE comme une protéine ordinaire.
+Il peut contenir des minuscules, des symboles de groupes et des points. Il sera
+introduit avec le modèle Atlas version 2 comme ligne d’annotation attachable,
+afin de préserver sa sémantique et son export sans contaminer les analyses qui
+doivent uniquement utiliser les séquences protéiques.
+
 ## Décisions encore ouvertes
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;
