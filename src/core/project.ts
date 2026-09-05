@@ -7,6 +7,7 @@ import {
   createAlignmentDocument,
   createId,
   isAnnotationKind,
+  isPointAnnotationKind,
   Sequence,
 } from "./model";
 
@@ -81,6 +82,7 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     const start = annotation.start as number;
     const end = annotation.end as number;
     if (start < 0 || end < start || end >= alignmentWidth) throw new Error(`Étendue de l’annotation ${index + 1} invalide.`);
+    if (isPointAnnotationKind(annotation.kind) && start !== end) throw new Error(`Le symbole ${index + 1} doit occuper une seule position.`);
     if (annotation.lane !== 0 && annotation.lane !== 1) throw new Error(`Piste de l’annotation ${index + 1} invalide.`);
     const color = requireString(annotation.color, `Couleur de l’annotation ${index + 1}`);
     if (!/^#[0-9a-f]{6}$/i.test(color)) throw new Error(`Couleur de l’annotation ${index + 1} invalide.`);

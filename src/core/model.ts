@@ -9,6 +9,23 @@ export type Sequence = {
   numberingStart: number;
 };
 
+export const POINT_ANNOTATION_KINDS = [
+  "triangle-up",
+  "triangle-down",
+  "triangle-up-small",
+  "triangle-down-small",
+  "circle",
+  "star",
+  "hollow-star",
+  "square",
+  "diamond",
+  "arrow-up",
+  "arrow-down",
+  "arrow-up-right",
+  "arrow-down-right",
+  "right-bar",
+] as const;
+
 export const ANNOTATION_KINDS = [
   "helix",
   "helix-alt",
@@ -20,11 +37,18 @@ export const ANNOTATION_KINDS = [
   "connector-up",
   "connector-down",
   "underline",
+  ...POINT_ANNOTATION_KINDS,
 ] as const;
 export type AnnotationKind = typeof ANNOTATION_KINDS[number];
 
 export function isAnnotationKind(value: unknown): value is AnnotationKind {
   return typeof value === "string" && (ANNOTATION_KINDS as readonly string[]).includes(value);
+}
+
+export type PointAnnotationKind = typeof POINT_ANNOTATION_KINDS[number];
+
+export function isPointAnnotationKind(value: unknown): value is PointAnnotationKind {
+  return typeof value === "string" && (POINT_ANNOTATION_KINDS as readonly string[]).includes(value);
 }
 
 export type AlignmentAnnotation = {

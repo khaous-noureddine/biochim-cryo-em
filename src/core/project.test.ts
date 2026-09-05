@@ -15,6 +15,7 @@ describe("Atlas project files", () => {
     document.annotations.push({ id: "connect-up-1", kind: "connector-up", start: 0, end: 1, lane: 0, color: "#111111" });
     document.annotations.push({ id: "connect-down-1", kind: "connector-down", start: 1, end: 2, lane: 1, color: "#111111" });
     document.annotations.push({ id: "underline-1", kind: "underline", start: 0, end: 2, lane: 1, color: "#ef4444" });
+    document.annotations.push({ id: "star-1", kind: "star", start: 1, end: 1, lane: 1, color: "#facc15" });
     expect(parseAtlasProject(serializeAtlasProject(document))).toEqual(document);
   });
 
@@ -28,6 +29,13 @@ describe("Atlas project files", () => {
   it("rejects an unsupported Atlas version", () => {
     expect(() => parseAtlasProject('{"format":"atlas-alignment","version":99,"sequences":[]}'))
       .toThrow("Version .atlas non prise en charge");
+  });
+
+  it("rejects point symbols spanning several columns", () => {
+    const document = parseFasta(">alpha\nACD", "Example");
+    const invalid = JSON.parse(serializeAtlasProject(document));
+    invalid.annotations = [{ id: "star", kind: "star", start: 0, end: 1, lane: 0, color: "#facc15" }];
+    expect(() => parseAtlasProject(JSON.stringify(invalid))).toThrow("doit occuper une seule position");
   });
 });
 

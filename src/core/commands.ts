@@ -1,5 +1,5 @@
 import { normalizeAlignment } from "./alignment";
-import { AlignmentAnnotation, AlignmentDocument, CellPosition, CellRange, isAnnotationKind, Sequence } from "./model";
+import { AlignmentAnnotation, AlignmentDocument, CellPosition, CellRange, isAnnotationKind, isPointAnnotationKind, Sequence } from "./model";
 
 export type AlignmentCommand =
   | { type: "replace-residue"; position: CellPosition; residue: string }
@@ -62,7 +62,7 @@ function remapAnnotations(
 
 function validAnnotation(document: AlignmentDocument, annotation: AlignmentAnnotation): boolean {
   const width = document.sequences[0]?.residues.length ?? 0;
-  return isAnnotationKind(annotation.kind) &&
+  return isAnnotationKind(annotation.kind) && (!isPointAnnotationKind(annotation.kind) || annotation.start === annotation.end) &&
     Number.isInteger(annotation.start) && Number.isInteger(annotation.end) &&
     annotation.start >= 0 && annotation.end >= annotation.start && annotation.end < width &&
     (annotation.lane === 0 || annotation.lane === 1) && /^#[0-9a-f]{6}$/i.test(annotation.color);

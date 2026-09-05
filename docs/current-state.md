@@ -32,6 +32,8 @@ Dernière mise à jour : 6 septembre 2026.
   Dashed line, Connect up, Connect down et Underline avec choix de couleur ;
 - placement des structures par une case de départ et une case de fin sur la
   deuxième ligne située au-dessus des séquences ;
+- sélecteur des 14 symboles ponctuels historiques (triangles, cercle, étoiles,
+  carré, losange, flèches et barre), placés en un clic ;
 - persistance des cylindres, flèches de brin beta, ressorts et traits dans
   `.atlas` ;
 - sélection de toute structure existante, modification précise de ses positions
@@ -42,7 +44,7 @@ Dernière mise à jour : 6 septembre 2026.
 
 ## Vérification actuelle
 
-- 57 tests Vitest couvrent le modèle, les commandes, l’historique, les
+- 59 tests Vitest couvrent le modèle, les commandes, l’historique, les
   colorations et le format de projet ;
 - le build TypeScript/Vite passe ;
 - les principaux changements d’interface ont été contrôlés dans le navigateur.
@@ -53,8 +55,8 @@ Dernière mise à jour : 6 septembre 2026.
   encore les objets graphiques historiques ;
 - les objets linéaires `helix`, `helix-alt`, `strand`, `strand-alt`, `coil`,
   `line`, `dashed-line`, `connector-up`, `connector-down` et `underline`
-  existent dans le modèle Atlas ; les glyphes, régions et textes restent à
-  intégrer ;
+  existent dans le modèle Atlas ; les 14 glyphes ponctuels existent également,
+  tandis que les régions et textes restent à intégrer ;
 - les annotations existantes ne peuvent pas encore être déplacées ou
   redimensionnées directement par glisser-déposer, ni changer de calque ;
 - la sélection rectangulaire de cellules existe, mais les sélections complètes

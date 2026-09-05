@@ -95,6 +95,14 @@ describe("applyAlignmentCommand", () => {
     expect(applyAlignmentCommand(original, { type: "add-annotation", annotation }).annotations).toEqual([annotation]);
   });
 
+  it("accepts one-cell symbols and rejects ranged symbols", () => {
+    const original = document();
+    const symbol = { id: "star-1", kind: "star" as const, start: 2, end: 2, lane: 0 as const, color: "#facc15" };
+    const updated = applyAlignmentCommand(original, { type: "add-annotation", annotation: symbol });
+    expect(updated.annotations).toEqual([symbol]);
+    expect(applyAlignmentCommand(updated, { type: "update-annotation", annotation: { ...symbol, end: 3 } })).toBe(updated);
+  });
+
   it("rejects annotations outside the alignment", () => {
     const original = document();
     const result = applyAlignmentCommand(original, {

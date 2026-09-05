@@ -7,7 +7,7 @@ import {
   exportPir,
 } from "./core/alignment";
 import { documentHistoryReducer, createDocumentHistory } from "./core/history";
-import { AnnotationKind, CellPosition, createId } from "./core/model";
+import { AnnotationKind, CellPosition, createId, isPointAnnotationKind, POINT_ANNOTATION_KINDS, PointAnnotationKind } from "./core/model";
 import { moveCellSelection, NavigationDirection, normalizeCellRange } from "./core/navigation";
 import { openAlignmentFile, serializeAtlasProject } from "./core/project";
 import {
@@ -24,6 +24,23 @@ const residueGroups: Record<string, string> = {
   K: "basic", R: "basic", H: "basic",
   S: "polar", T: "polar", N: "polar", Q: "polar", C: "polar",
   G: "special", P: "special",
+};
+
+const POINT_SYMBOLS: Record<PointAnnotationKind, { label: string; glyph: string }> = {
+  "triangle-up": { label: "Triangle up", glyph: "▲" },
+  "triangle-down": { label: "Triangle down", glyph: "▼" },
+  "triangle-up-small": { label: "Small triangle up", glyph: "▲" },
+  "triangle-down-small": { label: "Small triangle down", glyph: "▼" },
+  circle: { label: "Circle", glyph: "●" },
+  star: { label: "Star", glyph: "★" },
+  "hollow-star": { label: "Hollow star", glyph: "☆" },
+  square: { label: "Square", glyph: "■" },
+  diamond: { label: "Diamond", glyph: "◆" },
+  "arrow-up": { label: "Arrow up", glyph: "↑" },
+  "arrow-down": { label: "Arrow down", glyph: "↓" },
+  "arrow-up-right": { label: "Right arrow up", glyph: "↑" },
+  "arrow-down-right": { label: "Right arrow down", glyph: "↓" },
+  "right-bar": { label: "Right bar", glyph: "▌" },
 };
 
 const MIN_SIDEBAR_WIDTH = 150;
@@ -116,6 +133,13 @@ function AnnotationShape({
   }
   if (["line", "dashed-line", "connector-up", "connector-down", "underline"].includes(kind)) {
     return <button type="button" aria-label={`Select ${kind} annotation`} className={`annotation-shape ${kind}-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick} />;
+  }
+  if (isPointAnnotationKind(kind)) {
+    return (
+      <button type="button" aria-label={`Select ${POINT_SYMBOLS[kind].label} annotation`} className={`annotation-shape point-shape ${kind}-shape ${preview ? "preview" : ""} ${selected ? "selected" : ""}`} style={style} onClick={handleClick}>
+        {POINT_SYMBOLS[kind].glyph}
+      </button>
+    );
   }
   const cycles = Math.max(1, Math.round(length / 2));
   const points = Array.from({ length: 61 }, (_, index) => {
@@ -400,6 +424,18 @@ export function App() {
     if (!annotationTool || width === 0) return;
     event.preventDefault();
     const column = annotationColumn(event, blockStart, blockWidth);
+    if (isPointAnnotationKind(annotationTool)) {
+      const id = createId();
+      dispatch({
+        type: "execute",
+        command: {
+          type: "add-annotation",
+          annotation: { id, kind: annotationTool, start: column, end: column, lane: 0, color: annotationColor },
+        },
+      });
+      setSelectedAnnotationId(id);
+      return;
+    }
     if (annotationStart === null) {
       setAnnotationStart(column);
       return;
@@ -560,13 +596,22 @@ export function App() {
                 <span>Underline</span>
               </button>
             </div>
+            <label className="symbol-picker">
+              <span>Point symbol</span>
+              <select value={isPointAnnotationKind(annotationTool) ? annotationTool : ""} onChange={(event) => {
+                if (isPointAnnotationKind(event.target.value)) selectAnnotationTool(event.target.value);
+              }}>
+                <option value="">Choose…</option>
+                {POINT_ANNOTATION_KINDS.map((kind) => <option value={kind} key={kind}>{POINT_SYMBOLS[kind].glyph} {POINT_SYMBOLS[kind].label}</option>)}
+              </select>
+            </label>
             <label className="annotation-color">
               <span>Shape color</span>
               <input type="color" value={annotationColor} onChange={(event) => setAnnotationColor(event.target.value)} />
             </label>
             <p>{annotationTool
               ? annotationStart === null
-                ? "Click the start cell on the second line."
+                ? isPointAnnotationKind(annotationTool) ? "Click one cell on the second line." : "Click the start cell on the second line."
                 : `Start: ${annotationStart + 1}. Click the end cell.`
               : "Choose a shape, then select its start and end above the alignment."}</p>
           </div>
