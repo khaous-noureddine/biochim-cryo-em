@@ -10,6 +10,7 @@ const document: AlignmentDocument = {
   annotations: [],
   regions: [],
   textAnnotations: [],
+  cellStyles: [],
   sequences: [
     { id: "a", name: "A", description: "", residues: "ACD", numberingStart: 1 },
     { id: "b", name: "B", description: "", residues: "A--", numberingStart: 1 },

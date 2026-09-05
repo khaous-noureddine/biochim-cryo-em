@@ -37,6 +37,12 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .top-menu-popover button span { color: #e1ebe8; font-size: 12px; font-weight: 600; }
 .top-menu-popover button small { color: var(--muted); font-size: 9px; }
 .menu-separator { height: 1px; margin: 5px 7px; background: var(--line); }
+.manual-color-controls { display: grid; gap: 7px; padding: 8px 11px; }
+.manual-color-controls > label { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 10px; }
+.manual-color-controls input { width: 36px; height: 25px; padding: 2px; border: 1px solid var(--line); border-radius: 5px; background: #14231f; }
+.manual-color-controls > div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.manual-color-controls button { padding: 6px 4px; font-size: 9px; }
+.manual-color-controls small { color: #687a74; font-size: 9px; }
 
 .workspace { display: grid; grid-template-columns: var(--sidebar-width, 258px) 7px minmax(0, 1fr); min-height: calc(100vh - 68px); }
 .sidebar { min-width: 0; padding: 30px 22px; overflow-x: hidden; overflow-y: auto; background: rgba(11, 21, 18, .68); }

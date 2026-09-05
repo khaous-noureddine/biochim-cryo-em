@@ -1,5 +1,5 @@
 import { normalizeAlignment } from "./alignment";
-import { AlignmentAnnotation, AlignmentDocument, AlignmentRegion, CellPosition, CellRange, isAnnotationKind, isPointAnnotationKind, Sequence, TextAnnotation } from "./model";
+import { AlignmentAnnotation, AlignmentDocument, AlignmentRegion, CellPosition, CellRange, CellStyle, isAnnotationKind, isPointAnnotationKind, Sequence, TextAnnotation } from "./model";
 
 export type AlignmentCommand =
   | { type: "replace-residue"; position: CellPosition; residue: string }
@@ -23,7 +23,9 @@ export type AlignmentCommand =
   | { type: "add-text-annotation"; annotation: TextAnnotation }
   | { type: "update-text-annotation"; annotation: TextAnnotation }
   | { type: "delete-text-annotation"; annotationId: string }
-  | { type: "change-object-layer"; objectId: string; direction: "front" | "forward" | "backward" | "back" };
+  | { type: "change-object-layer"; objectId: string; direction: "front" | "forward" | "backward" | "back" }
+  | { type: "set-cell-style"; range: CellRange; foreground?: string; background?: string }
+  | { type: "clear-cell-style"; range: CellRange };
 
 const EDITABLE_RESIDUE = /^[A-Z*?.-]$/;
 
@@ -92,6 +94,22 @@ function remapTextAnnotations(annotations: TextAnnotation[], keptColumns: number
   return annotations.flatMap((annotation) => {
     const column = newIndex.get(annotation.column);
     return column === undefined ? [] : [{ ...annotation, column }];
+  });
+}
+
+function remapCellStyles(styles: CellStyle[], keptColumns: number[]): CellStyle[] {
+  const newIndex = new Map(keptColumns.map((column, index) => [column, index]));
+  return styles.flatMap((style) => {
+    const column = newIndex.get(style.column);
+    return column === undefined ? [] : [{ ...style, column }];
+  });
+}
+
+function shiftCellStyles(styles: CellStyle[], sequenceId: string, column: number, direction: "insert" | "delete"): CellStyle[] {
+  return styles.flatMap((style) => {
+    if (style.sequenceId !== sequenceId || style.column < column) return [style];
+    if (direction === "delete" && style.column === column) return [];
+    return [{ ...style, column: style.column + (direction === "insert" ? 1 : -1) }];
   });
 }
 
@@ -184,7 +202,7 @@ export function applyAlignmentCommand(
         };
       });
       if (updated === document) return document;
-      return { ...updated, sequences: normalizeAlignment(updated.sequences) };
+      return { ...updated, sequences: normalizeAlignment(updated.sequences), cellStyles: shiftCellStyles(document.cellStyles, command.position.sequenceId, command.position.column, "insert") };
     }
 
     case "delete-cell": {
@@ -198,7 +216,7 @@ export function applyAlignmentCommand(
         };
       });
       if (updated === document) return document;
-      return { ...updated, sequences: normalizeAlignment(updated.sequences) };
+      return { ...updated, sequences: normalizeAlignment(updated.sequences), cellStyles: shiftCellStyles(document.cellStyles, command.position.sequenceId, command.position.column, "delete") };
     }
 
     case "clear-region": {
@@ -224,12 +242,20 @@ export function applyAlignmentCommand(
         ...sequence,
         residues: sequence.residues.slice(0, command.range.start) + sequence.residues.slice(command.range.end + 1),
       } : sequence));
-      if (!deletingAllRows) return { ...document, sequences };
+      if (!deletingAllRows) {
+        const removed = command.range.end - command.range.start + 1;
+        const cellStyles = document.cellStyles.flatMap((style) => {
+          if (!selected.has(style.sequenceId) || style.column < command.range.start) return [style];
+          if (style.column <= command.range.end) return [];
+          return [{ ...style, column: style.column - removed }];
+        });
+        return { ...document, sequences, cellStyles };
+      }
       const oldWidth = document.sequences[0].residues.length;
       const keptColumns = Array.from({ length: oldWidth }, (_, column) => column)
         .filter((column) => column < command.range.start || column > command.range.end);
       if (!keptColumns.length) sequences = sequences.map((sequence) => ({ ...sequence, residues: "-" }));
-      return { ...document, sequences, annotations: remapAnnotations(document.annotations, keptColumns), regions: remapRegions(document.regions, keptColumns), textAnnotations: remapTextAnnotations(document.textAnnotations, keptColumns) };
+      return { ...document, sequences, annotations: remapAnnotations(document.annotations, keptColumns), regions: remapRegions(document.regions, keptColumns), textAnnotations: remapTextAnnotations(document.textAnnotations, keptColumns), cellStyles: remapCellStyles(document.cellStyles, keptColumns) };
     }
 
     case "rename-sequence": {
@@ -266,7 +292,7 @@ export function applyAlignmentCommand(
     case "delete-sequence": {
       if (document.sequences.length <= 1 || !document.sequences.some((sequence) => sequence.id === command.sequenceId)) return document;
       const sequences = document.sequences.filter((sequence) => sequence.id !== command.sequenceId);
-      return { ...document, sequences, regions: keepRegionSequences(document.regions, new Set(sequences.map((sequence) => sequence.id))) };
+      return { ...document, sequences, regions: keepRegionSequences(document.regions, new Set(sequences.map((sequence) => sequence.id))), cellStyles: document.cellStyles.filter((style) => style.sequenceId !== command.sequenceId) };
     }
 
     case "move-sequence": {
@@ -299,6 +325,7 @@ export function applyAlignmentCommand(
         annotations: remapAnnotations(document.annotations, keptColumns),
         regions: remapRegions(document.regions, keptColumns),
         textAnnotations: remapTextAnnotations(document.textAnnotations, keptColumns),
+        cellStyles: remapCellStyles(document.cellStyles, keptColumns),
       };
     }
 
@@ -315,7 +342,8 @@ export function applyAlignmentCommand(
         );
       });
       if (survivors.length === document.sequences.length) return document;
-      return { ...document, sequences: survivors, regions: keepRegionSequences(document.regions, new Set(survivors.map((sequence) => sequence.id))) };
+      const survivingIds = new Set(survivors.map((sequence) => sequence.id));
+      return { ...document, sequences: survivors, regions: keepRegionSequences(document.regions, survivingIds), cellStyles: document.cellStyles.filter((style) => survivingIds.has(style.sequenceId)) };
     }
 
     case "add-annotation": {
@@ -375,5 +403,25 @@ export function applyAlignmentCommand(
     }
     case "change-object-layer":
       return changeObjectLayer(document, command.objectId, command.direction);
+    case "set-cell-style": {
+      if (!validRange(document, command.range)) return document;
+      const { foreground, background } = command;
+      if ((foreground === undefined && background === undefined) || (foreground !== undefined && !/^#[0-9a-f]{6}$/i.test(foreground)) || (background !== undefined && !/^#[0-9a-f]{6}$/i.test(background))) return document;
+      const styles = new Map(document.cellStyles.map((style) => [`${style.sequenceId}:${style.column}`, style]));
+      for (const sequenceId of command.range.sequenceIds) {
+        for (let column = command.range.start; column <= command.range.end; column += 1) {
+          const key = `${sequenceId}:${column}`;
+          styles.set(key, { ...styles.get(key), sequenceId, column, ...(foreground === undefined ? {} : { foreground }), ...(background === undefined ? {} : { background }) });
+        }
+      }
+      const cellStyles = [...styles.values()];
+      return JSON.stringify(cellStyles) === JSON.stringify(document.cellStyles) ? document : { ...document, cellStyles };
+    }
+    case "clear-cell-style": {
+      if (!validRange(document, command.range)) return document;
+      const selected = new Set(command.range.sequenceIds);
+      const cellStyles = document.cellStyles.filter((style) => !selected.has(style.sequenceId) || style.column < command.range.start || style.column > command.range.end);
+      return cellStyles.length === document.cellStyles.length ? document : { ...document, cellStyles };
+    }
   }
 }

@@ -3,6 +3,7 @@ import {
   AlignmentAnnotation,
   AlignmentDocument,
   AlignmentRegion,
+  CellStyle,
   ATLAS_DOCUMENT_FORMAT,
   ATLAS_DOCUMENT_VERSION,
   createAlignmentDocument,
@@ -147,6 +148,23 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     const zIndex = optionalZIndex(annotation.zIndex, `Calque du texte ${index + 1}`);
     return { id, kind: annotation.kind, column: annotation.column as number, lane: annotation.lane, text, color, outlineColor, outlineWidth: annotation.outlineWidth as number, fontFamily, fontSize: annotation.fontSize as number, fontWeight: annotation.fontWeight, italic: annotation.italic, align: annotation.align, ...(zIndex === undefined ? {} : { zIndex }) };
   });
+  const rawCellStyles = project.cellStyles ?? [];
+  if (!Array.isArray(rawCellStyles)) throw new Error("La liste des couleurs manuelles du projet .atlas est invalide.");
+  const styleKeys = new Set<string>();
+  const cellStyles: CellStyle[] = rawCellStyles.map((item, index) => {
+    if (!item || typeof item !== "object") throw new Error(`Style de cellule ${index + 1} invalide.`);
+    const style = item as Record<string, unknown>;
+    const sequenceId = requireString(style.sequenceId, `Séquence du style ${index + 1}`);
+    if (!ids.has(sequenceId) || !Number.isInteger(style.column) || (style.column as number) < 0 || (style.column as number) >= alignmentWidth) throw new Error(`Position du style ${index + 1} invalide.`);
+    const column = style.column as number;
+    const key = `${sequenceId}:${column}`;
+    if (styleKeys.has(key)) throw new Error(`Style de cellule dupliqué : ${key}.`);
+    styleKeys.add(key);
+    const foreground = style.foreground;
+    const background = style.background;
+    if ((foreground === undefined && background === undefined) || (foreground !== undefined && (typeof foreground !== "string" || !/^#[0-9a-f]{6}$/i.test(foreground))) || (background !== undefined && (typeof background !== "string" || !/^#[0-9a-f]{6}$/i.test(background)))) throw new Error(`Couleur du style ${index + 1} invalide.`);
+    return { sequenceId, column, ...(foreground === undefined ? {} : { foreground }), ...(background === undefined ? {} : { background }) };
+  });
 
   return {
     format: ATLAS_DOCUMENT_FORMAT,
@@ -157,6 +175,7 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     annotations,
     regions,
     textAnnotations,
+    cellStyles,
   };
 }
 

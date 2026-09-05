@@ -18,6 +18,7 @@ describe("Atlas project files", () => {
     document.annotations.push({ id: "star-1", kind: "star", start: 1, end: 1, lane: 1, color: "#facc15", zIndex: 1 });
     document.regions.push({ id: "box-1", kind: "box", sequenceIds: document.sequences.map((sequence) => sequence.id), start: 0, end: 1, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2, zIndex: 2 });
     document.textAnnotations.push({ id: "text-1", kind: "outline-text", column: 1, lane: 0, text: "active site", color: "#ffffff", outlineColor: "#111111", outlineWidth: 2, fontFamily: "Arial", fontSize: 14, fontWeight: "bold", italic: false, align: "center", zIndex: 3 });
+    document.cellStyles.push({ sequenceId: document.sequences[0].id, column: 1, foreground: "#ffffff", background: "#2563eb" });
     expect(parseAtlasProject(serializeAtlasProject(document))).toEqual(document);
   });
 
@@ -27,7 +28,8 @@ describe("Atlas project files", () => {
     delete legacy.annotations;
     delete legacy.regions;
     delete legacy.textAnnotations;
-    expect(parseAtlasProject(JSON.stringify(legacy))).toMatchObject({ annotations: [], regions: [], textAnnotations: [] });
+    delete legacy.cellStyles;
+    expect(parseAtlasProject(JSON.stringify(legacy))).toMatchObject({ annotations: [], regions: [], textAnnotations: [], cellStyles: [] });
   });
 
   it("rejects an unsupported Atlas version", () => {

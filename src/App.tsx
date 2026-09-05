@@ -208,6 +208,8 @@ export function App() {
   const [similarityDialogOpen, setSimilarityDialogOpen] = useState(false);
   const [sequenceManagerOpen, setSequenceManagerOpen] = useState(false);
   const [colorExclusions, setColorExclusions] = useState<Set<string>>(() => new Set());
+  const [manualForeground, setManualForeground] = useState("#111111");
+  const [manualBackground, setManualBackground] = useState("#facc15");
   const [viewMode, setViewMode] = useState<"modern" | "classic">("classic");
   const [repeatNames, setRepeatNames] = useState(true);
   const [classicWidths, setClassicWidths] = useState({ first: 60, continuation: 70 });
@@ -240,6 +242,7 @@ export function App() {
     [alignment, similarityOptions],
   );
   const alscriptConservation = useMemo(() => calculateAlscriptConservation(alignment), [alignment]);
+  const cellStyleMap = useMemo(() => new Map(alignment.cellStyles.map((style) => [`${style.sequenceId}:${style.column}`, style])), [alignment.cellStyles]);
   const width = alignment.sequences[0]?.residues.length ?? 0;
   const selectedRange = useMemo(
     () => selection && selectionAnchor ? normalizeCellRange(alignment, selectionAnchor, selection) : null,
@@ -475,12 +478,24 @@ export function App() {
   }
 
   function resetSelectedColor() {
-    if (!selection) return;
+    if (!selectedRange) return;
+    dispatch({ type: "execute", command: { type: "clear-cell-style", range: selectedRange } });
     setColorExclusions((current) => {
       const next = new Set(current);
-      for (let column = 0; column < width; column += 1) next.add(`${selection.sequenceId}:${column}`);
+      for (const sequenceId of selectedRange.sequenceIds) for (let column = selectedRange.start; column <= selectedRange.end; column += 1) next.add(`${sequenceId}:${column}`);
       return next;
     });
+    colorsMenuRef.current?.removeAttribute("open");
+  }
+
+  function resetAllColors() {
+    if (width > 0) dispatch({ type: "execute", command: { type: "clear-cell-style", range: { sequenceIds: alignment.sequences.map((sequence) => sequence.id), start: 0, end: width - 1 } } });
+    applyColorScheme("none");
+  }
+
+  function applyManualColors(mode: "foreground" | "background" | "both") {
+    if (!selectedRange) return;
+    dispatch({ type: "execute", command: { type: "set-cell-style", range: selectedRange, ...(mode === "background" ? {} : { foreground: manualForeground }), ...(mode === "foreground" ? {} : { background: manualBackground }) } });
     colorsMenuRef.current?.removeAttribute("open");
   }
 
@@ -584,18 +599,20 @@ export function App() {
     column: number,
     residue: string,
   ): { className: string; style?: React.CSSProperties } {
-    if (scheme === "none" || colorExclusions.has(`${sequenceId}:${column}`)) return { className: "none" };
-    if (scheme === "residue") return { className: `residue ${residueGroups[residue] ?? "unknown"} aa-${residue}` };
-    const strength = scheme === "similarity" ? similarityColors[row]?.[column] : alscriptConservation[column];
-    if (strength === null || strength === undefined) return { className: "none" };
-    const displayStrength = strength >= 0.999 ? 1 : Math.floor(strength * 10) / 10;
-    return {
-      className: scheme,
-      style: {
-        "--strength": displayStrength,
-        "--foreground": displayStrength >= 0.6 ? "#fff" : "#111",
-      } as React.CSSProperties,
-    };
+    let result: { className: string; style?: React.CSSProperties };
+    if (scheme === "none" || colorExclusions.has(`${sequenceId}:${column}`)) result = { className: "none" };
+    else if (scheme === "residue") result = { className: `residue ${residueGroups[residue] ?? "unknown"} aa-${residue}` };
+    else {
+      const strength = scheme === "similarity" ? similarityColors[row]?.[column] : alscriptConservation[column];
+      if (strength === null || strength === undefined) result = { className: "none" };
+      else {
+        const displayStrength = strength >= 0.999 ? 1 : Math.floor(strength * 10) / 10;
+        result = { className: scheme, style: { "--strength": displayStrength, "--foreground": displayStrength >= 0.6 ? "#fff" : "#111" } as React.CSSProperties };
+      }
+    }
+    const manual = cellStyleMap.get(`${sequenceId}:${column}`);
+    if (!manual) return result;
+    return { className: `${result.className} manual-color`, style: { ...result.style, ...(manual.foreground ? { color: manual.foreground } : {}), ...(manual.background ? { backgroundColor: manual.background } : {}) } };
   }
 
   return (
@@ -619,10 +636,17 @@ export function App() {
                 <span>By Residue Type…</span><small>Colour amino-acid families</small>
               </button>
               <div className="menu-separator" />
-              <button role="menuitem" disabled={!selection || scheme === "none"} onClick={resetSelectedColor}>
-                <span>Reset…</span><small>Remove markup from selected sequence</small>
+              <div className="manual-color-controls">
+                <label><span>Text</span><input type="color" value={manualForeground} onChange={(event) => setManualForeground(event.target.value)} /></label>
+                <label><span>Background</span><input type="color" value={manualBackground} onChange={(event) => setManualBackground(event.target.value)} /></label>
+                <div><button type="button" disabled={!selectedRange} onClick={() => applyManualColors("foreground")}>Text</button><button type="button" disabled={!selectedRange} onClick={() => applyManualColors("background")}>Background</button><button type="button" disabled={!selectedRange} onClick={() => applyManualColors("both")}>Both</button></div>
+                <small>Apply custom colours to the selected cells</small>
+              </div>
+              <div className="menu-separator" />
+              <button role="menuitem" disabled={!selectedRange} onClick={resetSelectedColor}>
+                <span>Reset…</span><small>Remove colouring from selected cells</small>
               </button>
-              <button role="menuitem" onClick={() => applyColorScheme("none")}>
+              <button role="menuitem" onClick={resetAllColors}>
                 <span>Reset all</span><small>Return to monochrome</small>
               </button>
             </div>

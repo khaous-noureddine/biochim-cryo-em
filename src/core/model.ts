@@ -92,6 +92,13 @@ export type TextAnnotation = {
   zIndex?: number;
 };
 
+export type CellStyle = {
+  sequenceId: string;
+  column: number;
+  foreground?: string;
+  background?: string;
+};
+
 export type GraphicObject = AlignmentAnnotation | AlignmentRegion | TextAnnotation;
 
 export function nextGraphicZIndex(document: AlignmentDocument): number {
@@ -108,6 +115,7 @@ export type AlignmentDocument = {
   annotations: AlignmentAnnotation[];
   regions: AlignmentRegion[];
   textAnnotations: TextAnnotation[];
+  cellStyles: CellStyle[];
 };
 
 export type CellPosition = {
@@ -138,5 +146,6 @@ export function createAlignmentDocument(
     annotations: [],
     regions: [],
     textAnnotations: [],
+    cellStyles: [],
   };
 }

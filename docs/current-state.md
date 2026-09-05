@@ -28,6 +28,9 @@ Dernière mise à jour : 6 septembre 2026.
 - taille des cellules réglable ;
 - colorations monochrome, par type de résidu, par similarité et
   ALSCRIPT/Calcons ;
+- couleurs manuelles de texte et de fond, appliquées séparément ou ensemble à
+  une sélection rectangulaire, persistées dans `.atlas` et remappées avec les
+  résidus ;
 - outils Cylinder, Helix ribbon, Beta strand, Strand ribbon, Spring, Line,
   Dashed line, Connect up, Connect down et Underline avec choix de couleur ;
 - placement des structures par une case de départ et une case de fin sur la
@@ -52,7 +55,7 @@ Dernière mise à jour : 6 septembre 2026.
 
 ## Vérification actuelle
 
-- 63 tests Vitest couvrent le modèle, les commandes, l’historique, les
+- 64 tests Vitest couvrent le modèle, les commandes, l’historique, les
   colorations et le format de projet ;
 - le build TypeScript/Vite passe ;
 - les principaux changements d’interface ont été contrôlés dans le navigateur.

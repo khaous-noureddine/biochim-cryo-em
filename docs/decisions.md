@@ -83,6 +83,14 @@ de calques numérique. Les objets plus anciens sans `zIndex` restent lisibles ;
 la première opération de réordonnancement consolide l’ensemble en rangs
 contigus, comme `_ConsolidateZ` dans ALINE.
 
+## D-012 — Couleurs manuelles persistantes par cellule
+
+**Décision :** les couleurs manuelles sont des surcharges clairsemées liées à
+`sequenceId + column`, avec texte et fond indépendants. Elles ont priorité sur
+le schéma calculé sans le détruire, suivent les résidus lors des insertions ou
+suppression et sont enregistrées dans `.atlas`. Cette représentation évite de
+dupliquer un style pour chaque cellule non modifiée.
+
 ## Décisions encore ouvertes
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

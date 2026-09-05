@@ -11,6 +11,7 @@ function document(): AlignmentDocument {
     annotations: [],
     regions: [],
     textAnnotations: [],
+    cellStyles: [],
     sequences: [
       { id: "seq-a", name: "A", description: "", residues: "AC-D", numberingStart: 1 },
       { id: "seq-b", name: "B", description: "", residues: "ACED", numberingStart: 1 },
@@ -146,6 +147,24 @@ describe("applyAlignmentCommand", () => {
     const backward = applyAlignmentCommand(front, { type: "change-object-layer", objectId: "shape", direction: "backward" });
     expect(backward.annotations[0].zIndex).toBe(2);
     expect(backward.textAnnotations[0].zIndex).toBe(3);
+  });
+
+  it("applies, merges and clears persistent cell colours on a range", () => {
+    const original = document();
+    const range = { sequenceIds: ["seq-a", "seq-b"], start: 1, end: 2 };
+    const backgrounds = applyAlignmentCommand(original, { type: "set-cell-style", range, background: "#facc15" });
+    expect(backgrounds.cellStyles).toHaveLength(4);
+    const merged = applyAlignmentCommand(backgrounds, { type: "set-cell-style", range: { sequenceIds: ["seq-a"], start: 2, end: 2 }, foreground: "#111111" });
+    expect(merged.cellStyles.find((style) => style.sequenceId === "seq-a" && style.column === 2)).toEqual({ sequenceId: "seq-a", column: 2, background: "#facc15", foreground: "#111111" });
+    const cleared = applyAlignmentCommand(merged, { type: "clear-cell-style", range: { sequenceIds: ["seq-a"], start: 1, end: 2 } });
+    expect(cleared.cellStyles).toEqual([
+      { sequenceId: "seq-b", column: 1, background: "#facc15" },
+      { sequenceId: "seq-b", column: 2, background: "#facc15" },
+    ]);
+    const inserted = applyAlignmentCommand(merged, { type: "insert-gap", position: { sequenceId: "seq-a", column: 1 } });
+    expect(inserted.cellStyles.find((style) => style.sequenceId === "seq-a" && style.foreground)).toMatchObject({ column: 3 });
+    const restored = applyAlignmentCommand(inserted, { type: "delete-cell", position: { sequenceId: "seq-a", column: 1 } });
+    expect(restored.cellStyles.find((style) => style.sequenceId === "seq-a" && style.foreground)).toMatchObject({ column: 2 });
   });
 
   it("rejects annotations outside the alignment", () => {

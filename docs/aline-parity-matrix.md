@@ -32,10 +32,10 @@ colonne de vérification.
 | CORE-021 | Modes insertion/remplacement/agressif | `SequenceEditor`, `_AggroCheck`, `_ApplyEdits` | partiel | tests différentiels d'édition |
 | CORE-022 | Sélection cellule/région/ligne/colonne | `SelectBox`, `_RubberBand`, `ShadeRegion` | partiel | rectangle Shift-clic/clavier implémenté ; sélection entière et glisser à compléter |
 | CORE-023 | Insertion/suppression de cellules et gaps | `_InsertCells`, `_DeleteCells`, `_DefrayEnds` | partiel | lignes attachées, objets, undo |
-| CORE-024 | Édition des propriétés de cellule/région | `_PropertyWindow`, `_PropertySheet` | absent | texte, police, couleurs, plage |
+| CORE-024 | Édition des propriétés de cellule/région | `_PropertyWindow`, `_PropertySheet` | partiel | couleurs de cellules et propriétés géométriques/visuelles des régions éditables ; texte et police par cellule à compléter |
 | CORE-025 | Vue quadrillée et découpage en blocs | `PrintSeq`, `Grid`, paramètres d'affichage | partiel | références visuelles et responsive |
 | CORE-026 | Espacements, échelle, largeur et polices | `_UpdateParameters`, sliders, `ConfigDialog` | partiel | persistance et références visuelles |
-| CORE-027 | Couleurs de contour/remplissage manuelles | `_SetWorkColour`, `RecolourObject/Obs` | absent | cellule, région et objet |
+| CORE-027 | Couleurs de contour/remplissage manuelles | `_SetWorkColour`, `RecolourObject/Obs` | partiel | texte/fond de sélection et couleurs des régions, structures et textes persistés ; portée complète ALINE à comparer |
 | CORE-028 | Palettes `.alc` et éditeur de palettes | `ReadColour`, `SaveColour`, `CalColours`, `_ApplyCat` | partiel | lecture/écriture des 5 palettes fournies |
 | CORE-029 | Interpolation RGB/HSL | `colourInterpolate`, `colourInterpolateHSL`, `rgb2hsl`, `hsl2rgb` | absent | vecteurs numériques comparatifs |
 | CORE-030 | Création d'objets graphiques | `CreateObject`, `NewObType`, `_GlyphFactory`, `_LingFactory` | partiel | chaque type, propriété et persistance |
