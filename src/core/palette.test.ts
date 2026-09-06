@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appendPaletteCategory, interpolateHsl, interpolateRgb, normalizeAlineColor, normalizePaletteCategories, paletteStyle, parseAlinePalette, serializeAlinePalette } from "./palette";
+import { appendPaletteCategory, createPaletteGradient, interpolateHsl, interpolateRgb, normalizeAlineColor, normalizePaletteCategories, paletteStyle, parseAlinePalette, serializeAlinePalette } from "./palette";
 import cyanToRed from "../../aline_011208/colourschemes/Cyan to Red (50 levels).alc?raw";
 import greyscale from "../../aline_011208/colourschemes/Greyscale (10 levels).alc?raw";
 import saturationBlue from "../../aline_011208/colourschemes/Saturation (Blue, 50 levels).alc?raw";
@@ -40,5 +40,13 @@ describe("ALINE colour palettes", () => {
     expect(normalizePaletteCategories(categories).map(({ threshold }) => threshold)).toEqual([0.5, 1]);
     expect(appendPaletteCategory(categories).map(({ threshold }) => threshold)).toEqual([0.25, 0.5, 1]);
     expect(() => normalizePaletteCategories([{ ...categories[0], threshold: 0.5 }, { ...categories[1], threshold: 0.5 }])).toThrow(/unique/);
+  });
+
+  it("creates bounded RGB and HSL palette gradients", () => {
+    const rgb = createPaletteGradient({ start: 0.2, end: 1, steps: 3, startFill: "#000000", endFill: "#ffffff", startText: "#ffffff", endText: "#000000", mode: "rgb" });
+    expect(rgb.map(({ threshold, fill }) => [threshold, fill])).toEqual([[0.2, "#000000"], [0.6, "#808080"], [1, "#ffffff"]]);
+    const hsl = createPaletteGradient({ start: 0, end: 1, steps: 3, startFill: "#ff0000", endFill: "#00ff00", startText: "#000000", endText: "#ffffff", mode: "hsl" });
+    expect(hsl[1].fill).toBe("#ffff00");
+    expect(() => createPaletteGradient({ start: 1, end: 0, steps: 1, startFill: "#000000", endFill: "#ffffff", startText: "#000000", endText: "#ffffff", mode: "rgb" })).toThrow();
   });
 });

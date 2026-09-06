@@ -158,3 +158,36 @@ export function interpolateHsl(start: string, end: string, amount: number): stri
   const channels = hslToRgb(from.map((channel, index) => channel + (to[index] - channel) * amount) as [number, number, number]);
   return `#${channels.map((channel) => Math.round(channel * 255).toString(16).padStart(2, "0")).join("")}`;
 }
+
+export type PaletteGradientOptions = {
+  start: number;
+  end: number;
+  steps: number;
+  startFill: string;
+  endFill: string;
+  startText: string;
+  endText: string;
+  mode: "rgb" | "hsl";
+};
+
+export function createPaletteGradient(options: PaletteGradientOptions): PaletteCategory[] {
+  if (!Number.isFinite(options.start) || !Number.isFinite(options.end) || options.start < 0 || options.end > 1 || options.start >= options.end) throw new Error("Les bornes du gradient sont invalides.");
+  if (!Number.isInteger(options.steps) || options.steps < 2 || options.steps > 100) throw new Error("Un gradient doit contenir entre 2 et 100 niveaux.");
+  const interpolate = options.mode === "hsl" ? interpolateHsl : interpolateRgb;
+  return Array.from({ length: options.steps }, (_, index) => {
+    const amount = index / (options.steps - 1);
+    const threshold = Number((options.start + (options.end - options.start) * amount).toFixed(6));
+    const fill = interpolate(options.startFill, options.endFill, amount);
+    return {
+      threshold,
+      fill,
+      line: fill,
+      lineWidth: 0,
+      text: interpolate(options.startText, options.endText, amount),
+      fontSize: 12,
+      fontFamily: "Helvetica",
+      fontSlant: "R",
+      fontWeight: "Bold",
+    };
+  });
+}

@@ -17,7 +17,7 @@ import {
   SimilarityOptions,
 } from "./core/coloring";
 import { demoAlignment } from "./data/demo";
-import { appendPaletteCategory, ColourPalette, DEFAULT_GREYSCALE_PALETTE, normalizePaletteCategories, paletteStyle, parseAlinePalette, serializeAlinePalette } from "./core/palette";
+import { appendPaletteCategory, ColourPalette, createPaletteGradient, DEFAULT_GREYSCALE_PALETTE, normalizePaletteCategories, paletteStyle, parseAlinePalette, serializeAlinePalette } from "./core/palette";
 
 const residueGroups: Record<string, string> = {
   A: "hydrophobic", V: "hydrophobic", I: "hydrophobic", L: "hydrophobic", M: "hydrophobic", F: "hydrophobic", W: "hydrophobic", Y: "hydrophobic",
@@ -213,6 +213,7 @@ export function App() {
   const [manualBackground, setManualBackground] = useState("#facc15");
   const [paletteEditorOpen, setPaletteEditorOpen] = useState(false);
   const [paletteDraft, setPaletteDraft] = useState<ColourPalette>(DEFAULT_GREYSCALE_PALETTE);
+  const [gradientDraft, setGradientDraft] = useState({ start: 0, end: 1, steps: 10, startFill: "#ffffff", endFill: "#000000", startText: "#000000", endText: "#ffffff", mode: "rgb" as "rgb" | "hsl" });
   const [viewMode, setViewMode] = useState<"modern" | "classic">("classic");
   const [repeatNames, setRepeatNames] = useState(true);
   const [classicWidths, setClassicWidths] = useState({ first: 60, continuation: 70 });
@@ -550,6 +551,19 @@ export function App() {
       setNotice(`Palette mise à jour (${categories.length} niveaux)`);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Palette invalide.");
+    }
+  }
+
+  function addPaletteGradient() {
+    try {
+      const gradient = createPaletteGradient(gradientDraft);
+      setPaletteDraft((current) => {
+        const outside = current.categories.filter((category) => category.threshold < gradientDraft.start || category.threshold > gradientDraft.end);
+        return { ...current, categories: normalizePaletteCategories([...outside, ...gradient]) };
+      });
+      setError("");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Gradient invalide.");
     }
   }
 
@@ -1212,6 +1226,20 @@ export function App() {
             <div className="palette-preview" aria-label="Palette preview">
               {paletteDraft.categories.map((category, index) => <span key={`${category.threshold}-${index}`} style={{ background: category.fill, color: category.text }}>{Math.round(category.threshold * 100)}</span>)}
             </div>
+            <details className="palette-gradient">
+              <summary>Add gradient</summary>
+              <div className="palette-gradient-grid">
+                <label><span>From</span><input type="number" min="0" max="1" step="0.01" value={gradientDraft.start} onChange={(event) => setGradientDraft((current) => ({ ...current, start: Number(event.target.value) }))} /></label>
+                <label><span>To</span><input type="number" min="0" max="1" step="0.01" value={gradientDraft.end} onChange={(event) => setGradientDraft((current) => ({ ...current, end: Number(event.target.value) }))} /></label>
+                <label><span>Levels</span><input type="number" min="2" max="100" value={gradientDraft.steps} onChange={(event) => setGradientDraft((current) => ({ ...current, steps: Number(event.target.value) }))} /></label>
+                <label><span>Space</span><select value={gradientDraft.mode} onChange={(event) => setGradientDraft((current) => ({ ...current, mode: event.target.value as "rgb" | "hsl" }))}><option value="rgb">RGB</option><option value="hsl">HSL</option></select></label>
+                <label><span>Start background</span><input type="color" value={gradientDraft.startFill} onChange={(event) => setGradientDraft((current) => ({ ...current, startFill: event.target.value }))} /></label>
+                <label><span>End background</span><input type="color" value={gradientDraft.endFill} onChange={(event) => setGradientDraft((current) => ({ ...current, endFill: event.target.value }))} /></label>
+                <label><span>Start text</span><input type="color" value={gradientDraft.startText} onChange={(event) => setGradientDraft((current) => ({ ...current, startText: event.target.value }))} /></label>
+                <label><span>End text</span><input type="color" value={gradientDraft.endText} onChange={(event) => setGradientDraft((current) => ({ ...current, endText: event.target.value }))} /></label>
+              </div>
+              <button type="button" onClick={addPaletteGradient}>Generate gradient</button>
+            </details>
             <div className="palette-category-list">
               {paletteDraft.categories.map((category, index) => (
                 <div className="palette-category-row" key={index}>

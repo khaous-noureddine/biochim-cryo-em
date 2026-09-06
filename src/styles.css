@@ -240,6 +240,12 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .palette-editor-heading p { margin: 0; color: var(--muted); font-size: 10px; }
 .palette-preview { min-height: 42px; display: flex; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; }
 .palette-preview span { min-width: 16px; flex: 1; display: grid; place-items: center; font-size: 8px; }
+.palette-gradient { margin-top: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 9px; }
+.palette-gradient summary { color: #dbe7e3; cursor: pointer; font-size: 11px; font-weight: 600; }
+.palette-gradient-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.palette-gradient-grid label { display: grid; gap: 4px; color: var(--muted); font-size: 8px; text-transform: uppercase; }
+.palette-gradient-grid input, .palette-gradient-grid select { min-width: 0; height: 32px; padding: 4px; border: 1px solid #385048; border-radius: 6px; color: var(--foreground); background: #0b1512; }
+.palette-gradient > button { width: 100%; padding: 7px; }
 .palette-category-list { min-height: 0; margin-top: 14px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; }
 .palette-category-row { display: grid; grid-template-columns: minmax(110px, 1fr) 100px 100px auto; align-items: end; gap: 12px; padding: 10px; border-bottom: 1px solid var(--line); }
 .palette-category-row:last-child { border-bottom: 0; }
