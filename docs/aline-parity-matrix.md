@@ -36,7 +36,7 @@ colonne de vérification.
 | CORE-025 | Vue quadrillée et découpage en blocs | `PrintSeq`, `Grid`, paramètres d'affichage | partiel | références visuelles et responsive |
 | CORE-026 | Espacements, échelle, largeur et polices | `_UpdateParameters`, sliders, `ConfigDialog` | partiel | persistance et références visuelles |
 | CORE-027 | Couleurs de contour/remplissage manuelles | `_SetWorkColour`, `RecolourObject/Obs` | partiel | texte/fond de sélection et couleurs des régions, structures et textes persistés ; portée complète ALINE à comparer |
-| CORE-028 | Palettes `.alc` et éditeur de palettes | `ReadColour`, `SaveColour`, `CalColours`, `_ApplyCat` | partiel | lecture sûre des 5 palettes fournies, écriture compatible et application aux scores testées ; éditeur visuel à ajouter |
+| CORE-028 | Palettes `.alc` et éditeur de palettes | `ReadColour`, `SaveColour`, `CalColours`, `_ApplyCat` | partiel | lecture sûre des 5 palettes, écriture compatible, persistance `.atlas`, application et édition visuelle des seuils/couleurs testées ; gradients et typographie à compléter |
 | CORE-029 | Interpolation RGB/HSL | `colourInterpolate`, `colourInterpolateHSL`, `rgb2hsl`, `hsl2rgb` | reproduit | conversions Tk 16 bits et vecteurs RGB/HSL testés |
 | CORE-030 | Création d'objets graphiques | `CreateObject`, `NewObType`, `_GlyphFactory`, `_LingFactory` | partiel | chaque type, propriété et persistance |
 | CORE-031 | Sélection/déplacement/suppression d'objet | `FindObjectAt`, `MoveObject`, `DeleteObjectById/Ptr` | partiel | sélection, positions, couleur et suppression testées ; déplacement direct et objets liés à compléter |

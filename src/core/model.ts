@@ -1,3 +1,6 @@
+import type { ColourPalette } from "./palette";
+import { DEFAULT_GREYSCALE_PALETTE } from "./palette";
+
 export const ATLAS_DOCUMENT_FORMAT = "atlas-alignment" as const;
 export const ATLAS_DOCUMENT_VERSION = 1 as const;
 
@@ -116,6 +119,7 @@ export type AlignmentDocument = {
   regions: AlignmentRegion[];
   textAnnotations: TextAnnotation[];
   cellStyles: CellStyle[];
+  colourPalette?: ColourPalette;
 };
 
 export type CellPosition = {
@@ -147,5 +151,6 @@ export function createAlignmentDocument(
     regions: [],
     textAnnotations: [],
     cellStyles: [],
+    colourPalette: { ...DEFAULT_GREYSCALE_PALETTE, categories: DEFAULT_GREYSCALE_PALETTE.categories.map((category) => ({ ...category })) },
   };
 }

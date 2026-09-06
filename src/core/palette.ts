@@ -15,6 +15,45 @@ export type ColourPalette = {
   categories: PaletteCategory[];
 };
 
+export function validateColourPalette(value: unknown): ColourPalette {
+  if (!value || typeof value !== "object") throw new Error("Palette de projet invalide.");
+  const palette = value as Record<string, unknown>;
+  if (typeof palette.name !== "string" || !palette.name.trim() || !Array.isArray(palette.categories)) throw new Error("Palette de projet invalide.");
+  const categories = palette.categories.map((item) => {
+    if (!item || typeof item !== "object") throw new Error("Catégorie de palette invalide.");
+    const category = item as Record<string, unknown>;
+    for (const key of ["fill", "line", "text"] as const) if (typeof category[key] !== "string" || !/^#[0-9a-f]{6}$/i.test(category[key])) throw new Error("Couleur de palette invalide.");
+    if (typeof category.threshold !== "number" || !Number.isFinite(category.threshold) || category.threshold < 0 || category.threshold > 1 || typeof category.lineWidth !== "number" || !Number.isFinite(category.lineWidth) || category.lineWidth < 0 || typeof category.fontSize !== "number" || !Number.isFinite(category.fontSize) || category.fontSize <= 0) throw new Error("Valeur de palette invalide.");
+    for (const key of ["fontFamily", "fontSlant", "fontWeight"] as const) if (typeof category[key] !== "string") throw new Error("Police de palette invalide.");
+    return category as PaletteCategory;
+  });
+  return { name: palette.name, categories: normalizePaletteCategories(categories) };
+}
+
+export function normalizePaletteCategories(categories: PaletteCategory[]): PaletteCategory[] {
+  if (!categories.length) throw new Error("Une palette doit contenir au moins une catégorie.");
+  const sorted = categories.map((category) => ({ ...category, threshold: Math.max(0, Math.min(1, category.threshold)) })).sort((left, right) => left.threshold - right.threshold);
+  for (let index = 1; index < sorted.length; index += 1) {
+    if (sorted[index].threshold === sorted[index - 1].threshold) throw new Error("Chaque seuil de palette doit être unique.");
+  }
+  return sorted;
+}
+
+export function appendPaletteCategory(categories: PaletteCategory[]): PaletteCategory[] {
+  const sorted = normalizePaletteCategories(categories);
+  let threshold = 1;
+  for (let index = 0; index < sorted.length; index += 1) {
+    const previous = index === 0 ? 0 : sorted[index - 1].threshold;
+    if (sorted[index].threshold - previous > 0.001) {
+      threshold = Number(((previous + sorted[index].threshold) / 2).toFixed(3));
+      break;
+    }
+  }
+  if (sorted.some((category) => category.threshold === threshold)) throw new Error("Aucun seuil supplémentaire ne peut être ajouté.");
+  const template = sorted.find((category) => threshold <= category.threshold) ?? sorted.at(-1)!;
+  return normalizePaletteCategories([...sorted, { ...template, threshold }]);
+}
+
 const CATEGORY_PATTERN = /\[\s*(\d*\.?\d+)\s*,\s*\[\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'?([\d.]+)'?\s*,\s*'([^']*)'\s*,\s*(\d+)\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*\]\s*\]/g;
 
 export const DEFAULT_GREYSCALE_PALETTE: ColourPalette = {
@@ -61,8 +100,7 @@ export function parseAlinePalette(source: string, filename = "palette.alc"): Col
     });
   }
   if (!categories.length) throw new Error("La palette ALINE ne contient aucune catégorie lisible.");
-  categories.sort((left, right) => left.threshold - right.threshold);
-  return { name: filename.replace(/\.alc$/i, ""), categories };
+  return { name: filename.replace(/\.alc$/i, ""), categories: normalizePaletteCategories(categories) };
 }
 
 function toAlineColor(color: string): string {

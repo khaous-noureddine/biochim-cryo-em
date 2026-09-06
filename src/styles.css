@@ -234,6 +234,18 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .sequence-manager { width: min(900px, 100%); max-height: min(760px, calc(100vh - 40px)); display: flex; flex-direction: column; }
 .sequence-manager-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .sequence-manager-heading h2 { margin-bottom: 16px; }
+.palette-editor { width: min(720px, 100%); max-height: min(780px, calc(100vh - 40px)); display: flex; flex-direction: column; }
+.palette-editor-heading { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
+.palette-editor-heading h2 { margin-bottom: 5px; }
+.palette-editor-heading p { margin: 0; color: var(--muted); font-size: 10px; }
+.palette-preview { min-height: 42px; display: flex; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; }
+.palette-preview span { min-width: 16px; flex: 1; display: grid; place-items: center; font-size: 8px; }
+.palette-category-list { min-height: 0; margin-top: 14px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; }
+.palette-category-row { display: grid; grid-template-columns: minmax(110px, 1fr) 100px 100px auto; align-items: end; gap: 12px; padding: 10px; border-bottom: 1px solid var(--line); }
+.palette-category-row:last-child { border-bottom: 0; }
+.palette-category-row label { display: grid; gap: 5px; color: var(--muted); font-size: 9px; text-transform: uppercase; }
+.palette-category-row input[type="number"] { width: 100%; padding: 8px; border: 1px solid #385048; border-radius: 6px; color: var(--foreground); background: #0b1512; }
+.palette-category-row input[type="color"] { width: 100%; height: 34px; padding: 2px; border: 1px solid #385048; border-radius: 6px; background: #0b1512; }
 .sequence-list { min-height: 0; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; }
 .sequence-list-row { display: grid; grid-template-columns: auto minmax(130px, 1fr) minmax(180px, 1.6fr) 90px auto; align-items: end; gap: 8px; padding: 11px; border-bottom: 1px solid var(--line); }
 .sequence-list-row:last-child { border-bottom: 0; }

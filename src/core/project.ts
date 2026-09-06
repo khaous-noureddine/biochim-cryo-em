@@ -13,6 +13,7 @@ import {
   Sequence,
   TextAnnotation,
 } from "./model";
+import { DEFAULT_GREYSCALE_PALETTE, validateColourPalette } from "./palette";
 
 export type OpenedAlignment = {
   document: AlignmentDocument;
@@ -165,6 +166,9 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     if ((foreground === undefined && background === undefined) || (foreground !== undefined && (typeof foreground !== "string" || !/^#[0-9a-f]{6}$/i.test(foreground))) || (background !== undefined && (typeof background !== "string" || !/^#[0-9a-f]{6}$/i.test(background)))) throw new Error(`Couleur du style ${index + 1} invalide.`);
     return { sequenceId, column, ...(foreground === undefined ? {} : { foreground }), ...(background === undefined ? {} : { background }) };
   });
+  const colourPalette = project.colourPalette === undefined
+    ? { ...DEFAULT_GREYSCALE_PALETTE, categories: DEFAULT_GREYSCALE_PALETTE.categories.map((category) => ({ ...category })) }
+    : validateColourPalette(project.colourPalette);
 
   return {
     format: ATLAS_DOCUMENT_FORMAT,
@@ -176,6 +180,7 @@ export function parseAtlasProject(source: string): AlignmentDocument {
     regions,
     textAnnotations,
     cellStyles,
+    colourPalette,
   };
 }
 

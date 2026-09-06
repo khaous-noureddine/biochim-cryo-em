@@ -19,6 +19,7 @@ describe("Atlas project files", () => {
     document.regions.push({ id: "box-1", kind: "box", sequenceIds: document.sequences.map((sequence) => sequence.id), start: 0, end: 1, lineColor: "#111111", fillColor: "#facc15", lineWidth: 2, zIndex: 2 });
     document.textAnnotations.push({ id: "text-1", kind: "outline-text", column: 1, lane: 0, text: "active site", color: "#ffffff", outlineColor: "#111111", outlineWidth: 2, fontFamily: "Arial", fontSize: 14, fontWeight: "bold", italic: false, align: "center", zIndex: 3 });
     document.cellStyles.push({ sequenceId: document.sequences[0].id, column: 1, foreground: "#ffffff", background: "#2563eb" });
+    document.colourPalette = { name: "Custom", categories: [{ threshold: 1, fill: "#123456", line: "#123456", lineWidth: 0, text: "#ffffff", fontSize: 12, fontFamily: "Arial", fontSlant: "R", fontWeight: "Bold" }] };
     expect(parseAtlasProject(serializeAtlasProject(document))).toEqual(document);
   });
 
@@ -29,7 +30,8 @@ describe("Atlas project files", () => {
     delete legacy.regions;
     delete legacy.textAnnotations;
     delete legacy.cellStyles;
-    expect(parseAtlasProject(JSON.stringify(legacy))).toMatchObject({ annotations: [], regions: [], textAnnotations: [], cellStyles: [] });
+    delete legacy.colourPalette;
+    expect(parseAtlasProject(JSON.stringify(legacy))).toMatchObject({ annotations: [], regions: [], textAnnotations: [], cellStyles: [], colourPalette: { name: "Greyscale" } });
   });
 
   it("rejects an unsupported Atlas version", () => {

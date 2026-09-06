@@ -1,5 +1,6 @@
 import { normalizeAlignment } from "./alignment";
 import { AlignmentAnnotation, AlignmentDocument, AlignmentRegion, CellPosition, CellRange, CellStyle, isAnnotationKind, isPointAnnotationKind, Sequence, TextAnnotation } from "./model";
+import { ColourPalette, validateColourPalette } from "./palette";
 
 export type AlignmentCommand =
   | { type: "replace-residue"; position: CellPosition; residue: string }
@@ -25,7 +26,8 @@ export type AlignmentCommand =
   | { type: "delete-text-annotation"; annotationId: string }
   | { type: "change-object-layer"; objectId: string; direction: "front" | "forward" | "backward" | "back" }
   | { type: "set-cell-style"; range: CellRange; foreground?: string; background?: string }
-  | { type: "clear-cell-style"; range: CellRange };
+  | { type: "clear-cell-style"; range: CellRange }
+  | { type: "set-colour-palette"; palette: ColourPalette };
 
 const EDITABLE_RESIDUE = /^[A-Z*?.-]$/;
 
@@ -422,6 +424,14 @@ export function applyAlignmentCommand(
       const selected = new Set(command.range.sequenceIds);
       const cellStyles = document.cellStyles.filter((style) => !selected.has(style.sequenceId) || style.column < command.range.start || style.column > command.range.end);
       return cellStyles.length === document.cellStyles.length ? document : { ...document, cellStyles };
+    }
+    case "set-colour-palette": {
+      try {
+        const colourPalette = validateColourPalette(command.palette);
+        return JSON.stringify(colourPalette) === JSON.stringify(document.colourPalette) ? document : { ...document, colourPalette };
+      } catch {
+        return document;
+      }
     }
   }
 }

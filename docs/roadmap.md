@@ -80,7 +80,7 @@ migrations et tests aller-retour.
 ## Phase 5 — Colorations, palettes et analyses internes
 
 - [ ] coloration manuelle de cellule, région, ligne et objet ;
-- [ ] édition, chargement et sauvegarde des palettes `.alc` ;
+- [x] édition, chargement et sauvegarde des palettes `.alc` ;
 - [ ] parité résidu, similarité et ALSCRIPT/Calcons ;
 - [ ] séparation des séquences de calcul et des séquences colorées ;
 - [ ] consensus configurable ;

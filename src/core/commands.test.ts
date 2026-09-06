@@ -312,4 +312,13 @@ describe("applyAlignmentCommand", () => {
     const result = applyAlignmentCommand(original, { type: "remove-duplicate-sequences", includeFragments: true });
     expect(result.sequences.map((sequence) => sequence.id)).toEqual(["seq-b"]);
   });
+
+  it("stores a validated colour palette as a document edit", () => {
+    const original = document();
+    const palette = { name: "Publication", categories: [{ threshold: 1, fill: "#ffffff", line: "#ffffff", lineWidth: 0, text: "#111111", fontSize: 12, fontFamily: "Arial", fontSlant: "R", fontWeight: "Bold" }] };
+    const result = applyAlignmentCommand(original, { type: "set-colour-palette", palette });
+    expect(result).not.toBe(original);
+    expect(result.colourPalette).toEqual(palette);
+    expect(applyAlignmentCommand(original, { type: "set-colour-palette", palette: { ...palette, categories: [] } })).toBe(original);
+  });
 });

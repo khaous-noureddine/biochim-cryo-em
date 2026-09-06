@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { interpolateHsl, interpolateRgb, normalizeAlineColor, paletteStyle, parseAlinePalette, serializeAlinePalette } from "./palette";
+import { appendPaletteCategory, interpolateHsl, interpolateRgb, normalizeAlineColor, normalizePaletteCategories, paletteStyle, parseAlinePalette, serializeAlinePalette } from "./palette";
 import cyanToRed from "../../aline_011208/colourschemes/Cyan to Red (50 levels).alc?raw";
 import greyscale from "../../aline_011208/colourschemes/Greyscale (10 levels).alc?raw";
 import saturationBlue from "../../aline_011208/colourschemes/Saturation (Blue, 50 levels).alc?raw";
@@ -33,5 +33,12 @@ describe("ALINE colour palettes", () => {
 
   it("rejects executable text without a palette", () => {
     expect(() => parseAlinePalette("system('danger')")).toThrow(/palette ALINE valide/);
+  });
+
+  it("sorts edited thresholds, rejects duplicates and inserts a category in a free interval", () => {
+    const categories = parseAlinePalette("@categories=(\n[1.0,['black','black',0,'white',12,'Arial','R','Bold']],\n[0.5,['white','white',0,'black',12,'Arial','R','Bold']],\n);").categories;
+    expect(normalizePaletteCategories(categories).map(({ threshold }) => threshold)).toEqual([0.5, 1]);
+    expect(appendPaletteCategory(categories).map(({ threshold }) => threshold)).toEqual([0.25, 0.5, 1]);
+    expect(() => normalizePaletteCategories([{ ...categories[0], threshold: 0.5 }, { ...categories[1], threshold: 0.5 }])).toThrow(/unique/);
   });
 });

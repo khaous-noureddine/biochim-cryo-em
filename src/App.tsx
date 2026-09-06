@@ -17,7 +17,7 @@ import {
   SimilarityOptions,
 } from "./core/coloring";
 import { demoAlignment } from "./data/demo";
-import { ColourPalette, DEFAULT_GREYSCALE_PALETTE, paletteStyle, parseAlinePalette, serializeAlinePalette } from "./core/palette";
+import { appendPaletteCategory, ColourPalette, DEFAULT_GREYSCALE_PALETTE, normalizePaletteCategories, paletteStyle, parseAlinePalette, serializeAlinePalette } from "./core/palette";
 
 const residueGroups: Record<string, string> = {
   A: "hydrophobic", V: "hydrophobic", I: "hydrophobic", L: "hydrophobic", M: "hydrophobic", F: "hydrophobic", W: "hydrophobic", Y: "hydrophobic",
@@ -211,7 +211,8 @@ export function App() {
   const [colorExclusions, setColorExclusions] = useState<Set<string>>(() => new Set());
   const [manualForeground, setManualForeground] = useState("#111111");
   const [manualBackground, setManualBackground] = useState("#facc15");
-  const [colourPalette, setColourPalette] = useState<ColourPalette>(DEFAULT_GREYSCALE_PALETTE);
+  const [paletteEditorOpen, setPaletteEditorOpen] = useState(false);
+  const [paletteDraft, setPaletteDraft] = useState<ColourPalette>(DEFAULT_GREYSCALE_PALETTE);
   const [viewMode, setViewMode] = useState<"modern" | "classic">("classic");
   const [repeatNames, setRepeatNames] = useState(true);
   const [classicWidths, setClassicWidths] = useState({ first: 60, continuation: 70 });
@@ -233,6 +234,7 @@ export function App() {
   const [notice, setNotice] = useState("");
   const [selection, setSelection] = useState<CellPosition | null>(null);
   const [selectionAnchor, setSelectionAnchor] = useState<CellPosition | null>(null);
+  const colourPalette = alignment.colourPalette ?? DEFAULT_GREYSCALE_PALETTE;
   const inputRef = useRef<HTMLInputElement>(null);
   const paletteInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLElement>(null);
@@ -512,7 +514,7 @@ export function App() {
     if (!file) return;
     try {
       const palette = parseAlinePalette(await file.text(), file.name);
-      setColourPalette(palette);
+      dispatch({ type: "execute", command: { type: "set-colour-palette", palette } });
       setNotice(`Palette ${palette.name} chargée (${palette.categories.length} niveaux)`);
       setError("");
     } catch (reason) {
@@ -527,6 +529,28 @@ export function App() {
     const safeName = colourPalette.name.replace(/[^a-z0-9._-]+/gi, "-") || "atlas-colours";
     downloadFile(`${safeName}.alc`, serializeAlinePalette(colourPalette), "text/plain");
     colorsMenuRef.current?.removeAttribute("open");
+  }
+
+  function openPaletteEditor() {
+    setPaletteDraft({ ...colourPalette, categories: colourPalette.categories.map((category) => ({ ...category })) });
+    setPaletteEditorOpen(true);
+    colorsMenuRef.current?.removeAttribute("open");
+  }
+
+  function updatePaletteCategory(index: number, updates: Partial<ColourPalette["categories"][number]>) {
+    setPaletteDraft((current) => ({ ...current, categories: current.categories.map((category, categoryIndex) => categoryIndex === index ? { ...category, ...updates } : category) }));
+  }
+
+  function applyPaletteDraft() {
+    try {
+      const categories = normalizePaletteCategories(paletteDraft.categories);
+      dispatch({ type: "execute", command: { type: "set-colour-palette", palette: { name: paletteDraft.name.trim() || "Atlas colours", categories } } });
+      setPaletteEditorOpen(false);
+      setError("");
+      setNotice(`Palette mise à jour (${categories.length} niveaux)`);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Palette invalide.");
+    }
   }
 
   function startSidebarResize(event: ReactPointerEvent<HTMLButtonElement>) {
@@ -675,6 +699,9 @@ export function App() {
                 <span>Reset all</span><small>Return to monochrome</small>
               </button>
               <div className="menu-separator" />
+              <button role="menuitem" onClick={openPaletteEditor}>
+                <span>Edit Colour Scheme…</span><small>Thresholds, backgrounds and text colours</small>
+              </button>
               <button role="menuitem" onClick={() => paletteInputRef.current?.click()}>
                 <span>Load Colour Scheme…</span><small>{colourPalette.name} · {colourPalette.categories.length} levels</small>
               </button>
@@ -1168,6 +1195,35 @@ export function App() {
               <button className="primary" type="submit">Apply</button>
             </div>
           </form>
+        </div>
+      )}
+      {paletteEditorOpen && (
+        <div className="dialog-backdrop" role="presentation" onMouseDown={() => setPaletteEditorOpen(false)}>
+          <section className="settings-dialog palette-editor" aria-labelledby="palette-editor-title" onMouseDown={(event) => event.stopPropagation()}>
+            <span className="eyebrow">ALINE colouring</span>
+            <div className="palette-editor-heading">
+              <div><h2 id="palette-editor-title">Edit Colour Scheme</h2><p>Each score uses the first category whose threshold is greater or equal.</p></div>
+              <button type="button" onClick={() => {
+                try { setPaletteDraft((current) => ({ ...current, categories: appendPaletteCategory(current.categories) })); setError(""); }
+                catch (reason) { setError(reason instanceof Error ? reason.message : "Impossible d’ajouter un niveau."); }
+              }}>Add level</button>
+            </div>
+            <label><span>Palette name</span><input className="text-field" value={paletteDraft.name} onChange={(event) => setPaletteDraft((current) => ({ ...current, name: event.target.value }))} /></label>
+            <div className="palette-preview" aria-label="Palette preview">
+              {paletteDraft.categories.map((category, index) => <span key={`${category.threshold}-${index}`} style={{ background: category.fill, color: category.text }}>{Math.round(category.threshold * 100)}</span>)}
+            </div>
+            <div className="palette-category-list">
+              {paletteDraft.categories.map((category, index) => (
+                <div className="palette-category-row" key={index}>
+                  <label><span>Threshold</span><input type="number" min="0" max="1" step="0.001" value={category.threshold} onChange={(event) => updatePaletteCategory(index, { threshold: Number(event.target.value) })} /></label>
+                  <label><span>Background</span><input type="color" value={category.fill} onChange={(event) => updatePaletteCategory(index, { fill: event.target.value, line: event.target.value })} /></label>
+                  <label><span>Text</span><input type="color" value={category.text} onChange={(event) => updatePaletteCategory(index, { text: event.target.value })} /></label>
+                  <button className="danger-button" type="button" disabled={paletteDraft.categories.length === 1} aria-label={`Delete level ${index + 1}`} onClick={() => setPaletteDraft((current) => ({ ...current, categories: current.categories.filter((_, categoryIndex) => categoryIndex !== index) }))}>Delete</button>
+                </div>
+              ))}
+            </div>
+            <div className="dialog-actions"><button type="button" onClick={() => setPaletteEditorOpen(false)}>Cancel</button><button className="primary" type="button" onClick={applyPaletteDraft}>Apply palette</button></div>
+          </section>
         </div>
       )}
       {sequenceManagerOpen && (
