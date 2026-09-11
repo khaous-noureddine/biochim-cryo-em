@@ -13,6 +13,9 @@
 
 - These instructions are tool-independent and apply to Codex, OpenCode, and
   any other coding agent working in this repository.
+- Write all new documentation and all documentation updates in English,
+  including operational project memory, user guides, technical documents,
+  comments intended as documentation, and commit messages.
 - Before planning or implementing substantial work, read `project/GOAL.md`,
   `project/STATUS.md`, `project/PLAN.md`, and `project/DECISIONS.md`, in that
   order.
