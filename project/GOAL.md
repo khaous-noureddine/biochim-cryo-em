@@ -1,4 +1,4 @@
-# Vision produit d’Atlas Alignement
+# Objectif durable d’Atlas Alignement
 
 ## Mission
 
@@ -30,11 +30,39 @@ Un utilisateur doit pouvoir installer Atlas sur macOS, Windows ou Linux, puis :
 10. travailler de façon fluide sur des alignements sensiblement plus grands que
     ceux supportés confortablement par l’application Perl/Tk.
 
+## Périmètre obligatoire
+
+Le travail couvre exhaustivement :
+
+- le cœur historique dans `aline_011208/bin/` et les modules associés ;
+- tous les plugins livrés dans `aline_011208/plugins/`, y compris ceux qui ne
+  sont pas visibles dans l’interface par défaut ;
+- les formats historiques, préférences, palettes, scripts et fichiers
+  d’exemple utiles à la compréhension du comportement ;
+- les parcours de création, édition, analyse, annotation, mise en page,
+  sauvegarde, réouverture, impression et export ;
+- la livraison d’une application installable sur macOS, Windows et Linux.
+
+Le code historique doit rester inchangé : il constitue une fixture de référence
+et non la base technique de la nouvelle application.
+
+## Résultats qui ne suffisent pas
+
+Ne constituent pas une livraison complète :
+
+- une reproduction limitée aux éléments visibles sur les captures d’écran ;
+- une fonctionnalité présente dans l’interface mais sans logique, persistance
+  ou vérification ;
+- une analyse du cœur qui ignore les plugins ;
+- une intégration historique cassée recopiée sans remplacement maintenu ;
+- un prototype web qui ne possède pas de stratégie desktop multiplateforme ;
+- une affirmation de parité fondée uniquement sur le nombre de tests réussis.
+
 ## Définition de la parité ALINE
 
 La parité signifie que chaque fonctionnalité répertoriée dans
-`aline-feature-inventory.md` et `aline-core-vs-plugins.md` possède l’un des
-statuts suivants :
+`docs/aline-feature-inventory.md` et `docs/aline-core-vs-plugins.md` possède
+l’un des statuts suivants :
 
 - **Reproduite** : même capacité et résultat compatible dans Atlas ;
 - **Modernisée** : même besoin utilisateur, réalisé avec un mécanisme actuel ;
@@ -67,8 +95,30 @@ Par ordre de priorité :
 2. code du cœur historique et code de chaque plugin ;
 3. fichiers d’exemple historiques ;
 4. inventaires fonctionnels dans `docs/` ;
-5. matrice de livraison `aline-parity-matrix.md` ;
-6. décisions produit consignées dans `decisions.md`.
+5. matrice de livraison `docs/aline-parity-matrix.md` ;
+6. décisions produit consignées dans `project/DECISIONS.md`.
 
 En cas d’ambiguïté biologique, la décision doit être signalée pour validation
 par le spécialiste du domaine au lieu d’être silencieusement inventée.
+
+## Condition d’arrêt vérifiable
+
+L’objectif global est atteint uniquement lorsque :
+
+1. chaque capacité du cœur et de chaque plugin historique possède un identifiant
+   dans la matrice de parité ;
+2. chaque identifiant est classé Reproduit, Modernisé, Remplacé ou Écart accepté ;
+3. chaque classement renvoie vers une preuve reproductible : test, fixture,
+   procédure de vérification ou décision acceptée ;
+4. les projets historiques représentatifs s’ouvrent sans perte silencieuse des
+   données prises en charge et les projets `.atlas` passent les tests
+   d’aller-retour ;
+5. les parcours critiques ont été vérifiés sur macOS, Windows et Linux ;
+6. les suites de tests, le typage, le lint et le build de production passent ;
+7. la documentation utilisateur, développeur et de compatibilité correspond à
+   l’application livrée ;
+8. `project/PLAN.md` ne contient plus de checkpoint obligatoire inachevé et
+   `project/STATUS.md` contient les preuves du dernier audit de livraison.
+
+Tout écart nécessitant une décision produit ou biologique doit être validé par
+le propriétaire du produit avant de pouvoir satisfaire cette condition.

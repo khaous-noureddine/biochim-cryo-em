@@ -37,11 +37,18 @@ ligne et troisième ligne libre pour de futures annotations.
 Les cylindres et ressorts sont créés en sélectionnant l’outil, puis une case de
 départ et une case de fin.
 
-## D-006 — Mémoire versionnée dans le dépôt
+## D-006 — Mémoire opérationnelle versionnée dans le dépôt
 
-**Décision :** la vision, l’état, la feuille de route et les décisions sont
-stockés dans `docs/`. La mémoire personnelle ou l’historique de conversation
-peuvent aider, mais ne constituent pas la source de vérité technique.
+**Décision :** l’objectif, l’état, le plan et les décisions sont stockés dans
+`project/`, séparément de la documentation fonctionnelle et technique conservée
+dans `docs/`. La mémoire personnelle ou l’historique de conversation peuvent
+aider, mais ne constituent pas la source de vérité technique.
+
+**Raison :** cette séparation rend la boucle de travail immédiatement lisible
+par Codex, OpenCode et les humains, sans créer une deuxième série de documents.
+Un éventuel vault personnel externe sert au contexte transversal entre projets ;
+il ne remplace pas la mémoire vérifiable propre à Atlas et versionnée avec son
+code.
 
 ## D-007 — Architecture moderne modulaire
 
@@ -99,6 +106,19 @@ restreint extrait uniquement les catégories attendues, normalise les couleurs
 Tk 16 bits et rejette les fichiers sans structure valide. La sauvegarde reste
 compatible avec ALINE, tandis que l’ouverture d’une palette provenant d’un
 tiers ne peut pas déclencher de code arbitraire.
+
+## D-014 — Un contrat de vérification par capacité de parité
+
+**Décision :** chaque identifiant de `aline-parity-matrix.md` possède dans
+`parity-verification-plan.md` un contrat indiquant au moins un type de preuve,
+une procédure reproductible et un résultat observable. Les preuves admises
+sont les tests automatisés, les fixtures versionnées, les rapports de
+vérification manuelle et les décisions documentées de remplacement ou d’écart.
+
+**Conséquence :** un test documentaire compare les identifiants des deux
+fichiers et rejette les contrats manquants, dupliqués ou insuffisamment précis.
+Ajouter une capacité à la matrice impose donc de définir sa vérification dans le
+même changement.
 
 ## Décisions encore ouvertes
 

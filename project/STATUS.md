@@ -1,6 +1,29 @@
 # État actuel d’Atlas Alignement
 
-Dernière mise à jour : 6 septembre 2026.
+Dernière mise à jour : 11 septembre 2026.
+
+## Checkpoint actif
+
+La spécification exécutable de parité (phase 0) est en cours. Le prochain travail
+prioritaire consiste à caractériser complètement le format `.aline`, constituer
+le corpus historique et terminer la classification des intégrations obsolètes.
+
+## Reprise rapide
+
+À la reprise d’une session :
+
+1. lire `project/GOAL.md` et `project/PLAN.md` ;
+2. vérifier l’état réel avec `git status` et les commandes du projet ;
+3. préserver les changements locaux signalés plus bas ;
+4. reprendre le premier checkpoint incomplet de la phase 0 ;
+5. inscrire ici les preuves obtenues et le prochain checkpoint seulement après
+   vérification.
+
+## Blocages nécessitant une intervention humaine
+
+- aucun blocage actif sur le checkpoint courant ;
+- les ambiguïtés biologiques et les écarts de compatibilité proposés devront
+  être soumis au spécialiste ou au propriétaire du produit.
 
 ## Socle disponible
 
@@ -59,8 +82,11 @@ Dernière mise à jour : 6 septembre 2026.
 
 ## Vérification actuelle
 
-- 72 tests Vitest couvrent le modèle, les commandes, l’historique, les
+- 74 tests Vitest couvrent le modèle, les commandes, l’historique, les
   colorations et le format de projet ;
+- un registre de vérification associe désormais chacune des 75 capacités de la
+  matrice de parité à des tests, fixtures, procédures manuelles ou décisions,
+  avec un test documentaire qui interdit les entrées manquantes ou vagues ;
 - le build TypeScript/Vite passe ;
 - les principaux changements d’interface ont été contrôlés dans le navigateur.
 

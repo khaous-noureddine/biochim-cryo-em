@@ -3,6 +3,29 @@
 Cette feuille de route est ordonnée pour éviter de construire les fonctions
 avancées sur un modèle ou un rendu qui devrait ensuite être remplacé.
 
+## Contrat de la boucle
+
+À chaque itération, l’agent doit :
+
+1. lire `project/STATUS.md` et sélectionner le premier checkpoint incomplet dont
+   les prérequis sont satisfaits ;
+2. auditer les sources historiques concernées avant de modifier Atlas ;
+3. définir le comportement observable et sa preuve ;
+4. implémenter le plus petit changement cohérent, y compris persistance et
+   undo/redo lorsqu’ils sont concernés ;
+5. exécuter les tests pertinents, puis le typage, le lint et le build disponibles ;
+6. vérifier le parcours utilisateur dans l’application lorsque cela apporte une
+   preuve supplémentaire ;
+7. mettre à jour la matrice de parité et la mémoire opérationnelle ;
+8. revoir le diff, committer le checkpoint avec un message détaillé et pousser
+   la branche courante sans force-push ;
+9. passer automatiquement au checkpoint suivant tant qu’aucun blocage décrit
+   dans `AGENTS.md` n’exige l’utilisateur.
+
+Une case n’est cochée qu’après obtention et référencement de toutes les preuves
+requises. Une implémentation partielle reste une case non cochée et son état est
+décrit dans `project/STATUS.md`.
+
 ## Règle de progression
 
 Pour chaque capacité ALINE :
@@ -20,7 +43,7 @@ Pour chaque capacité ALINE :
 - [x] convertir l’inventaire existant en matrice cœur/plugin avec un identifiant
   stable par fonctionnalité ;
 - [x] associer chaque entrée aux fonctions Perl et fichiers concernés ;
-- [ ] définir pour chaque entrée un test, une fixture ou une procédure manuelle ;
+- [x] définir pour chaque entrée un test, une fixture ou une procédure manuelle ;
 - [ ] caractériser complètement le format `.aline`, y compris objets,
   graphiques, couleurs, attachements et préférences de document ;
 - [ ] constituer un corpus de projets historiques représentatifs ;
