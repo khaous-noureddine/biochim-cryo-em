@@ -1,0 +1,12 @@
+### Aline 1.0, hand-authored compatibility fixture
+%par = ('nch' => 40, 'csh' => 12, 'csv' => 12);
+@seq = (
+  {
+    'p' => 0, 'n' => undef,
+    't' => {'text' => 'Protein', 'comment' => 'A quoted \'label\'', 'attach' => -1},
+    'e' => [{'text' => 'A', 'seqnumber' => 1}, {'text' => '-', 'seqnumber' => undef}],
+    'o' => []
+  }
+);
+@categories = ([100, ['', '', '', '', '', '', '', '']]);
+@obj = ();

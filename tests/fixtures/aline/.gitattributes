@@ -1,0 +1,2 @@
+# Packed cell keys and streams have significant trailing spaces.
+*-r001.aline whitespace=-blank-at-eol

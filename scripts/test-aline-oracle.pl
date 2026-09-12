@@ -277,4 +277,23 @@ my ($pdb_code, undef, $pdb_decoded) = decode(savepackaline(\%layout, $pdb_rows, 
 is($pdb_code, 0, 'PDB-derived row loads from packed state');
 is_deeply($pdb_decoded, $pdb_rows, 'fractional insertion numbering survives packed persistence');
 
+for my $fixture (qw(minimal-r001 linked-graph-r001)) {
+    open my $input, '<:raw', "$root/tests/fixtures/aline/$fixture.aline" or die $!;
+    my $data = do { local $/; <$input> };
+    my ($result, $p, $r, $c) = decode($data);
+    is($result, 0, "$fixture hand-authored file loads");
+    my ($again, $p2, $r2, $c2) = decode(savepackaline($p, $r, $c));
+    is($again, 0, "$fixture saves and reloads");
+    is_deeply([$p2, $r2, $c2], [$p, $r, $c], "$fixture preserves every decoded value");
+    if ($fixture eq 'minimal-r001') {
+        is_deeply([map { $_->{seqnumber} } @{$r->[0]{e}}], [1, undef, 10],
+            'minimal saved file has incremental, gap and discontinuous numbering');
+    } else {
+        is_deeply($r->[0]{o}[0]{fwd}, [1, 0], 'saved region links to second row');
+        is_deeply([map { $_->{xpos} } @{$r->[0]{o}[0]{e}}], [0, 2], 'saved region coverage is sparse');
+        is_deeply([map { $_->{text} } @{$r->[1]{o}[1]{e}}], [-0.25, 0, 1.5],
+            'saved graph carries signed, zero and positive samples');
+    }
+}
+
 done_testing();

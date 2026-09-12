@@ -69,8 +69,10 @@ Pour chaque capacité ALINE :
     module and inactive diagnostic, including numbering-cache side effects.
   - [x] Complete the R001 core property inventory and cover title/cell style
     fields and extension fields with packed round-trip fixtures.
-  - [ ] Characterize representative saved projects and the older Data::Dumper
-    dialect; review the strict input contract against that coverage.
+  - [x] Establish a saved-project corpus with provenance, two authored R001
+    fixtures and historical decoded round-trip verification.
+  - [ ] Implement an executable data-only contract for the older Data::Dumper
+    dialect and characterize reference fixups and unsupported old objects.
 - [ ] constituer un corpus de projets historiques représentatifs ;
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.
 

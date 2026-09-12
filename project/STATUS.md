@@ -27,7 +27,7 @@ remain excluded from this checkpoint.
 ## Resume evidence — 2026-09-12
 
 The first unfinished phase-0 checkpoint remains `.aline` characterization.
-The executable historical oracle (`npm run test:aline-oracle`) now passes 155
+The executable historical oracle (`npm run test:aline-oracle`) now passes 165
 assertions, including a complete decoded round trip of bundled `rada.aline`,
 synthetic rich records, alternate line endings, and all 17 loader error codes.
 All 36 registered drawable types now have styled serialization fixtures;
@@ -77,6 +77,15 @@ core title/cell style field and an extra object-container scalar. All 155 oracle
 assertions, 74 Vitest tests and the production build pass. The remaining format
 checkpoint is representative saved-project coverage and the older Data::Dumper
 dialect; full import and scientific workflows remain implementation work.
+
+Saved-project corpus now lives in `tests/fixtures/aline/`, with two hand-authored
+R001 specimens verified by the historical reader and full decoded round trips.
+The provenance record identifies the original bundled sample by SHA-256 and
+records its 11 rows, 4,048 cells and 88 objects. An illustrative old-dialect
+fixture is present but deliberately not evaluated; no original pre-R001 sample
+was found locally. The remaining characterization work is an executable safe
+data grammar, reference fixups and retained unsupported old-object records.
+Verification: 165 oracle assertions, 74 Vitest tests and production build pass.
 
 Earlier evidence:
 `docs/aline-packed-format.md` now records the source-derived envelope, cache

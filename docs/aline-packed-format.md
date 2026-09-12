@@ -200,6 +200,21 @@ Do not confuse numbering metadata with a general derived-analysis recipe.
 
 ## Older files and remaining verification
 
+See `tests/fixtures/aline/README.md` for saved specimens, provenance and exact
+coverage. Two small authored R001 files pass the historical reader and decoded
+round trips; the original bundled project has 11 rows and 88 objects. The
+illustrative older-dialect fixture is reserved for the forthcoming safe parser.
+
+The older loader requires assignments to `%par`, `@seq` and `@categories`,
+renames those variables, and evaluates the entire input. Consequently its
+accepted language is Perl, not a bounded serialization grammar. A modern
+reader must recognize data declarations, nested arrays/hashes, numeric/string
+literals, `undef` and safe reference fixups as data. Calls, interpolation and
+arbitrary statements are not part of that reader. Unknown old `@obj` records
+must remain retained with an unsupported-object diagnostic until their shapes
+are characterized. No original old-dialect specimen is available locally, so
+full historical syntax coverage remains unproven.
+
 `UndumpDataFile` also recognizes `### Aline 1.0, ` Data::Dumper files and
 historically evaluates their Perl content. Atlas must use a restricted data
 reader, never evaluate imported code. The historical reader warns that old
@@ -210,7 +225,7 @@ Run `npm run test:aline-oracle` with Perl and its core `Test::More` module.
 The harness extracts the three serialization functions and two copy/link helpers from the trusted
 repository source, plus the numbering plugin context-menu routine, and never
 evaluates a project file. It creates synthetic
-records in memory and reads the bundled `rada.aline` as raw bytes. Its 155
+records in memory and reads the bundled `rada.aline` as raw bytes. Its 165
 assertions cover numbering states (including explicit zero, negative and
 fractional values), extended/high-byte keys, styles, row attachments, object
 links, graph samples, palette compression, LF/CRLF/CR input, a complete decoded

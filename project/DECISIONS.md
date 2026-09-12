@@ -176,6 +176,12 @@ semantics, and reject malformed structure without changing document or history.
 Recompute derived layout caches from validated settings. Historical silent
 truncation is a defect to diagnose, not behavior to reproduce.
 
+## D-020 — Record corpus provenance and coverage limits
+
+Historical corpus provenance must distinguish original saves from authored
+compatibility fixtures. A synthetic Data::Dumper specimen does not establish
+complete old-version coverage. Never execute a specimen to infer its data.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;
