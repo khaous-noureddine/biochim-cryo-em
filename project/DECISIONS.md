@@ -194,6 +194,16 @@ Resolve aliases when locating reference-fixup parents and targets, with the
 same cycle and indirection limits used for validation. Keep the resulting links
 symbolic so the intermediate representation remains serializable.
 
+## D-022 — Modernize local tool invocation while retaining scientific identity
+
+Use version-aware MAFFT/MUSCLE and PDB-REDO DSSP adapters. Retain supported CCP4
+Chainsaw and all three pruning modes rather than replacing its scientific
+operation unnecessarily. Execute through an isolated, cancellable local-job
+boundary with explicit arguments and validated results. The source audit and
+remaining verification gates are in `docs/aline-integration-modernization.md`.
+These choices do not confer implemented parity or identical algorithm outputs
+across versions; constraints and historical alternatives remain in scope.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

@@ -2,6 +2,15 @@
 
 ## Current checkpoint — 2026-09-13
 
+The alias-fixup checkpoint was committed and pushed as `3f3b914`. The next
+integration audit has established local adapter directions for MAFFT/MUSCLE,
+PDB-REDO DSSP and supported CCP4 Chainsaw, with source anchors, current provider
+references and reproducible execution gates in
+`docs/aline-integration-modernization.md`. No executable integration is claimed.
+Remote services, export and automation remain the next eligible audit step.
+Validation for the local-adapter documentation: 97 Vitest tests and production
+build pass; no UI or persistence behavior changed.
+
 Phase-0 format characterization and the initial saved-project corpus have been
 audited against core fields, all 36 objects and all 30 plugins. The audit in
 `docs/aline-packed-format.md` separates established evidence from remaining

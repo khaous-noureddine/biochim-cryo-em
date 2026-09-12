@@ -80,6 +80,10 @@ Pour chaque capacité ALINE :
   specimens, provenance and reproducible checks; extend real-world coverage
   during rich import and final compatibility verification.
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.
+  - [x] Audit local alignment, DSSP and Chainsaw mechanisms against maintained
+    provider documentation; record adapter directions and verification gates.
+  - [ ] Complete remote-service, export and automation replacement decisions,
+    including scientific differences requiring explicit validation.
 
 **Sortie :** une matrice de parité qui permet de mesurer objectivement
 l’avancement et empêche d’oublier une fonction de plugin.

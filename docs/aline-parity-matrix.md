@@ -74,9 +74,9 @@ colonne de vérification.
 | PLUG-017 | `tAddDisEmbl` | Prédiction de désordre et ligne attachée | absent | remplacement maintenu à choisir |
 | PLUG-018 | `tAddGraph` | Import `.dat/.rms` et paramètres de graphe | absent | fixtures pour tous les graphes |
 | PLUG-019 | `tAddNumbers` | Ligne de numérotation configurable et recalculable | partiel | offsets, espacement et attachement |
-| PLUG-020 | `tAddSecStruct` | DSSP/PDB vers hélices, brins, coils ou boîtes | absent | fixtures DSSP/PDB et objets attendus |
+| PLUG-020 | `tAddSecStruct` | DSSP/PDB to editable secondary-structure objects | absent | `aline-integration-modernization.md`: modern DSSP adapter contract; assignment, chain/insertion and editable-object fixtures required |
 | PLUG-021 | `tAddSignalP` | SignalP, ligne/symboles et marquage de séquence | absent | remplacement SignalP actuel |
-| PLUG-022 | `tAlignment` | Alignement global MAFFT/MUSCLE/ClustalW | absent | outils disponibles et fixtures |
+| PLUG-022 | `tAlignment` | Global MAFFT/MUSCLE/ClustalW alignment | absent | `aline-integration-modernization.md`: version-aware adapter contract; real-tool fixtures, stable row identity and annotation remapping required |
 | PLUG-023 | `tAlignment` | Contraintes d'alignement depuis fichier | absent | fixture de contraintes |
 | PLUG-024 | `tAlignment` | Réalignement d'une ligne | absent | conservation de la relation aux autres lignes |
 | PLUG-025 | `tAlignment` | Alignement régional et structurel LSQMAN | absent | code historique incomplet : décision requise |
@@ -85,7 +85,7 @@ colonne de vérification.
 | PLUG-028 | `tFixDbnames` | Nettoyage des noms UniProt/GenBank | absent | table de noms historiques/modernes |
 | PLUG-029 | `tMatchPattern` | Recherche texte, regex, PROSITE et motifs prédéfinis | absent | positions, gaps, navigation et marquage |
 | PLUG-030 | `tPymolColors` | Export de script PyMOL depuis les couleurs | absent | script exécuté sur fixture PDB |
-| PLUG-031 | `tRunChainsaw` | Modèle MR depuis alignement et PDB | absent | remplacement maintenu à décider |
+| PLUG-031 | `tRunChainsaw` | MR model from alignment and PDB | absent | `aline-integration-modernization.md`: retain supported CCP4 Chainsaw; verify all three modes, chain selection, numbering and output handling |
 | PLUG-032 | `tUnattachAll` | Attacher/détacher toutes les lignes | absent | clusters sans cycles |
 | PLUG-033 | `tUndupe` | Supprimer doublons et fragments | reproduit | tests doublons espacés par gaps et fragments |
 | PLUG-034 | `mKeycodeTest.inactive` | Diagnostic de codes clavier, désactivé | absent | écart accepté probable |
