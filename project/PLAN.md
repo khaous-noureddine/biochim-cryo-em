@@ -82,8 +82,11 @@ Pour chaque capacité ALINE :
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.
   - [x] Audit local alignment, DSSP and Chainsaw mechanisms against maintained
     provider documentation; record adapter directions and verification gates.
-  - [ ] Complete remote-service, export and automation replacement decisions,
-    including scientific differences requiring explicit validation.
+  - [x] Record remote-service, export and automation contracts with provider
+    references and explicit scientific acceptance gates.
+  - [ ] Resolve the proposed disorder replacement and incomplete structural/
+    regional alignment scope before claiming these replacements accepted.
+    This scientific decision does not block independent phase-1 model work.
 
 **Sortie :** une matrice de parité qui permet de mesurer objectivement
 l’avancement et empêche d’oublier une fonction de plugin.

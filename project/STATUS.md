@@ -2,6 +2,16 @@
 
 ## Current checkpoint — 2026-09-13
 
+Remote retrieval/search, SignalP, PyMOL, print and automation contracts are now
+recorded in `docs/aline-integration-modernization.md`, with legacy source review
+and official provider documentation. A question about the proposed IUPred3
+replacement is pending user biological direction; no acceptance is inferred.
+Incomplete structure-guided/regional alignment also remains unresolved, with
+no accepted omission. These choices block their own parity claims, not phase-1
+model work. The next independent checkpoint is the version-2 document design.
+Documentation validation: 97 Vitest tests and production build pass; no running
+application behavior changed and no external scientific job was submitted.
+
 The alias-fixup checkpoint was committed and pushed as `3f3b914`. The next
 integration audit has established local adapter directions for MAFFT/MUSCLE,
 PDB-REDO DSSP and supported CCP4 Chainsaw, with source anchors, current provider

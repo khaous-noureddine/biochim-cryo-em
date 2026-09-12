@@ -90,6 +90,15 @@ colonne de vérification.
 | PLUG-033 | `tUndupe` | Supprimer doublons et fragments | reproduit | tests doublons espacés par gaps et fragments |
 | PLUG-034 | `mKeycodeTest.inactive` | Diagnostic de codes clavier, désactivé | absent | écart accepté probable |
 
+## Integration verification contracts — 2026-09-13
+
+`aline-integration-modernization.md` now supplies source-derived modern contracts
+and official provider references for CORE-014/015/039/040/041 and
+PLUG-009/010/011/015/017/020/021/022/024/025/030/031. Their implementation statuses
+above remain unchanged: architecture choices and provider documentation are not
+execution evidence. IUPred3 replacement and incomplete structural/regional
+alignment scope remain unaccepted; retain their scientific acceptance gates.
+
 ## Totaux initiaux
 
 - 41 capacités du cœur suivies ;

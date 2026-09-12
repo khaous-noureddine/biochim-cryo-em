@@ -204,6 +204,21 @@ remaining verification gates are in `docs/aline-integration-modernization.md`.
 These choices do not confer implemented parity or identical algorithm outputs
 across versions; constraints and historical alternatives remain in scope.
 
+## D-023 — Preserve provider identity and scientific meaning in modern workflows
+
+Use UniProt REST, NCBI EFetch, RCSB coordinate downloads and EBI Job Dispatcher
+BLAST+ for the corresponding retrieval/search workflows. Use current SignalP
+result import and a user-installed local package, retaining model provenance and
+the historical annotation choices without claiming identical version-3 results.
+Keep PyMOL colour scripts; replace print and automation mechanisms through the
+shared rendering and command layers. Exact contracts and provider references
+are in `docs/aline-integration-modernization.md`.
+
+IUPred3 is proposed for disorder prediction but has not been accepted as a
+replacement for the three DisEMBL definitions. Preserve original tracks and
+label new methods honestly. This decision and incomplete structural alignment
+remain open; neither is a prerequisite for designing the rich document model.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;
