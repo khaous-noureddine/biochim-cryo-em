@@ -174,7 +174,7 @@ Run `npm run test:aline-oracle` with Perl and its core `Test::More` module.
 The harness extracts the three serialization functions and two copy/link helpers from the trusted
 repository source, plus the numbering plugin context-menu routine, and never
 evaluates a project file. It creates synthetic
-records in memory and reads the bundled `rada.aline` as raw bytes. Its 134
+records in memory and reads the bundled `rada.aline` as raw bytes. Its 152
 assertions cover numbering states (including explicit zero, negative and
 fractional values), extended/high-byte keys, styles, row attachments, object
 links, graph samples, palette compression, LF/CRLF/CR input, a complete decoded
@@ -190,6 +190,53 @@ malformed values, invalid links or resource exhaustion.
 
 The characterization checkpoint remains open pending an exhaustive
 property/type inventory including plugins, additional representative projects,
-and strict modern malformed-input contracts. Atlas currently skips parameters, object dictionaries, object
+and review of the strict input contract against that inventory. Atlas currently
+skips parameters, object dictionaries, object
 records and palettes, and drops derived rows (`src/core/project.ts`). Full
 compatibility requires these gaps to be resolved and tested.
+
+## Strict Atlas reader contract (implementation pending)
+
+Historical acceptance is insufficient validation. The oracle demonstrates that
+an unmatched title key and one leftover cell byte are silently ignored. The
+modern reader must reject both with a section and row location. These rules
+apply to the forthcoming rich reader; the current partial importer does not
+satisfy them yet.
+
+- Parse bytes without replacing high-byte dictionary identifiers. Accept the
+  documented CR, LF and CRLF separators; require a supported revision and all
+  section terminators. Consume every record and every cell-stream byte.
+- Require complete key/value pairs, unique dictionary identifiers and unique
+  keys within maps. Preserve trailing empty values instead of dropping them.
+  Require every referenced dictionary entry to exist.
+- Require finite numbers for numeric fields; object counts and link indices
+  must be nonnegative integers. Validate declared counts against remaining
+  input before allocating or iterating. Numbering instructions must be one of
+  -1, 0, 1, 2, with a complete finite explicit payload for instruction 2.
+- Resolve row attachments and object links after parsing. Require detached
+  attachment -1 or an existing row index, and either two undefined link markers
+  or two valid row/object indices. Diagnose broken or inconsistent chains;
+  traversal must detect cycles rather than recurse indefinitely.
+- Validate palette field counts and inheritance sources. A first category
+  cannot inherit from a nonexistent preceding category. Preserve the terminal
+  category convention and distinguish empty fields from inheritance markers.
+- Keep unknown scalar fields as inert compatibility metadata with an explicit
+  unsupported-property diagnostic; never interpret them as code or merge them
+  into application prototypes. Unsupported object types require an explicit
+  diagnostic and retained source data, not silent deletion.
+- Apply explicit input-size and expanded-record limits before constructing the
+  document. A limit failure must explain the resource limit, leave the current
+  document and history unchanged, and offer no partially imported success.
+  Exact limits require measurement during importer implementation.
+- Parse into an isolated intermediate representation, validate it, then replace
+  the active document atomically. Test each rejection with current-document and
+  undo/redo preservation when the reader is integrated.
+
+`_UpdateParameters` (1900–1902) computes `_dpl=(1-all)*lin`,
+`_fnx=nch-all*lin`, and `_inx=1/_fnx`. These three caches are serialized alongside
+all ten default settings; the oracle now verifies all thirteen numeric values.
+Atlas should retain their source values as compatibility metadata but recompute
+layout from validated settings. Require positive effective wrap width before
+calculating its reciprocal. `fsi` is a font scale (the UI displays 100 times its
+value), not an absolute font size. Global `%cfg`, selection and undo stacks are
+not standalone packed sections.

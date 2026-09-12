@@ -211,4 +211,24 @@ delete $derived_rows->[0]{t}{pv_numsta};
 cmbind(0, 0, 0, 0, 0, undef, \@menu);
 is_deeply(\@menu, [], 'missing recalculation metadata disables historical action');
 
+# These are compatibility observations, not acceptable modern validation rules.
+my @tolerated = (
+    ['dangling title property', $prefix . "0${s}u${s}0${s}orphan\n>\nA \n$e\n"],
+    ['unconsumed cell byte', $prefix . $row . ">\nA X\n$e\n"],
+);
+for my $case (@tolerated) {
+    my ($result, undef, $decoded) = decode($case->[1]);
+    is($result, 0, "historical reader silently accepts $case->[0]");
+    is(scalar @{$decoded->[0]{e}}, 1, 'ignored malformed data leaves one decoded cell');
+}
+my %layout = (csh => 12, csv => 14, lin => 10, all => 1, ofx => 50,
+    ofy => 50, nch => 40, fsi => 1.25, num => 5, agr => 0,
+    _dpl => 0, _fnx => 30, _inx => 1/30);
+my ($layout_code, $layout_result) = decode(savepackaline(\%layout, [], \@palette));
+is($layout_code, 0, 'all document settings and derived layout caches load');
+for my $key (sort keys %layout) {
+    cmp_ok(abs($layout_result->{$key} - $layout{$key}), '<', 1e-12,
+        "document setting $key survives numeric serialization");
+}
+
 done_testing();

@@ -61,8 +61,10 @@ Pour chaque capacité ALINE :
     sparse region coverage and history-copy isolation.
   - [x] Characterize numbering private fields and consensus text with packed
     fixtures and the historical recalculation-menu prerequisite check.
+  - [x] Specify strict reader validation and characterize all document settings,
+    derived layout caches, and silently ignored malformed records.
   - [ ] Inventory remaining persisted core/plugin properties, complete representative
-    fixture coverage, and define strict modern malformed-input contracts.
+    fixture coverage, and review the strict input contract against that inventory.
 - [ ] constituer un corpus de projets historiques représentatifs ;
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.
 

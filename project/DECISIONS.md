@@ -156,6 +156,15 @@ including when reaching a scroll boundary. Keep the application within the
 viewport and verify both areas independently in the running browser. This is
 a durable product requirement from user steering, applicable to both views.
 
+## D-019 — Validate historical input before changing the active document
+
+The rich `.aline` reader must follow the strict contract in
+`docs/aline-packed-format.md`, rather than treating historical loader success as
+proof of valid input. Preserve unknown scalar data inertly, report unsupported
+semantics, and reject malformed structure without changing document or history.
+Recompute derived layout caches from validated settings. Historical silent
+truncation is a defect to diagnose, not behavior to reproduce.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;
