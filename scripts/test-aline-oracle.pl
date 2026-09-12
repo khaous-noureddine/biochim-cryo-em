@@ -184,4 +184,31 @@ is($live[0]{t}{text}, 'Row 0', 'copied title edits leave source unchanged');
 is_deeply($live[0]{e}[0]{tk}, [300], 'copy does not remove live handles');
 is($live[0]{o}[0]{fwd}, $live[1]{o}[0], 'copy does not replace live object links');
 
+my $derived = [
+    {p => 0, n => undef, t => {text => '%%%Numbers', attach => 2,
+        pv_numspc => 10, pv_numsta => -5, pv_numdo1 => 1,
+        comment => 'For Protein'}, o => [], e => [{text => '-5'}, {text => '10'}]},
+    {p => 1, n => undef, t => {text => '%%%Consensus', attach => -1,
+        comment => 'Groups=(!=IV), cutoffs = 0.50, 0.90'}, o => [],
+        e => [map { +{text => $_} } ('a', '!', '.', '$', '%', '#')]},
+    {p => 2, n => 1, t => {text => 'Protein', attach => -1}, o => [], e => [{text => 'A'}]},
+];
+my ($derived_code, undef, $derived_rows) = decode(savepackaline(\%parameters, $derived, \@palette));
+is($derived_code, 0, 'numbering and consensus rows load');
+is_deeply($derived_rows, $derived, 'private recalculation settings and non-protein annotation text survive');
+open my $number_file, '<:raw', "$root/aline_011208/plugins/tAddNumbers.plugin" or die $!;
+my $number_source = do { local $/; <$number_file> };
+my ($context_menu) = $number_source =~ /^(sub cmbind\n\{.*?)^1;/ms;
+die 'Historical numbering context menu not found' unless defined $context_menu;
+our $seq = $derived_rows;
+eval $context_menu;
+die $@ if $@;
+my @menu;
+cmbind(0, 0, 0, 0, 0, undef, \@menu);
+is($menu[1][0], 'Recalculate Numbers', 'reloaded numbering metadata enables historical recalculation action');
+delete $derived_rows->[0]{t}{pv_numsta};
+@menu = ();
+cmbind(0, 0, 0, 0, 0, undef, \@menu);
+is_deeply(\@menu, [], 'missing recalculation metadata disables historical action');
+
 done_testing();

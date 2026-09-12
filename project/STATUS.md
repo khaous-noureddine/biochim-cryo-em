@@ -27,7 +27,7 @@ remain excluded from this checkpoint.
 ## Resume evidence — 2026-09-12
 
 The first unfinished phase-0 checkpoint remains `.aline` characterization.
-The executable historical oracle (`npm run test:aline-oracle`) now passes 130
+The executable historical oracle (`npm run test:aline-oracle`) now passes 134
 assertions, including a complete decoded round trip of bundled `rada.aline`,
 synthetic rich records, alternate line endings, and all 17 loader error codes.
 All 36 registered drawable types now have styled serialization fixtures;
@@ -35,6 +35,9 @@ All 36 registered drawable types now have styled serialization fixtures;
 graph scaling, plugin producers, and the save-path handle exclusions.
 Save-copy fixtures now verify index-based links, sparse regions, all four
 handle exclusions and history-copy isolation without modifying live data.
+Numbering and consensus fixtures now preserve private recalculation fields and
+non-protein text; the historical context menu enables recalculation after reload
+and suppresses it when required metadata is missing.
 It exposes the historical loss of trailing empty dictionary values. Next work
 is the exhaustive core/plugin property inventory and strict modern input
 contracts; rich Atlas import is still incomplete.

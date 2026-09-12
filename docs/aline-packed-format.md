@@ -140,6 +140,28 @@ sparse regions, handle-bearing cells and titles, and differing display/array
 positions. It verifies packed save-copy round trips, link conversion, runtime
 handle exclusion, and history-copy isolation for title, cell and object edits.
 
+## Private numbering fields and derived text
+
+`AlinePlugin.pm` binding type 11 registers private sequence fields by location:
+0 is the row, 1 the title, 2 a cell, and 3 an object item. `_LoadPlugins`
+checks name conflicts; registration is not a serializer allowlist. The packed
+writer saves arbitrary scalar properties in those maps.
+
+`tAddNumbers.plugin` registers three title fields and writes them in `Number`:
+`pv_numspc` (spacing), `pv_numsta` (offset), and `pv_numdo1` (include the first
+number). `cmbind` offers Recalculate Numbers only for a `%%%Numbers` row with
+a nonnegative attachment and all three fields defined. The oracle round-trips
+these fields and invokes the unchanged context-menu routine to verify the
+recalculation action remains available. Removing the offset field suppresses
+that action. Actual recalculation and its UI remain separate parity work.
+
+`tAddConsensus.plugin::Consensus` writes `%%%Consensus` and a comment containing
+its group definition and cutoffs. It stores uppercase residues, lowercase
+residues, group symbols, or dots in cell `text`. The oracle preserves this
+mixed text without protein normalization. Consensus dialog settings are local
+variables; the plugin does not persist a structured recalculation configuration.
+Do not confuse numbering metadata with a general derived-analysis recipe.
+
 ## Older files and remaining verification
 
 `UndumpDataFile` also recognizes `### Aline 1.0, ` Data::Dumper files and
@@ -150,8 +172,9 @@ Atlas may silently discard it.
 
 Run `npm run test:aline-oracle` with Perl and its core `Test::More` module.
 The harness extracts the three serialization functions and two copy/link helpers from the trusted
-repository source and never evaluates a project file. It creates synthetic
-records in memory and reads the bundled `rada.aline` as raw bytes. Its 130
+repository source, plus the numbering plugin context-menu routine, and never
+evaluates a project file. It creates synthetic
+records in memory and reads the bundled `rada.aline` as raw bytes. Its 134
 assertions cover numbering states (including explicit zero, negative and
 fractional values), extended/high-byte keys, styles, row attachments, object
 links, graph samples, palette compression, LF/CRLF/CR input, a complete decoded

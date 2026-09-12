@@ -59,6 +59,8 @@ Pour chaque capacité ALINE :
     records for each type, including all nine graph variants.
   - [x] Verify historical save-copy pointer conversion, runtime handle exclusion,
     sparse region coverage and history-copy isolation.
+  - [x] Characterize numbering private fields and consensus text with packed
+    fixtures and the historical recalculation-menu prerequisite check.
   - [ ] Inventory remaining persisted core/plugin properties, complete representative
     fixture coverage, and define strict modern malformed-input contracts.
 - [ ] constituer un corpus de projets historiques représentatifs ;

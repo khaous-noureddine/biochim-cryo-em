@@ -132,7 +132,8 @@ implemented parity. Imported Perl-style data must never be executed.
 
 Use the unchanged repository's `savepackaline`, `n2a64`, and `loadpackaline`
 routines, plus `_CopySeq` and `_ObjPtrToId2`, as test references without
-initializing the Tk application. Evaluate
+initializing the Tk application. The numbering plugin context-menu routine
+is also a bounded reference for persisted recalculation prerequisites. Evaluate
 only those trusted source routines; read project bytes as data. Keep synthetic
 fixtures in the test harness and compare decoded structures because historical
 hash serialization order varies. Record legacy data-loss defects explicitly
