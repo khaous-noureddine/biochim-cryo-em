@@ -231,4 +231,44 @@ for my $key (sort keys %layout) {
         "document setting $key survives numeric serialization");
 }
 
+# PDB import produces ordinary sequence text and fractional numbering, with no
+# independent persisted chain/insertion-code map.
+open my $pdb_file, '<:raw', "$root/aline_011208/plugins/fInputPDB.plugin" or die $!;
+my $pdb_source = do { local $/; <$pdb_file> };
+my ($pdb_routine) = $pdb_source =~ /^(my \$resnl=.*)^1;/ms;
+die 'Historical PDB routine not found' unless defined $pdb_routine;
+our $cfg = {gapchar => '.'};
+eval $pdb_routine;
+die $@ if $@;
+sub pdb_atom {
+    my ($residue, $number, $insertion, $alternate) = @_;
+    my $line = ' ' x 80;
+    substr($line, 0, 6) = 'ATOM  ';
+    substr($line, 12, 4) = ' CA ';
+    substr($line, 16, 1) = $alternate;
+    substr($line, 17, 3) = $residue;
+    substr($line, 21, 1) = 'A';
+    substr($line, 22, 4) = sprintf('%4d', $number);
+    substr($line, 26, 1) = $insertion;
+    return $line;
+}
+my @pdb_input = (
+    pdb_atom('ALA', 1, ' ', ' '), pdb_atom('CYS', 1, 'A', ' '),
+    pdb_atom('ASP', 1, 'A', 'A'), pdb_atom('GLU', 2, ' ', 'B'),
+    pdb_atom('GLY', 3, ' ', ' '), 'ENDMDL', pdb_atom('TRP', 4, ' ', ' '),
+);
+my $pdb_import = pdbload(\@pdb_input);
+is_deeply($pdb_import, [['Chain A', 'ACD.G', [1, 1.0001, 1.0002, undef, 3]]],
+    'PDB insertion collisions increment fractions, gaps are unnumbered, alternate B and later models are excluded');
+my @pdb_cells;
+for my $i (0..length($pdb_import->[0][1])-1) {
+    push @pdb_cells, {text => substr($pdb_import->[0][1], $i, 1),
+        seqnumber => $pdb_import->[0][2][$i]};
+}
+my $pdb_rows = [{p => 0, n => 1, t => {text => $pdb_import->[0][0], attach => -1},
+    e => \@pdb_cells, o => []}];
+my ($pdb_code, undef, $pdb_decoded) = decode(savepackaline(\%layout, $pdb_rows, \@palette));
+is($pdb_code, 0, 'PDB-derived row loads from packed state');
+is_deeply($pdb_decoded, $pdb_rows, 'fractional insertion numbering survives packed persistence');
+
 done_testing();

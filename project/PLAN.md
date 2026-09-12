@@ -63,6 +63,8 @@ Pour chaque capacité ALINE :
     fixtures and the historical recalculation-menu prerequisite check.
   - [x] Specify strict reader validation and characterize all document settings,
     derived layout caches, and silently ignored malformed records.
+  - [x] Verify PDB-derived fractional insertion numbering through the historical
+    parser and packed persistence, documenting unrecoverable insertion identity.
   - [ ] Inventory remaining persisted core/plugin properties, complete representative
     fixture coverage, and review the strict input contract against that inventory.
 - [ ] constituer un corpus de projets historiques représentatifs ;

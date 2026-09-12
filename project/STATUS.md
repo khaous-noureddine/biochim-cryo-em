@@ -27,7 +27,7 @@ remain excluded from this checkpoint.
 ## Resume evidence — 2026-09-12
 
 The first unfinished phase-0 checkpoint remains `.aline` characterization.
-The executable historical oracle (`npm run test:aline-oracle`) now passes 152
+The executable historical oracle (`npm run test:aline-oracle`) now passes 155
 assertions, including a complete decoded round trip of bundled `rada.aline`,
 synthetic rich records, alternate line endings, and all 17 loader error codes.
 All 36 registered drawable types now have styled serialization fixtures;
@@ -50,6 +50,14 @@ These are requirements for the rich reader, not claims of implemented import
 validation. All 152 oracle assertions, 74 Vitest tests and the production build
 pass. No UI behavior changed. The remaining property/plugin inventory and
 representative corpus remain open.
+
+PDB persistence checkpoint: the unchanged plugin parser produces fractional
+insertion numbering, resolves duplicate insertions by incrementing the fraction,
+inserts unnumbered gaps, excludes alternate B locations and stops at ENDMDL.
+The resulting synthetic row survives packed persistence. Original insertion
+codes cannot be uniquely reconstructed from those fractions. The broader PDB
+workflow remains unimplemented in Atlas. Verification: 155 oracle assertions,
+74 Vitest tests and the TypeScript/Vite production build pass; no UI changed.
 
 Earlier evidence:
 `docs/aline-packed-format.md` now records the source-derived envelope, cache

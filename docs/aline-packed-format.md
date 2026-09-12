@@ -174,7 +174,7 @@ Run `npm run test:aline-oracle` with Perl and its core `Test::More` module.
 The harness extracts the three serialization functions and two copy/link helpers from the trusted
 repository source, plus the numbering plugin context-menu routine, and never
 evaluates a project file. It creates synthetic
-records in memory and reads the bundled `rada.aline` as raw bytes. Its 152
+records in memory and reads the bundled `rada.aline` as raw bytes. Its 155
 assertions cover numbering states (including explicit zero, negative and
 fractional values), extended/high-byte keys, styles, row attachments, object
 links, graph samples, palette compression, LF/CRLF/CR input, a complete decoded
@@ -194,6 +194,25 @@ and review of the strict input contract against that inventory. Atlas currently
 skips parameters, object dictionaries, object
 records and palettes, and drops derived rows (`src/core/project.ts`). Full
 compatibility requires these gaps to be resolved and tested.
+
+## PDB-derived numbering
+
+`fInputPDB.plugin::pdbload` returns names, sequence strings and numbering arrays;
+it adds no private row or cell properties. Chain identity is included in the
+name (`Chain A`, or the HEADER identifier followed by `:A`). Residue insertion
+codes become fractions: the residue number plus 0.0001 times the insertion
+index. Duplicate number/index pairs increment the index until unused. Thus a
+stored value such as 1.0002 does not prove that the original insertion code was
+B: it can also result from duplicate A records. Preserve the stored numbering
+without inventing the original structure identifiers.
+
+The oracle executes the unchanged parser with a synthetic single-chain input.
+It verifies duplicate insertions, unnumbered gaps, exclusion of alternate B
+locations, stopping at ENDMDL, and a packed round trip of the resulting row.
+This is a persistence fixture, not full PDB import parity: multi-chain batching,
+all residue mappings, malformed inputs and the Atlas UI remain to be verified.
+The parser routine and its two residue lookup strings are extracted from trusted
+repository source; input PDB records are never evaluated.
 
 ## Strict Atlas reader contract (implementation pending)
 

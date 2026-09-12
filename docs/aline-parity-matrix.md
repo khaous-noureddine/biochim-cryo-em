@@ -10,7 +10,7 @@ colonne de vérification.
 | ID | Capacité observable | Source ALINE principale | Atlas | Vérification requise |
 |---|---|---|---|---|
 | CORE-001 | Nouveau document et nettoyage de l'état | `ClearDocument`, menus File | absent | test d'état initial et parcours UI |
-| CORE-002 | Open/save/save as `.aline` | `Open`, `DumpDataFile`, `UndumpDataFile`, `savepackaline`, `loadpackaline` | partial | `aline-packed-format.md` and `npm run test:aline-oracle`: 152 historical assertions, including all 36 drawable types, layout settings and silent-loss cases; rich Atlas import fixtures and lossless `.atlas` round trips remain required |
+| CORE-002 | Open/save/save as `.aline` | `Open`, `DumpDataFile`, `UndumpDataFile`, `savepackaline`, `loadpackaline` | partial | `aline-packed-format.md` and `npm run test:aline-oracle`: 155 historical assertions, including all 36 drawable types, layout settings, PDB-derived numbering and silent-loss cases; rich Atlas import fixtures and lossless `.atlas` round trips remain required |
 | CORE-003 | Détection des changements non sauvegardés | `ShouldaSavedEh`, `_Shutdown` | partiel | tests dirty/saved et fermeture |
 | CORE-004 | Historique multi-niveaux | `PDumpData`, `DumpData`, `UndumpData`, `SkipUndoData` | partiel | undo/redo de chaque commande métier |
 | CORE-005 | Import FASTA | `ReadFasta` | reproduit | fixtures valides et invalides |
@@ -65,7 +65,7 @@ colonne de vérification.
 | PLUG-008 | `cColRes` | Coloration par type de résidu | partiel | palette exacte et choix des lignes |
 | PLUG-009 | `eAddBlast` | BLAST puis insertion/réalignement de résultats | absent | remplacement API moderne et fixture |
 | PLUG-010 | `eSeqList` | Gestionnaire de lignes, import et récupération DB | partiel | parcours complet de gestion |
-| PLUG-011 | `fInputPDB` | Import PDB/ENT par chaîne avec gaps et numéros d'insertion | absent | corpus PDB comparatif |
+| PLUG-011 | `fInputPDB` | Import PDB/ENT by chain with gaps and insertion numbering | absent | `npm run test:aline-oracle` verifies historical single-chain insertion collisions, gaps, alternate-location filtering, ENDMDL and packed persistence; comparative multi-chain corpus and Atlas workflow remain required |
 | PLUG-012 | `fInputPIR` | Import PIR | partiel | corpus PIR comparatif |
 | PLUG-013 | `mDefaultCM` | Menus contextuels adaptés au type ciblé | absent | matrice cible × commandes |
 | PLUG-014 | `mDefaultTooltips` | Infobulles titres, commentaires et numéros biologiques | partiel | contenu et modificateur Shift |
