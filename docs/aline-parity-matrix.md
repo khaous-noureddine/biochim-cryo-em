@@ -92,6 +92,12 @@ colonne de vérification.
 
 ## Integration verification contracts — 2026-09-13
 
+Version-2 object data evidence for CORE-030/032/033/034/035/036 and PLUG-018:
+`richObjects.test.ts` checks all 36 historical types plus Atlas Line, sparse
+linked coverage, per-item styles and signed drawing-space graph values through
+the component JSON reader. This does not establish UI, graph-analysis or legacy
+conversion parity; full document persistence and rendering remain required.
+
 `aline-integration-modernization.md` now supplies source-derived modern contracts
 and official provider references for CORE-014/015/039/040/041 and
 PLUG-009/010/011/015/017/020/021/022/024/025/030/031. Their implementation statuses

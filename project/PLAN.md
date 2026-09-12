@@ -98,6 +98,11 @@ l’avancement et empêche d’oublier une fonction de plugin.
     semantics, preserving annotation text and historical number states.
   - [ ] Complete object, graph, style, layout and provenance contracts, then
     validate migration and lossless serialization before application adoption.
+    - [x] Implement the rich object data contract for all historical types,
+      sparse coverage, per-item styles, stable links and drawing-space samples;
+      verify round trips and malformed input before document integration.
+    - [ ] Add the document envelope, layout/palette/provenance records and
+      full row/object validation; verify lossless version-2 serialization.
 - [ ] représenter cellules, régions, lignes d’annotation et attachements ;
 - [ ] représenter tous les objets ponctuels et régionaux d’ALINE ;
 - [ ] représenter styles, polices, palettes, graphiques et mise en page ;

@@ -233,6 +233,17 @@ The historical oracle now also evaluates the bounded `_FillSeqnum` and
 `_AttachmentForX` routines from unchanged trusted source. Application adoption
 requires full validation, migration, command/history and rendering integration.
 
+## D-025 — Rich object segments preserve sparse item-level data
+
+Represent row-local object segments with stable reciprocal segment IDs, keeping
+their own layer, multi flag and ordered item coverage. Items preserve individual
+type, style and optional text/sample; do not collapse sparse coverage into a
+bounding rectangle. Store saved graph values explicitly in drawing space, with
+height/cutoff and no invented raw measurements. Keep unknown metadata inertly
+in bounded compatibility data and reject unknown fields outside that storage.
+`docs/atlas-v2-format.md` defines component-parser limits and remaining full
+document validation, migration and rendering obligations.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

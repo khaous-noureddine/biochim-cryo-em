@@ -2,6 +2,16 @@
 
 ## Current checkpoint — 2026-09-13
 
+The rich-object component contract is implemented in `src/core/richObjects.ts`:
+all 36 historical kinds plus Atlas Line, sparse ordered coverage, independent
+item styles, stable reciprocal links and drawing-space graph samples. Twenty-one
+tests verify exact registry coverage, data round trips and rejection/retention
+boundaries. Full verification: 129 Vitest tests, 171 historical assertions and
+production build pass. No UI changed; the application still uses version 1.
+Next: document envelope, layout/palette/provenance and full row/object validation,
+then migrations and application adoption. The overall version-2 checkpoint
+and full parity remain incomplete; the disorder question remains pending.
+
 Version-2 row primitives are implemented in `src/core/richRows.ts`, with the
 contract in `docs/atlas-v2-format.md`. Eleven new tests cover immutable numbering,
 all saved number states, styles/coordinate identity and attachment traversal,
