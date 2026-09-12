@@ -50,7 +50,9 @@ Pour chaque capacité ALINE :
     in `docs/aline-packed-format.md`.
   - [x] Exercise the historical serializer/loader with synthetic records, the
     bundled project, and all 17 historical loader error codes.
-  - [ ] Inventory persisted core/plugin properties, complete representative
+  - [x] Inventory all 36 registered drawable types and verify styled packed
+    records for each type, including all nine graph variants.
+  - [ ] Inventory remaining persisted core/plugin properties, complete representative
     fixture coverage, and define strict modern malformed-input contracts.
 - [ ] constituer un corpus de projets historiques représentatifs ;
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.

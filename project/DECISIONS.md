@@ -137,6 +137,15 @@ fixtures in the test harness and compare decoded structures because historical
 hash serialization order varies. Record legacy data-loss defects explicitly
 instead of making them Atlas persistence requirements.
 
+## D-017 — Preserve historical graph drawing values without inventing raw data
+
+Packed graph samples are the output of `InsertGraph` normalization and optional
+logarithmic scaling. Preserve those drawing values and any original-range row
+comment during import. Do not infer recoverable raw measurements or processing
+options that the historical file did not store. Core region containers can
+cover sparse cells and span linked rows; their importer must preserve that
+coverage rather than silently filling a bounding rectangle.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

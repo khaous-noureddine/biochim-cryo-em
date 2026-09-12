@@ -118,4 +118,28 @@ for my $case (@invalid) {
     is($actual, $expected, "error $expected: $label");
 }
 
+my ($registry) = $source =~ /my %objectdata=\((.*?)^\);/ms;
+die 'Historical object registry not found' unless defined $registry;
+my %types = $registry =~ /^\s*(\w+)\s*=>\s*\[([0-4]),/mg;
+my @expected_types = qw(UpTriangle DownTriangle UpTriangleS DownTriangleS Circle
+    Star Starm Square Diamond UpArrowC DownArrowC UpArrowR DownArrowR BarR
+    Helix Helix2 Strand Strand2 Coil DashedLine ConnectUp ConnectDown Underline
+    Box Rect BarGraph BarCGraph LineGraph LineCGraph GradGraph GradCGraph
+    HSLGradGraph HSLGradCGraph OnebitGraph Text OutlineText);
+is_deeply([sort keys %types], [sort @expected_types], 'all 36 registered object types are explicitly inventoried');
+for my $type (@expected_types) {
+    my $item = {type => $type, xpos => 2, lc => '#112233', fc => '#aabbcc', lw => 2,
+        fontfill => '#334455', fontfoundry => 'Helvetica', fontwidth => 'condensed',
+        fontslant => 'O', fontsize => 14, fontweight => 'Bold', fontbg => 0,
+        anchor => 'nw'};
+    $item->{$types{$type} == 3 ? 'text' : 'otext'} = $types{$type} == 3 ? 0.75 : 'annotation';
+    my $object = {multi => 0, z => 3, rev => undef, fwd => undef, e => [$item]};
+    if ($types{$type} == 3) { $object->{h} = 2; $object->{cut} = 0.5; }
+    my $fixture = [{p => 0, n => undef, t => {text => '%%%Objects', attach => -1},
+        e => [{text => ' '}], o => [$object]}];
+    my ($result, undef, $decoded) = decode(savepackaline(\%parameters, $fixture, \@palette));
+    is($result, 0, "$type loads");
+    is_deeply($decoded, $fixture, "$type retains every style, payload and container property");
+}
+
 done_testing();

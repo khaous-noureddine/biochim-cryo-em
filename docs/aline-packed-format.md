@@ -90,6 +90,55 @@ written: the reader appends threshold 100 and eight empty fields.
 writes all current `%par` keys, including runtime-added keys. Global `%cfg`
 is not serialized as a separate configuration section.
 
+## Registered drawable types and persisted properties
+
+The core `%objectdata` registry (lines 610–743) contains 36 types. The oracle
+checks its complete name set and round-trips a styled record for every type.
+These are serialization assertions; they do not verify Atlas drawing fidelity.
+
+| Class | Historical type names |
+| --- | --- |
+| Point (0) | UpTriangle, DownTriangle, UpTriangleS, DownTriangleS, Circle, Star, Starm, Square, Diamond, UpArrowC, DownArrowC, UpArrowR, DownArrowR, BarR |
+| Linear (1) | Helix, Helix2, Strand, Strand2, Coil, DashedLine, ConnectUp, ConnectDown, Underline |
+| Region (2) | Box, Rect |
+| Graph (3) | BarGraph, BarCGraph, LineGraph, LineCGraph, GradGraph, GradCGraph, HSLGradGraph, HSLGradCGraph, OnebitGraph |
+| Text (4) | Text, OutlineText |
+
+`CreateObject` (2730) and `_CreateGraph` (2813) populate these common item
+fields: `type`, `xpos`, `lc`, `fc`, `lw`, `fontfill`, `fontfoundry`, `fontwidth`,
+`fontslant`, `fontsize`, `fontweight`, `fontbg`, and `anchor`. Font settings
+are persisted even on non-text objects. Point/text creation also writes
+`otext`; graph creation writes `text`. Containers hold `multi`, `z`, `rev`,
+`fwd`, and `e`; graph containers additionally hold `h` and `cut`.
+
+Linear objects store one item per covered column. Regions store per-row
+containers linked through `rev`/`fwd`, with one item per covered cell. A region
+can therefore represent sparse selected cells, not only a bounding rectangle.
+`MultiRect` and `MultiBox` are creation commands, not additional persisted types:
+`CreateObject` strips the prefix and creates linked `Rect` or `Box` records.
+
+`InsertGraph` (2843) clips to optional bounds, applies optional logarithms,
+normalizes samples, maps residue numbers to columns, then calls `_CreateGraph`.
+Gradient and binary types scale to one; other graphs scale to their height.
+The saved `text` samples and `cut` are already transformed drawing values.
+The original dynamic range may appear in a derived row comment; the original
+measurement array and transformation options are not separate saved fields.
+Do not relabel saved graph values as original scientific measurements.
+
+The bundled plugins have no `NewObType` or `objectdata` references. Graph-producing
+plugins reuse core types: `tAddGraph` selects class 3 through `_ObTypeList`,
+`cColBfac` defaults to `GradGraph`, and `tAddDisEmbl` and `tAddSecStruct` call
+`InsertGraph` with `LineGraph`. `tAddSignalP` creates `BarR`, `Box`, `DownArrowR`,
+and `Coil` through `CreateObject`. This establishes the bundled drawable type
+set; it does not complete the audit of other plugin-owned row/cell fields.
+
+The actual save path calls `_CopySeq` (4497) before `savepackaline`. It removes
+cell/title/object-item `tk` handles and row `ntk` handles, then converts object
+pointers to index pairs. Those Tk handles are runtime resources, not document
+properties. Cached scalar coordinates may remain in copied records. The current
+oracle tests packed records directly; save-path copying and pointer conversion
+still need independent fixtures.
+
 ## Older files and remaining verification
 
 `UndumpDataFile` also recognizes `### Aline 1.0, ` Data::Dumper files and
@@ -101,7 +150,7 @@ Atlas may silently discard it.
 Run `npm run test:aline-oracle` with Perl and its core `Test::More` module.
 The harness extracts only the three serialization functions from the trusted
 repository source and never evaluates a project file. It creates synthetic
-records in memory and reads the bundled `rada.aline` as raw bytes. Its 35
+records in memory and reads the bundled `rada.aline` as raw bytes. Its 108
 assertions cover numbering states (including explicit zero, negative and
 fractional values), extended/high-byte keys, styles, row attachments, object
 links, graph samples, palette compression, LF/CRLF/CR input, a complete decoded
