@@ -42,9 +42,11 @@ my @cells = (
     map { +{text => 'A', fontfill => sprintf('#%06x', $_)} } 0..299,
 );
 my @rows = (
-    {p => 7, n => 0, t => {text => 'Protein', comment => 'fixture', attach => -1},
+    {p => 7, n => 0, t => {text => 'Protein', comment => 'fixture', attach => -1,
+        titlefill => '#112233', titlefoundry => 'Helvetica', titleslant => 'R',
+        titlewidth => 'normal', titlesize => 15, titleweight => 'Bold', anchor => 'center'},
      custom => 'row-value', e => \@cells, o => [
-        {multi => 1, z => 8, rev => undef, fwd => [1, 0], e => [
+        {multi => 1, z => 8, rev => undef, fwd => [1, 0], custom => 'object-value', e => [
             {type => 'Text', xpos => 1, otext => 'domain', lc => 'black'},
             {type => 'Text', xpos => 2, otext => '', lc => 'black'},
             {type => 'Text', xpos => 9, lc => 'black'},
@@ -59,6 +61,10 @@ my @rows = (
         ]},
      ]},
 );
+
+# Cover every style field created for ordinary cells, independently of objects.
+@{$cells[0]}{qw(fontfill fontfoundry fontslant fontwidth fontsize fontweight fontbg anchor xpos)} =
+    ('#223344', 'Helvetica', 'I', 'condensed', 13, 'Medium', '#ddeeff', 'center', 0);
 
 my $wire = savepackaline(\%parameters, \@rows, \@palette);
 like($wire, qr/A\x05256\x05/, 'fixture exercises extended cell keys');

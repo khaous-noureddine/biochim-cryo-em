@@ -133,6 +133,10 @@ file contains no calculation recipe. Do not infer an analysis mode from its
 appearance. Preserve undefined row numbering starts for explicit numbering
 arrays, since a defined start enables sequential regeneration in ALINE.
 
+Treat cell array indices as alignment columns and object-item `xpos` as object
+coverage. Retain a historical cell `xpos` as compatibility metadata rather than
+using it to reposition residues. Runtime canvas handles are excluded.
+
 ## D-016 — Run a bounded historical serialization oracle
 
 Use the unchanged repository's `savepackaline`, `n2a64`, and `loadpackaline`

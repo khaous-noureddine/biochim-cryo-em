@@ -92,6 +92,42 @@ is not serialized as a separate configuration section.
 
 ## Registered drawable types and persisted properties
 
+### Core property inventory and fixture coverage
+
+The packed writer serializes the following core record families. The inventory
+comes from `InsertRow`, `InsertSequence`, `_InsertCells`, `_DefrayEnds`,
+`CreateObject`, `_CreateGraph`, `_PropertyWindow`, `_ApplyEdits`, `PrintSeq`,
+`_CopySeq`, and the packed writer/reader. Dynamic extension fields are preserved
+as scalar key/value data; this is not a closed allowlist for imported files.
+
+| Record | Core properties | Existing oracle coverage |
+| --- | --- | --- |
+| Document | `csh csv lin all ofx ofy nch fsi num agr`, derived `_dpl _fnx _inx` | All thirteen numeric settings; scalar/array extension parameters |
+| Row | `p n t e o`; runtime `ntk` | Differing display/index order, numeric/undefined start, rows with cells and objects, handle exclusion, extra scalar field |
+| Title | `text comment attach titlefill titlefoundry titleslant titlewidth titlesize titleweight anchor`; runtime `tk` | Fully styled title, detached/attached rows, derived names, private numbering metadata, handle exclusion |
+| Cell | `text seqnumber fontfill fontfoundry fontslant fontwidth fontsize fontweight fontbg anchor xpos`; runtime `tk` | Fully styled cell, numbering states, mixed text, high-byte dictionary variants, handle exclusion |
+| Object container | `multi z rev fwd e`; graph `h cut` | Linked sparse regions, all graph types, transformed samples, extra scalar field, copy isolation |
+| Object item | `type xpos lc fc lw fontfill fontfoundry fontslant fontwidth fontsize fontweight fontbg anchor`, `text` or `otext`; runtime `tk` | All 36 types with every style field, text/graph payload distinctions, handle exclusion |
+| Palette | Threshold plus eight category fields | Equal-field and prior-category compression, terminal category, full bundled-project round trip |
+
+Core display coordinates mainly live inside `tk`/`ntk` arrays and are removed
+by `_CopySeq`. Cell `xpos` is initialized by core creation and retained by the
+serializer; it is not the cell's authoritative alignment column, which is its
+array index. Object-item `xpos`, in contrast, is authoritative coverage data.
+The synthetic `ypos` in the copy fixture tests arbitrary scalar preservation;
+it is not a documented core-created property.
+
+The property editor synthesizes `FONT_title` and `FONT_font` controls that expand
+into the component font fields. Those UI control identifiers are not additional
+saved properties. `%cfg` includes fonts, canvas/grid colours, tool settings and
+external paths, but only values copied into the record families above enter
+packed state. `_RefreshAfterLoad` clears history and resets the cursor; neither
+history nor cursor is a packed document section.
+
+This completes the R001 core field inventory. Representative saved-file corpus
+coverage and the older Data::Dumper dialect still need their own characterization;
+neither is implied by the synthetic packed fixtures.
+
 The core `%objectdata` registry (lines 610–743) contains 36 types. The oracle
 checks its complete name set and round-trips a styled record for every type.
 These are serialization assertions; they do not verify Atlas drawing fidelity.

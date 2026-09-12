@@ -70,6 +70,14 @@ for explicit numbering arrays and preventing later sequential renumbering.
 Verification: 155 oracle assertions, 74 Vitest tests and production build pass.
 Next: finish the core property inventory and representative corpus coverage.
 
+R001 core field inventory is now complete in the packed-format reference,
+including property-editor font expansion, runtime exclusions and the distinction
+between cell index and object `xpos`. Rich fixtures now explicitly cover every
+core title/cell style field and an extra object-container scalar. All 155 oracle
+assertions, 74 Vitest tests and the production build pass. The remaining format
+checkpoint is representative saved-project coverage and the older Data::Dumper
+dialect; full import and scientific workflows remain implementation work.
+
 Earlier evidence:
 `docs/aline-packed-format.md` now records the source-derived envelope, cache
 keys, numbering states, row and object records, links, graph payloads, palettes,

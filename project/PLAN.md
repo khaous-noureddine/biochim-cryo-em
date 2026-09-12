@@ -67,8 +67,10 @@ Pour chaque capacité ALINE :
     parser and packed persistence, documenting unrecoverable insertion identity.
   - [x] Inventory persisted outputs for all 30 bundled plugins, their support
     module and inactive diagnostic, including numbering-cache side effects.
-  - [ ] Inventory remaining persisted core properties, complete representative
-    fixture coverage, and review the strict input contract against that inventory.
+  - [x] Complete the R001 core property inventory and cover title/cell style
+    fields and extension fields with packed round-trip fixtures.
+  - [ ] Characterize representative saved projects and the older Data::Dumper
+    dialect; review the strict input contract against that coverage.
 - [ ] constituer un corpus de projets historiques représentatifs ;
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.
 
