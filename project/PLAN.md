@@ -40,6 +40,11 @@ Pour chaque capacité ALINE :
 
 ## Phase 0 — Spécification exécutable de la parité
 
+- [x] Priority user steering: implement independent sidebar and alignment
+  vertical scroll containers; verify each independently and at boundaries in
+  the running browser, update status, commit and push, then resume the ALINE
+  characterization checkpoint below.
+
 - [x] convertir l’inventaire existant en matrice cœur/plugin avec un identifiant
   stable par fonctionnalité ;
 - [x] associer chaque entrée aux fonctions Perl et fichiers concernés ;

@@ -1,5 +1,29 @@
 # État actuel d’Atlas Alignement
 
+## Active user steering — independent scrolling
+
+D-018 and the priority checkpoint in `project/PLAN.md` were recorded before
+coding. `src/styles.css` now constrains the application to the viewport, lets
+the sidebar and alignment shrink within their layout tracks, uses independent
+vertical overflow, and contains scroll chaining at their boundaries. The editor
+toolbar retains its natural height, including wrapping at narrow widths.
+
+Validation: all 74 Vitest tests and the TypeScript/Vite production build pass.
+Browser verification passed in the connected in-app browser at 1280 × 720,
+using a synthetic FASTA with 40 rows and 200 positions. Classic: sidebar moved
+from 0 to 631.5 while alignment stayed at 0; alignment then moved to 1440 and
+6505 while sidebar stayed at 631.5. Additional downward boundary scrolling
+changed neither pane. Modern: sidebar returned to 0 while alignment stayed at
+629; alignment returned to 0 while sidebar stayed at 0. Additional upward
+boundary scrolling changed neither pane. Throughout, page scrollY stayed 0,
+topbar top stayed 0, and editor top stayed 92. Visual inspection confirmed
+separate scrollbars and a fixed header. This layout-only change does not alter
+document persistence or undo/redo. The synthetic input was temporary.
+
+The independent-scroll checkpoint is verified. Resume the remaining ALINE
+core/plugin property inventory and strict input contracts. Unrelated changes
+remain excluded from this checkpoint.
+
 ## Resume evidence — 2026-09-12
 
 The first unfinished phase-0 checkpoint remains `.aline` characterization.

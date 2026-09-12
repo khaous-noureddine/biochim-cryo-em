@@ -147,6 +147,14 @@ options that the historical file did not store. Core region containers can
 cover sparse cells and span linked rows; their importer must preserve that
 coverage rather than silently filling a bounding rectangle.
 
+## D-018 — Independent vertical scrolling for tools and alignment
+
+The tools sidebar and alignment workspace each own a vertical scroll container.
+Scrolling either area must not move the other area or the application layout,
+including when reaching a scroll boundary. Keep the application within the
+viewport and verify both areas independently in the running browser. This is
+a durable product requirement from user steering, applicable to both views.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;
