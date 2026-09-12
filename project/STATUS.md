@@ -1,5 +1,22 @@
 # État actuel d’Atlas Alignement
 
+## Resume evidence — 2026-09-12
+
+The first unfinished phase-0 checkpoint remains `.aline` characterization.
+`docs/aline-packed-format.md` now records the source-derived envelope, cache
+keys, numbering states, row and object records, links, graph payloads, palettes,
+document preferences, and the older Data::Dumper entry point. This is a first
+bounded documentation step, not completion of that checkpoint. Next: implement
+a historical serializer/loader oracle and fixtures, then audit all persisted
+core/plugin property types and malformed-input behavior.
+
+Verification for this documentation step: `npm test` passed all 74 tests in
+eight files; `npm run build` passed TypeScript and Vite. No lint script is
+configured. No UI behavior changed, so browser verification was not applicable.
+
+The existing untracked verification plan and documentation test were present
+on resumption and are preserved, as are README, examples, and `toto.py` changes.
+
 Dernière mise à jour : 11 septembre 2026.
 
 ## Checkpoint actif

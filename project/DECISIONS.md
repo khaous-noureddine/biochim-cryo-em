@@ -122,6 +122,14 @@ même changement.
 
 ## Décisions encore ouvertes
 
+### D-015 — Separate historical wire data from the Atlas document model
+
+Characterize `.aline` records before extending the rich document importer.
+Preserve the distinctions between cell text, graph payloads, row attachments,
+object links, and absent/undefined/explicit numbering in compatibility tests.
+The wire-format reference is `docs/aline-packed-format.md`; it does not confer
+implemented parity. Imported Perl-style data must never be executed.
+
 - conteneur desktop final : Tauri, Electron ou autre solution ;
 - moteur de rendu des grands alignements : DOM virtualisé, Canvas, SVG hybride
   ou combinaison ;

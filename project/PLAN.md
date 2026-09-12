@@ -46,6 +46,10 @@ Pour chaque capacité ALINE :
 - [x] définir pour chaque entrée un test, une fixture ou une procédure manuelle ;
 - [ ] caractériser complètement le format `.aline`, y compris objets,
   graphiques, couleurs, attachements et préférences de document ;
+  - [x] Document the packed wire layout from the historical serializer and loader
+    in `docs/aline-packed-format.md`.
+  - [ ] Verify wire branches with a historical oracle and fixtures, inventory
+    persisted core/plugin properties, and define malformed-input contracts.
 - [ ] constituer un corpus de projets historiques représentatifs ;
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.
 

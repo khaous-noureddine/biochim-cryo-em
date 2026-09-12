@@ -10,7 +10,7 @@ colonne de vérification.
 | ID | Capacité observable | Source ALINE principale | Atlas | Vérification requise |
 |---|---|---|---|---|
 | CORE-001 | Nouveau document et nettoyage de l'état | `ClearDocument`, menus File | absent | test d'état initial et parcours UI |
-| CORE-002 | Ouvrir/sauvegarder/sauvegarder sous `.aline` | `Open`, `DumpDataFile`, `UndumpDataFile`, `savepackaline`, `loadpackaline` | partiel | fixtures `.aline`, aller-retour `.atlas` sans perte |
+| CORE-002 | Open/save/save as `.aline` | `Open`, `DumpDataFile`, `UndumpDataFile`, `savepackaline`, `loadpackaline` | partial | Wire layout: `aline-packed-format.md`; historical oracle and rich import fixtures remain required; lossless `.atlas` round trips remain required |
 | CORE-003 | Détection des changements non sauvegardés | `ShouldaSavedEh`, `_Shutdown` | partiel | tests dirty/saved et fermeture |
 | CORE-004 | Historique multi-niveaux | `PDumpData`, `DumpData`, `UndumpData`, `SkipUndoData` | partiel | undo/redo de chaque commande métier |
 | CORE-005 | Import FASTA | `ReadFasta` | reproduit | fixtures valides et invalides |
