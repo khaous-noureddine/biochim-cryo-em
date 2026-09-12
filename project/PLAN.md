@@ -65,7 +65,9 @@ Pour chaque capacité ALINE :
     derived layout caches, and silently ignored malformed records.
   - [x] Verify PDB-derived fractional insertion numbering through the historical
     parser and packed persistence, documenting unrecoverable insertion identity.
-  - [ ] Inventory remaining persisted core/plugin properties, complete representative
+  - [x] Inventory persisted outputs for all 30 bundled plugins, their support
+    module and inactive diagnostic, including numbering-cache side effects.
+  - [ ] Inventory remaining persisted core properties, complete representative
     fixture coverage, and review the strict input contract against that inventory.
 - [ ] constituer un corpus de projets historiques représentatifs ;
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.

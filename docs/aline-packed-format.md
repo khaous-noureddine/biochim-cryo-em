@@ -195,6 +195,66 @@ skips parameters, object dictionaries, object
 records and palettes, and drops derived rows (`src/core/project.ts`). Full
 compatibility requires these gaps to be resolved and tested.
 
+## Bundled plugin persistence inventory
+
+The following inventory covers all 30 `.plugin` files shipped in `plugins/`.
+Names in the first column identify those files; function names identify the
+write path to inspect. This classifies persisted output, not implemented Atlas
+parity or verified scientific results for each plugin.
+
+| Plugin | Write path and packed result |
+| --- | --- |
+| aColourPicker | `run` reads title/cell/object colours into `_SetWorkColour`; changes working configuration, no new document fields. |
+| aDeleteResidues | `run` calls `_DeleteCells`; changes existing cells and associated core objects/numbering through core editing. |
+| aProtTool | `run_private` displays calculations; `_FillSeqnum` may populate existing cell numbering, but results are not saved as a new analysis record. |
+| cCalCons | `run` calls `_ApplyCat`; calculated conservation becomes cell style fields, not saved score arrays or a recalculation recipe. |
+| cCalSim | `run` calls `_ApplyCat`; similarity groups, history and cutoff are plugin-local settings; resulting cell styles persist. |
+| cClearSeq | `run` overwrites cell `fontfill`, `fontfoundry`, `fontweight`, `fontbg`; it does not delete graphical objects despite the menu's broad reset wording. |
+| cColBfac | `PDB` creates an optional attached B-factor row and core graph; input atom records and averaging choices remain local. |
+| cColRes | `run` calls `_ApplyEdits`; the six cell style fields below persist, without a residue-colouring mode identifier. |
+| eAddBlast | result insertion calls `InsertSequence`; returned names, sequences, numbering and comments become ordinary rows. Remote request state is not a packed section. |
+| eSeqList | `run` and insertion callbacks change row `p`, title `text`/`comment`, insert/delete core rows and copy core state. No private metadata map is registered. |
+| fInputPDB | `pdbload` returns names, sequence text and numeric numbering arrays; see the insertion-numbering fixture below. |
+| fInputPIR | `pirload` returns names, sequence text, optional numbering start from the name suffix and description; core insertion stores these. |
+| mDefaultCM | context-menu callbacks delegate row/object deletion, insertion and property edits to core commands; no menu state is serialized. |
+| mDefaultTooltips | `dc`/`dn` read title and numbering data; `_FillSeqnum` may materialize cell numbering. Tooltip strings are not saved. |
+| sPrint | `run` builds local page state and external PostScript/print output, temporarily changes canvas display; no private document fields. |
+| tAddConsensus | `Consensus` creates a derived row with title/comment and mixed cell text; no structured computation recipe. |
+| tAddDisEmbl | `DisEmbl` creates an optional attached row and `LineGraph` objects; predictions survive as transformed graph samples and descriptive text. |
+| tAddGraph | `RMSWin` passes local samples/options to `InsertGraph`; graph records and optional generated row persist. |
+| tAddNumbers | `Number` writes a derived row and title `pv_numspc`, `pv_numsta`, `pv_numdo1`; these are the only registered private fields in the bundled plugins. |
+| tAddSecStruct | `DSSP` creates an optional attached row, core structure objects and optional `LineGraph`; source DSSP/PDB records remain local. |
+| tAddSignalP | `SignalPWin` creates `BarR`/`Box`, or an attached row with `DownArrowR`/`Coil`; organism and request state are not a saved recipe. |
+| tAlignment | `dropalignment` temporarily rewrites attachments and calls `_DeleteCells`, `_InsertCells`, `_DefrayEnds`; final core cells/objects/attachments persist. External alignment options/results have no separate section. |
+| tClearGapCols | `run` calls `_DeleteCells` for gap-only columns; resulting core state persists. |
+| tCorrMutations | cluster marking calls `CreateObject('Multi' + selected type)`; sparse linked region objects persist, not the cluster calculation arrays. |
+| tFixDbnames | `run` rewrites title `text` and `comment`, preserving identifiers in descriptive text rather than a structured database field. |
+| tMatchPattern | search state remains local; marking calls `CreateObject('MultiBox')`, persisting sparse region objects. |
+| tPymolColors | `run` exports colours and identifiers to a script; `_FillSeqnum` may materialize numbering, but no PyMOL model/chain settings are packed. |
+| tRunChainsaw | `Chainsaw` writes external PDB/PIR files and invokes an executable; no generated model is inserted into document state. |
+| tUnattachAll | menu callback and `attachall` write title `attach`; their temporary cluster maps are not persisted. |
+| tUndupe | `run` deletes duplicate/fragment rows through `DeleteRowByY`; comparison strings are temporary. |
+
+`AlinePlugin.pm` is the binding infrastructure, `mKeycodeTest.inactive` logs
+keyboard events and is not auto-loaded, and `test.dat` is graph input data.
+None supplies an additional packed section. Binding type 7 can register object
+types, but no bundled plugin uses it; type 11 is used only by `tAddNumbers`.
+This conclusion concerns the bundled set, not arbitrary third-party extensions.
+
+`_ApplyCat` (3059) maps palette values into `_ApplyEdits` (3790). For cells,
+the latter writes `fontfill`, `fontsize`, `fontfoundry`, `fontslant`,
+`fontweight`, `fontbg`. For object items it writes `fc`, `lc`, `lw`,
+`fontfill`, `fontsize`, `fontfoundry`, `fontslant`, `fontweight`. Thus rich
+import must preserve explicit styles even when the original calculation or
+colouring mode is unknown. The existing styled cell and all-type object oracle
+fixtures cover serialization of these fields; they do not test each producer.
+
+Source review also exposes behaviors to revisit in their implementation phases:
+`cClearSeq` assigns font weight from configuration index 5, although core row
+creation uses index 2; `dropalignment` restores attachments with `pop` while
+iterating rows forward. These observations require dedicated regression cases
+before adopting a corrected modern behavior; they are not accepted parity gaps.
+
 ## PDB-derived numbering
 
 `fInputPDB.plugin::pdbload` returns names, sequence strings and numbering arrays;
@@ -205,6 +265,11 @@ index. Duplicate number/index pairs increment the index until unused. Thus a
 stored value such as 1.0002 does not prove that the original insertion code was
 B: it can also result from duplicate A records. Preserve the stored numbering
 without inventing the original structure identifiers.
+
+`InsertSequence` sets row `n` to undefined when given an explicit numbering
+array. This is essential: `_FillSeqnum` rewrites all cell numbers sequentially
+whenever row `n` is defined. The PDB fixture therefore uses undefined `n`, matching
+core insertion, so later display/export cannot erase its insertion fractions.
 
 The oracle executes the unchanged parser with a synthetic single-chain input.
 It verifies duplicate insertions, unnumbered gaps, exclusion of alternate B

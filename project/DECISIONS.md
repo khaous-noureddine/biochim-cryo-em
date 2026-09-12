@@ -128,6 +128,11 @@ object links, and absent/undefined/explicit numbering in compatibility tests.
 The wire-format reference is `docs/aline-packed-format.md`; it does not confer
 implemented parity. Imported Perl-style data must never be executed.
 
+Preserve plugin-produced explicit styles and objects even when the historical
+file contains no calculation recipe. Do not infer an analysis mode from its
+appearance. Preserve undefined row numbering starts for explicit numbering
+arrays, since a defined start enables sequential regeneration in ALINE.
+
 ## D-016 — Run a bounded historical serialization oracle
 
 Use the unchanged repository's `savepackaline`, `n2a64`, and `loadpackaline`

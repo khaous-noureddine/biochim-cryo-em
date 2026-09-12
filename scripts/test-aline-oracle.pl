@@ -265,7 +265,7 @@ for my $i (0..length($pdb_import->[0][1])-1) {
     push @pdb_cells, {text => substr($pdb_import->[0][1], $i, 1),
         seqnumber => $pdb_import->[0][2][$i]};
 }
-my $pdb_rows = [{p => 0, n => 1, t => {text => $pdb_import->[0][0], attach => -1},
+my $pdb_rows = [{p => 0, n => undef, t => {text => $pdb_import->[0][0], attach => -1},
     e => \@pdb_cells, o => []}];
 my ($pdb_code, undef, $pdb_decoded) = decode(savepackaline(\%layout, $pdb_rows, \@palette));
 is($pdb_code, 0, 'PDB-derived row loads from packed state');

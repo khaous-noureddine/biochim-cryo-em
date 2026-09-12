@@ -59,6 +59,17 @@ codes cannot be uniquely reconstructed from those fractions. The broader PDB
 workflow remains unimplemented in Atlas. Verification: 155 oracle assertions,
 74 Vitest tests and the TypeScript/Vite production build pass; no UI changed.
 
+Plugin persistence inventory now covers all 30 bundled plugins, the API module,
+inactive key diagnostic and graph input data in `docs/aline-packed-format.md`.
+Outputs use core styles, rows, numbering, attachments and objects; only the
+numbering plugin registers private fields. Scientific producer workflows remain
+separate parity work. Source review identified font-reset indexing and alignment
+attachment restoration behavior requiring regression cases in later phases.
+The PDB fixture now correctly uses undefined row `n`, matching `InsertSequence`
+for explicit numbering arrays and preventing later sequential renumbering.
+Verification: 155 oracle assertions, 74 Vitest tests and production build pass.
+Next: finish the core property inventory and representative corpus coverage.
+
 Earlier evidence:
 `docs/aline-packed-format.md` now records the source-derived envelope, cache
 keys, numbering states, row and object records, links, graph payloads, palettes,
