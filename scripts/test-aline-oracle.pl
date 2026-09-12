@@ -3,7 +3,7 @@ use warnings;
 use FindBin;
 use Test::More;
 
-# Execute only the three serialization routines from the trusted repository
+# Execute only bounded serialization and copy routines from the trusted repository
 # reference. Never evaluate a project file or initialize Perl/Tk.
 my $root = "$FindBin::Bin/..";
 open my $source_file, '<:raw', "$root/aline_011208/bin/aline" or die $!;
@@ -13,6 +13,12 @@ die 'Historical serialization routines not found' unless defined $routines;
 our %prog = (name => 'ALINE oracle', version => 'R001', author => 'fixture', website => 'local');
 eval $routines;
 die $@ if $@;
+for my $name (qw(_ObjPtrToId2 _CopySeq)) {
+    my ($routine) = $source =~ /^(sub \Q$name\E\([^\n]*\)\n\{.*?)^sub /ms;
+    die "Historical $name routine not found" unless defined $routine;
+    eval $routine;
+    die $@ if $@;
+}
 
 sub decode {
     my ($wire) = @_;
@@ -141,5 +147,41 @@ for my $type (@expected_types) {
     is($result, 0, "$type loads");
     is_deeply($decoded, $fixture, "$type retains every style, payload and container property");
 }
+
+my @live = map {
+    +{p => 9 - $_, n => undef, ntk => [100 + $_],
+      t => {text => "Row $_", attach => $_ ? 0 : -1, tk => [200 + $_]},
+      e => [{text => 'A', seqnumber => 1, xpos => 50, ypos => 60, tk => [300 + $_]}],
+      o => [{multi => 1, z => 4, rev => undef, fwd => undef,
+        e => [map { +{type => 'Rect', xpos => $_, fc => 'red', tk => [400 + $_]} } (1, 4)]}]}
+} (0, 1);
+$live[0]{o}[0]{fwd} = $live[1]{o}[0];
+$live[1]{o}[0]{rev} = $live[0]{o}[0];
+my (@packed_rows, @copied_rows);
+_CopySeq(\@live, \@packed_rows, 1);
+is_deeply($packed_rows[0]{o}[0]{fwd}, [1, 0], 'save copy converts forward pointer to array indices, not display position');
+is_deeply($packed_rows[1]{o}[0]{rev}, [0, 0], 'save copy converts reverse pointer');
+for my $i (0, 1) {
+    ok(!exists($packed_rows[$i]{ntk}), 'save copy excludes row number handles');
+    ok(!exists($packed_rows[$i]{t}{tk}), 'save copy excludes title handles');
+    ok(!exists($packed_rows[$i]{e}[0]{tk}), 'save copy excludes cell handles');
+    ok(!exists($packed_rows[$i]{o}[0]{e}[0]{tk}), 'save copy excludes object item handles');
+    is_deeply([map { $_->{xpos} } @{$packed_rows[$i]{o}[0]{e}}], [1, 4], 'sparse region remains sparse');
+}
+my ($saved_code, undef, $saved_rows) = decode(savepackaline(\%parameters, \@packed_rows, \@palette));
+is($saved_code, 0, 'actual save-copy output loads');
+is_deeply($saved_rows, \@packed_rows, 'save-copy output preserves all persisted properties');
+_CopySeq(\@live, \@copied_rows);
+is($copied_rows[0]{o}[0]{fwd}, $copied_rows[1]{o}[0], 'history copy reconnects forward link within copy');
+is($copied_rows[1]{o}[0]{rev}, $copied_rows[0]{o}[0], 'history copy reconnects reverse link within copy');
+isnt($copied_rows[0]{o}[0], $live[0]{o}[0], 'history copy owns new object containers');
+$copied_rows[0]{o}[0]{e}[0]{fc} = 'blue';
+$copied_rows[0]{e}[0]{text} = 'G';
+$copied_rows[0]{t}{text} = 'Edited';
+is($live[0]{o}[0]{e}[0]{fc}, 'red', 'copied object edits leave source unchanged');
+is($live[0]{e}[0]{text}, 'A', 'copied cell edits leave source unchanged');
+is($live[0]{t}{text}, 'Row 0', 'copied title edits leave source unchanged');
+is_deeply($live[0]{e}[0]{tk}, [300], 'copy does not remove live handles');
+is($live[0]{o}[0]{fwd}, $live[1]{o}[0], 'copy does not replace live object links');
 
 done_testing();

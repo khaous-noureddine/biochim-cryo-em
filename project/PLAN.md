@@ -52,6 +52,8 @@ Pour chaque capacité ALINE :
     bundled project, and all 17 historical loader error codes.
   - [x] Inventory all 36 registered drawable types and verify styled packed
     records for each type, including all nine graph variants.
+  - [x] Verify historical save-copy pointer conversion, runtime handle exclusion,
+    sparse region coverage and history-copy isolation.
   - [ ] Inventory remaining persisted core/plugin properties, complete representative
     fixture coverage, and define strict modern malformed-input contracts.
 - [ ] constituer un corpus de projets historiques représentatifs ;

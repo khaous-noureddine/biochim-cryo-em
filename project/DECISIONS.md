@@ -131,7 +131,8 @@ implemented parity. Imported Perl-style data must never be executed.
 ## D-016 — Run a bounded historical serialization oracle
 
 Use the unchanged repository's `savepackaline`, `n2a64`, and `loadpackaline`
-routines as test references without initializing the Tk application. Evaluate
+routines, plus `_CopySeq` and `_ObjPtrToId2`, as test references without
+initializing the Tk application. Evaluate
 only those trusted source routines; read project bytes as data. Keep synthetic
 fixtures in the test harness and compare decoded structures because historical
 hash serialization order varies. Record legacy data-loss defects explicitly

@@ -135,9 +135,10 @@ set; it does not complete the audit of other plugin-owned row/cell fields.
 The actual save path calls `_CopySeq` (4497) before `savepackaline`. It removes
 cell/title/object-item `tk` handles and row `ntk` handles, then converts object
 pointers to index pairs. Those Tk handles are runtime resources, not document
-properties. Cached scalar coordinates may remain in copied records. The current
-oracle tests packed records directly; save-path copying and pointer conversion
-still need independent fixtures.
+properties. Cached scalar coordinates may remain in copied records. The oracle now exercises `_CopySeq` and `_ObjPtrToId2` directly with linked
+sparse regions, handle-bearing cells and titles, and differing display/array
+positions. It verifies packed save-copy round trips, link conversion, runtime
+handle exclusion, and history-copy isolation for title, cell and object edits.
 
 ## Older files and remaining verification
 
@@ -148,9 +149,9 @@ top-level `@obj` data cannot be interpreted; that warning is not evidence that
 Atlas may silently discard it.
 
 Run `npm run test:aline-oracle` with Perl and its core `Test::More` module.
-The harness extracts only the three serialization functions from the trusted
+The harness extracts the three serialization functions and two copy/link helpers from the trusted
 repository source and never evaluates a project file. It creates synthetic
-records in memory and reads the bundled `rada.aline` as raw bytes. Its 108
+records in memory and reads the bundled `rada.aline` as raw bytes. Its 130
 assertions cover numbering states (including explicit zero, negative and
 fractional values), extended/high-byte keys, styles, row attachments, object
 links, graph samples, palette compression, LF/CRLF/CR input, a complete decoded
