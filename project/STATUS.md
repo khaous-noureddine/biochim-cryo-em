@@ -1,5 +1,22 @@
 # État actuel d’Atlas Alignement
 
+## Current checkpoint — 2026-09-13
+
+Phase-0 format characterization and the initial saved-project corpus have been
+audited against core fields, all 36 objects and all 30 plugins. The audit in
+`docs/aline-packed-format.md` separates established evidence from remaining
+rich-import, rendering and scientific workflow work. Historical-version corpus
+breadth remains limited and must expand during compatibility verification.
+
+The audit found a valid older-dialect fixup through aliases that the reader
+rejected. A failing regression now passes after dereferencing fixup parents and
+targets with cycle checks. Verification: 97 Vitest tests (23 older-reader tests),
+165 historical assertions and production build pass. No application UI changed.
+
+Next eligible checkpoint: classify obsolete integrations and choose maintained
+replacements, then proceed to the version 2 document model. Earlier evidence
+below is historical; this section defines the current continuation point.
+
 ## Active user steering — independent scrolling
 
 D-018 and the priority checkpoint in `project/PLAN.md` were recorded before

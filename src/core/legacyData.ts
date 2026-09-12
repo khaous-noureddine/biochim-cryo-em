@@ -211,30 +211,32 @@ export function parseLegacyData(source: string, limits: Partial<LegacyReadLimits
     };
     return walk(target);
   };
-  for (const { from, to } of fixups) {
-    const existing = resolve(from);
-    const target = resolve(to);
-    if (!target || typeof target !== "object" || target.kind === "reference") fail("Reference must target a container");
-    if (existing !== null && !(typeof existing === "object" && existing.kind === "map" && !Object.keys(existing.entries).length)
-      && !(typeof existing === "object" && existing.kind === "list" && !existing.values.length)) {
-      fail("Reference fixup would overwrite data");
-    }
-    const parent = resolve({ root: from.root, parts: from.parts.slice(0, -1) });
-    const last = from.parts[from.parts.length - 1];
-    const reference: LegacyReference = { kind: "reference", target: to };
-    if (parent && typeof parent === "object" && parent.kind === "list" && typeof last === "number") parent.values[last] = reference;
-    else if (parent && typeof parent === "object" && parent.kind === "map" && typeof last === "string") parent.entries[last] = reference;
-    else fail("Invalid reference destination");
-  }
-  for (const to of references) {
-    let target = resolve(to);
+  const dereference = (path: LegacyPath): LegacyValue => {
+    let target = resolve(path);
     const seen = new Set<LegacyValue>();
     while (target && typeof target === "object" && target.kind === "reference") {
       if (seen.has(target) || seen.size >= budget.maxDepth) fail("Cyclic or excessive reference indirection");
       seen.add(target);
       target = resolve(target.target);
     }
+    return target;
+  };
+  for (const { from, to } of fixups) {
+    const existing = resolve(from);
+    const target = dereference(to);
+    if (!target || typeof target !== "object" || target.kind === "reference") fail("Reference must target a container");
+    if (existing !== null && !(typeof existing === "object" && existing.kind === "map" && !Object.keys(existing.entries).length)
+      && !(typeof existing === "object" && existing.kind === "list" && !existing.values.length)) {
+      fail("Reference fixup would overwrite data");
+    }
+    const parent = dereference({ root: from.root, parts: from.parts.slice(0, -1) });
+    const last = from.parts[from.parts.length - 1];
+    const reference: LegacyReference = { kind: "reference", target: to };
+    if (parent && typeof parent === "object" && parent.kind === "list" && typeof last === "number") parent.values[last] = reference;
+    else if (parent && typeof parent === "object" && parent.kind === "map" && typeof last === "string") parent.entries[last] = reference;
+    else fail("Invalid reference destination");
   }
+  for (const to of references) dereference(to);
   return {
     parameters: roots.par as LegacyMap,
     rows: roots.seq as LegacyList,

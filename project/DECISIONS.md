@@ -190,6 +190,10 @@ Keep unknown old top-level objects with a warning. Syntax parsing is separate
 from scientific record validation and conversion into an Atlas document; parser
 success alone does not imply a fully supported project.
 
+Resolve aliases when locating reference-fixup parents and targets, with the
+same cycle and indirection limits used for validation. Keep the resulting links
+symbolic so the intermediate representation remains serializable.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

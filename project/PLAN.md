@@ -49,8 +49,9 @@ Pour chaque capacité ALINE :
   stable par fonctionnalité ;
 - [x] associer chaque entrée aux fonctions Perl et fichiers concernés ;
 - [x] définir pour chaque entrée un test, une fixture ou une procédure manuelle ;
-- [ ] caractériser complètement le format `.aline`, y compris objets,
-  graphiques, couleurs, attachements et préférences de document ;
+- [x] Characterize the known `.aline` record families, including objects,
+  graphs, colours, attachments and document preferences; retain the historical
+  coverage limits recorded in the packed-format audit for import verification.
   - [x] Document the packed wire layout from the historical serializer and loader
     in `docs/aline-packed-format.md`.
   - [x] Exercise the historical serializer/loader with synthetic records, the
@@ -73,9 +74,11 @@ Pour chaque capacité ALINE :
     fixtures and historical decoded round-trip verification.
   - [x] Implement an executable data-only contract for the older Data::Dumper
     dialect, symbolic reference fixups and retention of unsupported old objects.
-  - [ ] Audit characterization evidence against the inventory and consolidate
+  - [x] Audit characterization evidence against the inventory and consolidate
     remaining compatibility limits before starting the version 2 model.
-- [ ] constituer un corpus de projets historiques représentatifs ;
+- [x] Establish the initial representative corpus with original and authored
+  specimens, provenance and reproducible checks; extend real-world coverage
+  during rich import and final compatibility verification.
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.
 
 **Sortie :** une matrice de parité qui permet de mesurer objectivement

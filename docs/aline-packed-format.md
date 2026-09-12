@@ -1,5 +1,29 @@
 # ALINE packed state R001
 
+## Characterization audit — 2026-09-13
+
+The phase-0 format characterization and initial corpus are established. This
+means the known record families and their verification contracts are defined;
+it does not mean Atlas can import and edit every historical project yet.
+
+| Requirement | Evidence | Remaining implementation or coverage |
+| --- | --- | --- |
+| Cells, titles, fonts and numbering | Full-field historical round trips, four numbering states, PDB-derived fractions | Rich model, validated conversion, editing and export |
+| Objects and graphs | All 36 registered types; sparse linked regions; transformed graph samples | Faithful rendering, interaction and undo/redo |
+| Attachments and links | Save-copy index conversion and isolation; older-dialect symbolic references including aliases used by fixups | Stable document identifiers and editing propagation |
+| Palettes and layout | Compression/inheritance and all thirteen settings/caches | Rich project mapping and layout validation |
+| Bundled plugins | All 30 persisted-output entries, including private numbering fields | Individual scientific producer and UI verification |
+| Packed syntax and malformed data | Seventeen historical error codes, high-byte/extended keys, line endings, explicit silent-loss observations | Strict byte reader and atomic application import |
+| Older syntax | 23 data-only reader tests, original loader source review | Unsupported Perl constructs receive errors; unknown old objects remain retained; original pre-R001 corpus breadth remains unproven |
+| Saved specimens | Original rada plus authored minimal, sparse-region/graph and older-dialect inputs with provenance | Expand with real-world projects during rich import and final compatibility verification |
+
+The audit found and corrected alias resolution for fixup parents and targets:
+the regression failed before the fix and passes afterward. Reference-only cycles
+and invalid paths remain rejected. The initial corpus intentionally combines
+original and authored specimens; it must not be described as exhaustive
+historical-version coverage. Track those limits through phase 1 import and
+phase 9 release verification rather than claiming parity from parser tests.
+
 This is a source-derived wire-format contract, not a claim of complete import
 support. Reference: `aline_011208/bin/aline`, `DumpDataFile` (4648),
 `savepackaline` (4678), `n2a64` (4761), `loadpackaline` (4774), and

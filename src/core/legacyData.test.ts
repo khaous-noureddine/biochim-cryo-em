@@ -38,6 +38,15 @@ describe("data-only legacy ALINE reader", () => {
     expect(result.warnings).toEqual([expect.stringContaining("retained")]);
   });
 
+  it("resolves aliases used as fixup parents and targets", () => {
+    const result = parseLegacyData(document("{child => {}}, $seq[0], {text => 'A'}, $seq[2]",
+      "$seq[1]{child} = $seq[3];"));
+    expect(result.rows.values[0]).toMatchObject({ entries: {
+      child: { kind: "reference", target: { root: "seq", parts: [3] } },
+    } });
+    expect(JSON.parse(JSON.stringify(result))).toEqual(result);
+  });
+
   it("retains inline aliases and escaped Unicode without interpolation", () => {
     const result = parseLegacyData(document(String.raw`{text => "\x{3b1}\101\x42"}, $seq[0]`));
     expect(result.rows.values[0]).toMatchObject({ entries: { text: "αAB" } });
