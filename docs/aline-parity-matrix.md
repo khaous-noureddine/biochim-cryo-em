@@ -10,7 +10,7 @@ colonne de vérification.
 | ID | Capacité observable | Source ALINE principale | Atlas | Vérification requise |
 |---|---|---|---|---|
 | CORE-001 | Nouveau document et nettoyage de l'état | `ClearDocument`, menus File | absent | test d'état initial et parcours UI |
-| CORE-002 | Open/save/save as `.aline` | `Open`, `DumpDataFile`, `UndumpDataFile`, `savepackaline`, `loadpackaline` | partial | `aline-packed-format.md`, `tests/fixtures/aline/README.md` and `npm run test:aline-oracle`: 165 historical assertions, including saved specimens, all 36 drawable types, layout settings, PDB-derived numbering and silent-loss cases; rich Atlas import and lossless `.atlas` round trips remain required |
+| CORE-002 | Open/save/save as `.aline` | `Open`, `DumpDataFile`, `UndumpDataFile`, `savepackaline`, `loadpackaline` | partial | `aline-packed-format.md`, `tests/fixtures/aline/README.md` and `npm run test:aline-oracle`: 165 historical assertions; `legacyData.test.ts`: 22 data-only older-dialect tests including symbolic references and rejection cases; rich Atlas import and lossless `.atlas` round trips remain required |
 | CORE-003 | Détection des changements non sauvegardés | `ShouldaSavedEh`, `_Shutdown` | partiel | tests dirty/saved et fermeture |
 | CORE-004 | Historique multi-niveaux | `PDumpData`, `DumpData`, `UndumpData`, `SkipUndoData` | partiel | undo/redo de chaque commande métier |
 | CORE-005 | Import FASTA | `ReadFasta` | reproduit | fixtures valides et invalides |

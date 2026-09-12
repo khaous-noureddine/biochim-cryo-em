@@ -203,7 +203,7 @@ Do not confuse numbering metadata with a general derived-analysis recipe.
 See `tests/fixtures/aline/README.md` for saved specimens, provenance and exact
 coverage. Two small authored R001 files pass the historical reader and decoded
 round trips; the original bundled project has 11 rows and 88 objects. The
-illustrative older-dialect fixture is reserved for the forthcoming safe parser.
+illustrative older-dialect fixture is tested by `src/core/legacyData.test.ts`.
 
 The older loader requires assignments to `%par`, `@seq` and `@categories`,
 renames those variables, and evaluates the entire input. Consequently its
@@ -214,6 +214,31 @@ arbitrary statements are not part of that reader. Unknown old `@obj` records
 must remain retained with an unsupported-object diagnostic until their shapes
 are characterized. No original old-dialect specimen is available locally, so
 full historical syntax coverage remains unproven.
+
+`parseLegacyData` now implements an executable data-only contract. It returns
+tagged maps/lists, strings, finite decimal numbers, null for `undef`, and symbolic
+reference paths. Maps have null prototypes. It accepts the required `%par`,
+`@seq`, `@categories` declarations and optional `@obj`, comments, trailing
+commas, single/double quoted literals, common escaped controls, octal/hex/Unicode
+escapes, inline references and Data::Dumper-style reference fixups. It rejects
+interpolation, calls, arbitrary statements, duplicate keys/declarations,
+ambiguous leading-zero numbers, invalid paths and fixups that overwrite data.
+
+Reference fixups replace only null or empty-container placeholders. Cyclic
+object relationships stay symbolic and JSON-serializable; reference-only cycles
+are rejected. A fixture based on output observed from local Perl Data::Dumper
+with `Purity(1)` covers linked objects and subsequent alias assignments. No
+fixture is executed. Nonempty old `@obj` data is retained with a warning.
+
+Default parser limits are 16 million UTF-16 code units, one million parsed
+values/statements, and nesting/path depth 128. Callers can lower limits; depth
+has an absolute ceiling of 256 to bound recursion. These are parser guardrails,
+not measured alignment capacity promises. Limit and syntax errors include a
+character location. The function is pure and does not receive an active
+document or history. Integration, scientific record validation, byte decoding,
+font validation and document conversion remain in the rich importer checkpoint.
+This tested subset is not a claim that every Perl construct ever emitted by
+every historical Data::Dumper version is supported.
 
 `UndumpDataFile` also recognizes `### Aline 1.0, ` Data::Dumper files and
 historically evaluates their Perl content. Atlas must use a restricted data

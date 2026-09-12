@@ -8,7 +8,7 @@ keys and at the ends of cell streams are significant; do not trim them.
 | --- | --- | --- |
 | `minimal-r001.aline` | Authored from the R001 writer/reader contract | Historical reader and decoded round trip; one `A-C` row numbered 1, undefined, 10 |
 | `linked-graph-r001.aline` | Authored from the R001 writer/reader contract | Historical reader and decoded round trip; two attached rows, linked sparse boxes at columns 0 and 2, graph samples -0.25, 0, 1.5 |
-| `legacy-data-dumper.aline` | Illustrative data-only syntax matching the older loader's named assignments; not an original historical save | Pending restricted-parser tests; undefined values, nested hashes/arrays, quoted apostrophe, empty strings and empty old object array |
+| `legacy-data-dumper.aline` | Illustrative data-only syntax matching the older loader's named assignments; not an original historical save | `src/core/legacyData.test.ts` verifies undefined values, nested hashes/arrays, quoted apostrophe, empty strings and empty old object array |
 | `aline_011208/example/rada.aline` (repository root) | Original bundled ALINE demonstration | Historical reader and complete decoded round trip; 11 rows, 4,048 cells, 88 objects, four palette categories; Coil, Helix2, Star, Strand2 and Text |
 
 The original `rada.aline` SHA-256 is

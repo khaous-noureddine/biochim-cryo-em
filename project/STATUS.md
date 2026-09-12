@@ -87,6 +87,15 @@ was found locally. The remaining characterization work is an executable safe
 data grammar, reference fixups and retained unsupported old-object records.
 Verification: 165 oracle assertions, 74 Vitest tests and production build pass.
 
+The older-dialect data reader is implemented in `src/core/legacyData.ts`, with
+22 tests covering the authored fixture, symbolic cyclic links, inline aliases,
+escapes, unsupported old-object retention, inert prototype-shaped keys, malformed
+input and resource limits. It does not execute Perl and is not yet connected to
+the application file-opening workflow. Record semantics and conversion remain
+part of rich import. Validation: 96 Vitest tests, 165 historical oracle assertions
+and the production build pass. Next: consolidate the characterization evidence
+and remaining compatibility limits, then advance toward the version 2 model.
+
 Earlier evidence:
 `docs/aline-packed-format.md` now records the source-derived envelope, cache
 keys, numbering states, row and object records, links, graph payloads, palettes,

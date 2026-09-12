@@ -71,8 +71,10 @@ Pour chaque capacité ALINE :
     fields and extension fields with packed round-trip fixtures.
   - [x] Establish a saved-project corpus with provenance, two authored R001
     fixtures and historical decoded round-trip verification.
-  - [ ] Implement an executable data-only contract for the older Data::Dumper
-    dialect and characterize reference fixups and unsupported old objects.
+  - [x] Implement an executable data-only contract for the older Data::Dumper
+    dialect, symbolic reference fixups and retention of unsupported old objects.
+  - [ ] Audit characterization evidence against the inventory and consolidate
+    remaining compatibility limits before starting the version 2 model.
 - [ ] constituer un corpus de projets historiques représentatifs ;
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.
 

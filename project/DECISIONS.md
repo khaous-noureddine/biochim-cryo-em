@@ -182,6 +182,14 @@ Historical corpus provenance must distinguish original saves from authored
 compatibility fixtures. A synthetic Data::Dumper specimen does not establish
 complete old-version coverage. Never execute a specimen to infer its data.
 
+## D-021 — Preserve old-file references symbolically
+
+The data-only legacy reader returns tagged containers and symbolic reference
+paths, preserving cyclic links without constructing cyclic JavaScript objects.
+Keep unknown old top-level objects with a warning. Syntax parsing is separate
+from scientific record validation and conversion into an Atlas document; parser
+success alone does not imply a fully supported project.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;
