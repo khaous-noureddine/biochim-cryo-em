@@ -98,9 +98,25 @@ reader, never evaluate imported code. The historical reader warns that old
 top-level `@obj` data cannot be interpreted; that warning is not evidence that
 Atlas may silently discard it.
 
-The characterization checkpoint remains open pending an executable historical
-oracle, representative fixtures covering all wire branches, an exhaustive
-property/type inventory including plugins, and explicit malformed-input
-contracts. Atlas currently skips parameters, object dictionaries, object
+Run `npm run test:aline-oracle` with Perl and its core `Test::More` module.
+The harness extracts only the three serialization functions from the trusted
+repository source and never evaluates a project file. It creates synthetic
+records in memory and reads the bundled `rada.aline` as raw bytes. Its 35
+assertions cover numbering states (including explicit zero, negative and
+fractional values), extended/high-byte keys, styles, row attachments, object
+links, graph samples, palette compression, LF/CRLF/CR input, a complete decoded
+round trip of the bundled project, and every historical error code (1–17).
+It requires no Tk, network, external packages or generated fixture files.
+
+The oracle exposes a historical defect: Perl's default `split` discards trailing
+empty fields, so an empty final `text` dictionary value becomes an absent key.
+This loss is asserted explicitly, not treated as successful preservation. Atlas
+must preserve empty values in its own project format. The historical reader is
+not a strict validator: its error codes do not establish protection against all
+malformed values, invalid links or resource exhaustion.
+
+The characterization checkpoint remains open pending an exhaustive
+property/type inventory including plugins, additional representative projects,
+and strict modern malformed-input contracts. Atlas currently skips parameters, object dictionaries, object
 records and palettes, and drops derived rows (`src/core/project.ts`). Full
 compatibility requires these gaps to be resolved and tested.

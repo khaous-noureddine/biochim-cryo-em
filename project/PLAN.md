@@ -48,8 +48,10 @@ Pour chaque capacité ALINE :
   graphiques, couleurs, attachements et préférences de document ;
   - [x] Document the packed wire layout from the historical serializer and loader
     in `docs/aline-packed-format.md`.
-  - [ ] Verify wire branches with a historical oracle and fixtures, inventory
-    persisted core/plugin properties, and define malformed-input contracts.
+  - [x] Exercise the historical serializer/loader with synthetic records, the
+    bundled project, and all 17 historical loader error codes.
+  - [ ] Inventory persisted core/plugin properties, complete representative
+    fixture coverage, and define strict modern malformed-input contracts.
 - [ ] constituer un corpus de projets historiques représentatifs ;
 - [ ] marquer les intégrations obsolètes et choisir leurs remplacements.
 

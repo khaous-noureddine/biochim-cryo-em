@@ -120,15 +120,24 @@ fichiers et rejette les contrats manquants, dupliqués ou insuffisamment précis
 Ajouter une capacité à la matrice impose donc de définir sa vérification dans le
 même changement.
 
-## Décisions encore ouvertes
-
-### D-015 — Separate historical wire data from the Atlas document model
+## D-015 — Separate historical wire data from the Atlas document model
 
 Characterize `.aline` records before extending the rich document importer.
 Preserve the distinctions between cell text, graph payloads, row attachments,
 object links, and absent/undefined/explicit numbering in compatibility tests.
 The wire-format reference is `docs/aline-packed-format.md`; it does not confer
 implemented parity. Imported Perl-style data must never be executed.
+
+## D-016 — Run a bounded historical serialization oracle
+
+Use the unchanged repository's `savepackaline`, `n2a64`, and `loadpackaline`
+routines as test references without initializing the Tk application. Evaluate
+only those trusted source routines; read project bytes as data. Keep synthetic
+fixtures in the test harness and compare decoded structures because historical
+hash serialization order varies. Record legacy data-loss defects explicitly
+instead of making them Atlas persistence requirements.
+
+## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;
 - moteur de rendu des grands alignements : DOM virtualisé, Canvas, SVG hybride

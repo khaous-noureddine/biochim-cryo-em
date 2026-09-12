@@ -3,6 +3,14 @@
 ## Resume evidence — 2026-09-12
 
 The first unfinished phase-0 checkpoint remains `.aline` characterization.
+The executable historical oracle (`npm run test:aline-oracle`) now passes 35
+assertions, including a complete decoded round trip of bundled `rada.aline`,
+synthetic rich records, alternate line endings, and all 17 loader error codes.
+It exposes the historical loss of trailing empty dictionary values. Next work
+is the exhaustive core/plugin property inventory and strict modern input
+contracts; rich Atlas import is still incomplete.
+
+Earlier evidence:
 `docs/aline-packed-format.md` now records the source-derived envelope, cache
 keys, numbering states, row and object records, links, graph payloads, palettes,
 document preferences, and the older Data::Dumper entry point. This is a first
