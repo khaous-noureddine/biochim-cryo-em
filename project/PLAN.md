@@ -94,6 +94,10 @@ l’avancement et empêche d’oublier une fonction de plugin.
 ## Phase 1 — Modèle de document Atlas extensible
 
 - [ ] concevoir la version 2 du format `.atlas` ;
+  - [x] Establish the rich-row contract and executable numbering/attachment
+    semantics, preserving annotation text and historical number states.
+  - [ ] Complete object, graph, style, layout and provenance contracts, then
+    validate migration and lossless serialization before application adoption.
 - [ ] représenter cellules, régions, lignes d’annotation et attachements ;
 - [ ] représenter tous les objets ponctuels et régionaux d’ALINE ;
 - [ ] représenter styles, polices, palettes, graphiques et mise en page ;

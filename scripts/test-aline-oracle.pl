@@ -11,9 +11,10 @@ my $source = do { local $/; <$source_file> };
 my ($routines) = $source =~ /^(sub savepackaline\(\$\$\$\)\n\{.*?)^sub UndumpDataFile/ms;
 die 'Historical serialization routines not found' unless defined $routines;
 our %prog = (name => 'ALINE oracle', version => 'R001', author => 'fixture', website => 'local');
+our @seq;
 eval $routines;
 die $@ if $@;
-for my $name (qw(_ObjPtrToId2 _CopySeq)) {
+for my $name (qw(_ObjPtrToId2 _CopySeq _FillSeqnum _AttachmentForX)) {
     my ($routine) = $source =~ /^(sub \Q$name\E\([^\n]*\)\n\{.*?)^sub /ms;
     die "Historical $name routine not found" unless defined $routine;
     eval $routine;
@@ -294,6 +295,28 @@ for my $fixture (qw(minimal-r001 linked-graph-r001)) {
         is_deeply([map { $_->{text} } @{$r->[1]{o}[1]{e}}], [-0.25, 0, 1.5],
             'saved graph carries signed, zero and positive samples');
     }
+}
+
+{
+    local @seq = ({n => -2.5, e => [map { +{text => $_, seqnumber => 99} }
+        ('A', '-', '.', '_', ' ', '', 'a', '+', 'label', '--', "\t")]});
+    _FillSeqnum(0);
+    is_deeply([map { $_->{seqnumber} } @{$seq[0]{e}}],
+        [-2.5, undef, undef, undef, undef, undef, -1.5, -0.5, 0.5, 1.5, 2.5],
+        'automatic numbering uses exact gap texts and increments mixed annotation cells');
+    $seq[0] = {n => undef, e => [{text => 'A'}, {text => '-', seqnumber => undef},
+        {text => 'C', seqnumber => 0}, {text => 'D', seqnumber => 1.0002}]};
+    _FillSeqnum(0);
+    ok(!exists $seq[0]{e}[0]{seqnumber}, 'fixed numbering leaves absent numbers absent');
+    is_deeply([map { $_->{seqnumber} } @{$seq[0]{e}}], [undef, undef, 0, 1.0002],
+        'fixed numbering retains undefined, zero and fractional numbers');
+    @seq = map { +{t => {attach => $_}} } (1, 2, 0, 1, -1);
+    is_deeply([sort {$a <=> $b} @{_AttachmentForX(3)}], [0, 1, 2, 3],
+        'attachment traversal includes reverse edges and cycles');
+    is_deeply([sort {$a <=> $b} @{_AttachmentForX(0, 1)}], [1, 2, 3],
+        'attachment traversal can exclude the initiating row');
+    $seq[4]{t}{attach} = 4;
+    is_deeply(_AttachmentForX(4), [4], 'self attachment terminates');
 }
 
 done_testing();

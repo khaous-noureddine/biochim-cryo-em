@@ -26,8 +26,8 @@ colonne de vérification.
 | CORE-015 | Export PNG | `PrintPNG` | absent | comparaison visuelle de références |
 | CORE-016 | Ajouter/supprimer/déplacer une ligne | `InsertRow`, `DeleteRowByN/Y`, `_SeqDrag` | partiel | commandes testées ; parcours UI et lignes spéciales à compléter |
 | CORE-017 | Ajouter une séquence et ses métadonnées | `InsertSequence`, `EditTitle`, propriétés | partiel | gestion UI du nom, commentaire et numérotation ; saisie de résidus à compléter |
-| CORE-018 | Attacher des lignes | `AttachRow`, `_AttachmentForX`, `_InsertAttachmentElements` | absent | édition synchronisée de lignes attachées |
-| CORE-019 | Numérotation automatique/fixe et offsets | `_FillSeqnum`, `_SeqStart`, `_SetNumberingType`, `SetNumberOffsets` | partiel | gaps, insertions et codes d'insertion |
+| CORE-018 | Attach rows | `AttachRow`, `_AttachmentForX`, `_InsertAttachmentElements` | partiel | `richRows.test.ts` and historical oracle verify connected groups, reverse edges, cycles and self-links; application editing propagation, persistence and undo remain required |
+| CORE-019 | Automatic/fixed numbering and offsets | `_FillSeqnum`, `_SeqStart`, `_SetNumberingType`, `SetNumberOffsets` | partiel | `richRows.test.ts` and historical oracle verify exact gap handling and fixed absent/null/zero/fractional states; rich application editing and insertion identity remain required |
 | CORE-020 | Curseur et navigation clavier | `_CursorMove`, `SequenceEditor` | partiel | flèches/Home/End et maintien de visibilité implémentés ; raccourcis complets à vérifier |
 | CORE-021 | Modes insertion/remplacement/agressif | `SequenceEditor`, `_AggroCheck`, `_ApplyEdits` | partiel | tests différentiels d'édition |
 | CORE-022 | Sélection cellule/région/ligne/colonne | `SelectBox`, `_RubberBand`, `ShadeRegion` | partiel | rectangle Shift-clic/clavier implémenté ; sélection entière et glisser à compléter |
@@ -86,7 +86,7 @@ colonne de vérification.
 | PLUG-029 | `tMatchPattern` | Recherche texte, regex, PROSITE et motifs prédéfinis | absent | positions, gaps, navigation et marquage |
 | PLUG-030 | `tPymolColors` | Export de script PyMOL depuis les couleurs | absent | script exécuté sur fixture PDB |
 | PLUG-031 | `tRunChainsaw` | MR model from alignment and PDB | absent | `aline-integration-modernization.md`: retain supported CCP4 Chainsaw; verify all three modes, chain selection, numbering and output handling |
-| PLUG-032 | `tUnattachAll` | Attacher/détacher toutes les lignes | absent | clusters sans cycles |
+| PLUG-032 | `tUnattachAll` | Attach/detach all rows | absent | Complete command/UI workflow; retain valid historical attachment groups including cycles, as established by `richRows.test.ts` and the oracle |
 | PLUG-033 | `tUndupe` | Supprimer doublons et fragments | reproduit | tests doublons espacés par gaps et fragments |
 | PLUG-034 | `mKeycodeTest.inactive` | Diagnostic de codes clavier, désactivé | absent | écart accepté probable |
 

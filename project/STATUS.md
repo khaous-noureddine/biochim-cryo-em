@@ -2,6 +2,17 @@
 
 ## Current checkpoint — 2026-09-13
 
+Version-2 row primitives are implemented in `src/core/richRows.ts`, with the
+contract in `docs/atlas-v2-format.md`. Eleven new tests cover immutable numbering,
+all saved number states, styles/coordinate identity and attachment traversal,
+including cycles and a 20,000-row chain. Six matching historical assertions
+exercise unchanged `_FillSeqnum` and `_AttachmentForX` source. Full verification:
+108 Vitest tests, 171 historical assertions and production build pass.
+This is a model foundation: the application still uses version 1, so browser
+verification and command/history integration are not claimed. Next: complete
+the object/graph/style/layout/provenance contract and validated version-2 model.
+The disorder replacement question remains pending independently.
+
 Remote retrieval/search, SignalP, PyMOL, print and automation contracts are now
 recorded in `docs/aline-integration-modernization.md`, with legacy source review
 and official provider documentation. A question about the proposed IUPred3

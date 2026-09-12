@@ -219,6 +219,20 @@ replacement for the three DisEMBL definitions. Preserve original tracks and
 label new methods honestly. This decision and incomplete structural alignment
 remain open; neither is a prerequisite for designing the rich document model.
 
+## D-024 — Rich rows preserve cell text, number states and attachment identity
+
+Version-2 rows distinguish sequences from annotations, with stable identifiers,
+explicit cell text and absent/null/finite number states. Recalculate automatic
+numbering explicitly; fixed rows retain their snapshots. Keep coordinate residue
+identity separate from displayed numbering. Attachments use stable row IDs and
+propagate edits through connected groups, including historical cycles/self-links
+that `_AttachmentForX` handles. Reject dangling or duplicate identities.
+
+`docs/atlas-v2-format.md` and `src/core/richRows.ts` define the initial contract.
+The historical oracle now also evaluates the bounded `_FillSeqnum` and
+`_AttachmentForX` routines from unchanged trusted source. Application adoption
+requires full validation, migration, command/history and rendering integration.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;
