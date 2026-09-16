@@ -2,6 +2,16 @@
 
 ## Current checkpoint — 2026-09-16
 
+Compact sidebar styling is verified: tool buttons are approximately 42–43px high,
+icons are 32px wide, and section/panel padding is reduced. Demo sidebar content
+height decreased from 1311px to 1051px at the default width. Browser checks at
+1280 by 800 covered 258px and 198px sidebar widths, readable wrapping without
+button overflow, Cylinder selection and separate sidebar/alignment scrolling
+(alignment remained at zero during sidebar scrolling; sidebar remained at 306
+during alignment scrolling; window stayed at zero). No document, persistence or
+undo/redo behavior changes. All 145 current-worktree tests and production build
+pass. Resume the separate unfinished version-2 model checkpoint after this fix.
+
 Priority menu correction is verified. The header's stacking context now sits
 above an isolated workspace, preventing classic grid/annotation layers from
 painting white stripes across dropdowns. Colors, Tools and Export dismiss on

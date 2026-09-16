@@ -253,6 +253,12 @@ embedded controls inside a menu keeps it open. Preserve independent pane
 scrolling and existing modal backdrop dismissal. This is user steering from
 2026-09-16, prioritized ahead of the in-progress version-2 persistence work.
 
+## D-027 — Compact sidebar controls
+
+Use compact tool buttons and section spacing to expose more tools in limited
+vertical space. Keep visible labels, selection feedback and independent sidebar
+scrolling. This is a presentation preference, not a document or history change.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;
