@@ -1,6 +1,27 @@
 # État actuel d’Atlas Alignement
 
-## Current checkpoint — 2026-09-13
+## Current checkpoint — 2026-09-16
+
+Priority menu correction is verified. The header's stacking context now sits
+above an isolated workspace, preventing classic grid/annotation layers from
+painting white stripes across dropdowns. Colors, Tools and Export dismiss on
+outside pointer/focus interaction, action selection or Escape; opening another
+menu closes the previous one. Embedded controls remain usable, and tall menus
+scroll within the viewport. This changes transient UI only, with no persistence
+or undo/redo state changes.
+
+Browser verification on localhost:5173 at 1280 by 800 passed: classic and modern
+menu layering, all three menu switches, outside click, Escape with summary focus,
+inside interaction, action dismissal and Manage sequences backdrop dismissal.
+At 150% zoom, sidebar scrolling changed only its offset (0 to 579); alignment
+scrolling then changed only its offset (0 to 565.5). Window and header stayed at
+zero, including scrolling to the pane boundaries. Full current-worktree tests
+pass (145 tests, including 16 in-progress version-2 JSON tests); production build
+passes. The version-2 files remain a separate unfinished change. Resume the
+document envelope/layout/palette/provenance checkpoint next; full parity remains
+incomplete.
+
+## Previous checkpoint — 2026-09-13
 
 The rich-object component contract is implemented in `src/core/richObjects.ts`:
 all 36 historical kinds plus Atlas Line, sparse ordered coverage, independent

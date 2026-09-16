@@ -244,6 +244,15 @@ in bounded compatibility data and reject unknown fields outside that storage.
 `docs/atlas-v2-format.md` defines component-parser limits and remaining full
 document validation, migration and rendering obligations.
 
+## D-026 — Menus remain above alignment content and dismiss naturally
+
+Header menus must render above the alignment grid and all graphic layers.
+Opening another header menu closes the previous one; interacting outside,
+choosing an action or pressing Escape dismisses the open menu. Interacting with
+embedded controls inside a menu keeps it open. Preserve independent pane
+scrolling and existing modal backdrop dismissal. This is user steering from
+2026-09-16, prioritized ahead of the in-progress version-2 persistence work.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

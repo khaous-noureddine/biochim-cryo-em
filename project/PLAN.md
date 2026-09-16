@@ -40,6 +40,11 @@ Pour chaque capacité ALINE :
 
 ## Phase 0 — Spécification exécutable de la parité
 
+- [x] Priority steering (2026-09-16): keep menus above all alignment layers,
+  close menus on outside interaction and Escape, and allow only one open menu.
+  Verify Colors/Tools/Export, modal backdrop dismissal and independent scrolling
+  in the running browser; commit and push before resuming version-2 persistence.
+
 - [x] Priority user steering: implement independent sidebar and alignment
   vertical scroll containers; verify each independently and at boundaries in
   the running browser, update status, commit and push, then resume the ALINE

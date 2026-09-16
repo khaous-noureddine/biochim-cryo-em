@@ -276,6 +276,41 @@ export function App() {
   }, [width, repeatNames, classicWidths]);
 
   useEffect(() => {
+    const menus = () => [...document.querySelectorAll<HTMLDetailsElement>(".top-menu[open]")];
+    const dismissOutside = (event: Event) => {
+      for (const menu of menus()) {
+        if (event.target instanceof Node && !menu.contains(event.target)) menu.open = false;
+      }
+    };
+    const dismissAction = (event: Event) => {
+      dismissOutside(event);
+      if (!(event.target instanceof Element)) return;
+      const button = event.target.closest("button");
+      const menu = button?.closest<HTMLDetailsElement>(".top-menu");
+      if (menu && !button?.disabled) menu.open = false;
+    };
+    const dismissEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      const openMenus = menus();
+      if (!openMenus.length) return;
+      event.preventDefault();
+      event.stopPropagation();
+      for (const menu of openMenus) menu.open = false;
+      openMenus[0].querySelector("summary")?.focus();
+    };
+    document.addEventListener("pointerdown", dismissOutside, true);
+    document.addEventListener("focusin", dismissOutside);
+    document.addEventListener("click", dismissAction);
+    document.addEventListener("keydown", dismissEscape, true);
+    return () => {
+      document.removeEventListener("pointerdown", dismissOutside, true);
+      document.removeEventListener("focusin", dismissOutside);
+      document.removeEventListener("click", dismissAction);
+      document.removeEventListener("keydown", dismissEscape, true);
+    };
+  }, []);
+
+  useEffect(() => {
     const view = classicViewRef.current;
     if (!view || viewMode !== "classic") return;
 
