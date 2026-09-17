@@ -295,6 +295,10 @@ item is adjacent. New cells may inherit left text style or an explicit default;
 they never inherit residue identity, number or compatibility metadata, and their
 anchor resets to center. Graph measurements are never interpolated by insertion.
 
+Row deletion repairs surviving object links, detaches dependent rows and keeps
+analysis snapshots with null source-row references. Property updates do not
+implicitly recalculate saved numbering; renumbering is an explicit command.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

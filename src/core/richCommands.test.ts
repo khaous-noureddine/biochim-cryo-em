@@ -127,3 +127,69 @@ it("copies only left text style, resets anchor and supports default insertion st
   expect(first.rows[0].cells[0].style).toEqual({ foreground: "blue", anchor: "center" });
   expect(() => applyRichCommand(document, { type: "splice-columns", start: 0, deleteCount: 0, insertCount: 1, defaultStyle: { fontSize: -1 } })).toThrow();
 });
+
+it("deletes a row, reconnects object segments and retains detached analysis snapshots", () => {
+  const document = fixture();
+  document.rows.push({ ...document.rows[1], id: "third", position: 2, attachedTo: null });
+  document.objects = [
+    { ...document.objects[0], id: "before", rowId: "a", previousId: null, nextId: "g" },
+    { ...document.objects[0], id: "g", rowId: "s", previousId: "before", nextId: "after" },
+    { ...document.objects[0], id: "after", rowId: "third", previousId: "g", nextId: null },
+  ];
+  const state = createRichHistory(document);
+  const next = richHistoryReducer(state, { type: "execute", command: { type: "delete-row", rowId: "s" } });
+  expect(next.present.rows.map(row => [row.id, row.position, row.attachedTo])).toEqual([["a", 0, null], ["third", 1, null]]);
+  expect(next.present.objects.map(object => [object.id, object.previousId, object.nextId])).toEqual([["before", null, "after"], ["after", "before", null]]);
+  expect(next.present.analyses[0].inputs[0]).toEqual({ ...document.analyses[0].inputs[0], rowId: null });
+  expect(next.present.analyses[0].series).toEqual(document.analyses[0].series);
+  expect(next.present.columnCount).toBe(4);
+  expect(next.past).toHaveLength(1);
+  expect(richHistoryReducer(next, { type: "undo" }).present).toBe(document);
+  expect(parseRichProject(serializeRichProject(next.present))).toEqual(next.present);
+});
+
+it("reconnects cycles through multiple removed segments and permits an empty document", () => {
+  const document = fixture();
+  const graph = document.objects[0];
+  document.objects = [
+    { ...graph, id: "keep", rowId: "a", previousId: "two", nextId: "one" },
+    { ...graph, id: "one", previousId: "keep", nextId: "two" },
+    { ...graph, id: "two", previousId: "one", nextId: "keep" },
+  ];
+  const next = applyRichCommand(document, { type: "delete-row", rowId: "s" });
+  expect(next.objects).toHaveLength(1);
+  expect(next.objects[0]).toMatchObject({ id: "keep", previousId: "keep", nextId: "keep" });
+  const empty = applyRichCommand(next, { type: "delete-row", rowId: "a" });
+  expect(empty.rows).toEqual([]);
+  expect(empty.objects).toEqual([]);
+  expect(empty.analyses).toHaveLength(1);
+});
+
+it("updates row properties without renumbering until explicitly requested", () => {
+  const document = fixture();
+  const style = { foreground: "red" };
+  const changed = applyRichCommand(document, { type: "update-row", rowId: "s", properties: {
+    name: "Renamed", description: "new", titleStyle: style, numbering: { mode: "automatic", start: 20 },
+  } });
+  expect(changed.rows[0].cells).toEqual(document.rows[0].cells);
+  style.foreground = "blue";
+  expect(changed.rows[0].titleStyle).toEqual({ foreground: "red" });
+  const numbered = applyRichCommand(changed, { type: "renumber-row", rowId: "s" });
+  expect(numbered.rows[0].cells.map(cell => cell.number)).toEqual([20, 21, 22, 23]);
+  expect(numbered.rows[0].cells[2].compatibility).toEqual({ original: true });
+  expect(numbered.analyses).toEqual(document.analyses);
+  expect(applyRichCommand(document, { type: "renumber-row", rowId: "s" })).toBe(document);
+  expect(applyRichCommand(document, { type: "update-row", rowId: "s", properties: { name: "s" } })).toBe(document);
+});
+
+it("attaches and detaches rows with validation and no changes on rejection", () => {
+  const document = fixture();
+  const detached = applyRichCommand(document, { type: "attach-row", rowId: "a", attachedTo: null });
+  expect(detached.rows[1].attachedTo).toBe(null);
+  const self = applyRichCommand(detached, { type: "attach-row", rowId: "a", attachedTo: "a" });
+  expect(self.rows[1].attachedTo).toBe("a");
+  expect(() => applyRichCommand(document, { type: "attach-row", rowId: "s", attachedTo: "missing" })).toThrow(/attachment/);
+  expect(() => applyRichCommand(document, { type: "delete-row", rowId: "missing" })).toThrow(/Unknown row/);
+  expect(() => applyRichCommand(document, { type: "update-row", rowId: "s", properties: { numbering: { mode: "automatic", start: Infinity } } })).toThrow();
+  expect(document.rows[0].attachedTo).toBe("a");
+});

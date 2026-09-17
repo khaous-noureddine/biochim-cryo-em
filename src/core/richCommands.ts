@@ -4,17 +4,20 @@ import type { RichCell, RichTextStyle } from "./richRows";
 import { richAttachmentGroup } from "./richRows";
 import { INSERT_GROWING_KINDS } from "./richObjects";
 import { style as validateStyle } from "./richValidation";
+import { applyRichRowCommand, type RichRowCommand } from "./richRowCommands";
 
-export type RichCommand = ({ type: "splice-columns" } | { type: "splice-row"; rowId: string }) & {
+type RichSpliceCommand = ({ type: "splice-columns" } | { type: "splice-row"; rowId: string }) & {
   start: number;
   deleteCount: number;
   insertCount: number;
   copyLeftStyle?: boolean;
   defaultStyle?: RichTextStyle;
 };
+export type RichCommand = RichSpliceCommand | RichRowCommand;
 
 /** Column or connected-row editing with one atomic publication boundary. */
 export function applyRichCommand(document: RichDocument, command: RichCommand): RichDocument {
+  if (command.type !== "splice-columns" && command.type !== "splice-row") return applyRichRowCommand(document, command);
   const { start, deleteCount, insertCount } = command;
   if (!["splice-columns", "splice-row"].includes(command.type) || ![start, deleteCount, insertCount].every(value => Number.isSafeInteger(value) && value >= 0)
     || start > document.columnCount || deleteCount > document.columnCount - start) {

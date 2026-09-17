@@ -2,6 +2,17 @@
 
 ## Current checkpoint — 2026-09-17
 
+Rich row commands now update properties, attach/detach, explicitly renumber and
+delete rows. Deletion follows `DeleteRowByN`/`_UnlinkObject`: remove row-local
+objects, reconnect surviving segments, detach children and compact later row
+positions. Analysis inputs lose only their live row reference; snapshots and raw
+results survive. Candidate validation precedes history publication; caller-owned
+property objects are copied and no-op commands preserve history identity.
+Four tests cover deletion/link chains/cycles, empty documents, source retention,
+numbering, invalid input and undo. All 194 tests and production build pass.
+No browser behavior changed. Next: row insertion/reordering and object/style
+commands before renderer and file-workflow adoption.
+
 Insertion now extends eligible contiguous objects using the right boundary item's
 properties. The ten historical growth kinds are checked against ALINE's actual
 registry; Atlas Line follows the same continuous-line rule. Graphs, glyphs, text

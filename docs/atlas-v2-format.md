@@ -129,6 +129,16 @@ result indication must be implemented by later document commands.
 
 ## Verification and remaining design
 
+`richRowCommands.ts` implements property changes, attachment changes, explicit
+renumbering and deletion through rich history. Changing numbering mode/start
+does not implicitly recalculate the saved cell snapshot. Deletion removes the
+row's objects and bypasses their segments in reciprocal chains/cycles, detaches
+rows referencing the removed row, and decrements positions above the deleted
+position, matching the core `DeleteRowByN`/`_UnlinkObject` behavior. Analysis
+snapshots and results survive with null live source-row references. No-op updates
+do not create history entries; rejected changes do not publish partial state.
+These commands are data-layer coverage, pending application integration.
+
 `richCommands.ts` supplies a global column-splice operation and immutable
 snapshot history. A splice removes the specified range and inserts gap cells
 (`-` for sequence rows, empty text for annotation rows) with null numbering.
