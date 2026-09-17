@@ -269,6 +269,15 @@ duplicate members and values that would be silently dropped or coerced. Preserve
 unknown data explicitly; parsing does not imply supported rendering or complete
 legacy import. See `docs/atlas-v2-format.md` for limits and adoption requirements.
 
+## D-029 — Preserve version-1 source during explicit migration
+
+Convert the validated version-1 visible document to rich rows and linked object
+segments with deterministic collision-safe IDs. Retain its complete decoded
+source in compatibility.atlasV1Source, including unknown fields and pre-normalized
+text. Report layout defaults because version 1 did not persist view settings.
+Keep its numbering snapshot; later explicit recalculation uses rich-row rules.
+Application adoption must surface migration diagnostics before saving version 2.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

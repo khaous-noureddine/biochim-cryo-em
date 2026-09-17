@@ -129,6 +129,21 @@ result indication must be implemented by later document commands.
 
 ## Verification and remaining design
 
+`migrateV1Project` converts validated version-1 data with deterministic IDs,
+two explicit drawing lanes, every annotation kind, text styles and linked region
+segments. Manual styles are applied after version-1 padding/normalization.
+Number snapshots retain the old UI's hyphen-only gap counting; an explicit later
+recalculation uses the rich numbering rule. Full decoded source is retained in
+`compatibility.atlasV1Source`, including unknown fields, original spellings and
+absent optional values. This archive is provenance, not the editable source of
+truth. Layout defaults and retained source data are reported as migration
+warnings. Palette defaults match the version-1 reader. Expansion is limited to
+one million cells and one million object items, plus the common JSON limits.
+The migration is pure and does not change the active document or history.
+`migrateV1.test.ts` verifies all 24 annotation mappings, text, styled padded cells,
+linked regions, source retention, ID collisions and invalid inputs. Rendering
+equivalence still needs browser verification when the new model is adopted.
+
 `richRows.test.ts` has 11 tests covering mixed annotation text, immutable
 renumbering, all fixed-number states, structure/style retention, invalid numeric
 range, cycles, self-links, invalid identifiers and a 20,000-row chain. The

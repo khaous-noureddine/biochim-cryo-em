@@ -112,8 +112,10 @@ l’avancement et empêche d’oublier une fonction de plugin.
       verify round trips and malformed input before document integration.
     - [x] Add the document envelope, layout/palette/provenance records and
       full row/object validation; verify lossless version-2 serialization.
-    - [ ] Implement explicit version-1 migration with preservation tests before
+    - [x] Implement explicit version-1 migration with preservation tests before
       adopting version 2 in application commands, rendering and file opening.
+    - [ ] Adopt the rich document in commands and rendering, then route file
+      opening/saving through version dispatch with migration diagnostics.
 - [ ] représenter cellules, régions, lignes d’annotation et attachements ;
 - [ ] représenter tous les objets ponctuels et régionaux d’ALINE ;
 - [ ] représenter styles, polices, palettes, graphiques et mise en page ;

@@ -2,6 +2,16 @@
 
 ## Current checkpoint — 2026-09-17
 
+Explicit version-1 migration now maps sequence cells/styles, all 24 annotation
+kinds, text and linked region segments into version 2. IDs are deterministic
+and collision-safe. Preserve version-1 numbering snapshots (including counted
+dots), default missing unsaved layout with a warning, and retain the complete
+decoded source under compatibility.atlasV1Source for unknown fields and original
+spellings. Expansion is bounded before creating cells/items. Three migration
+tests exercise the combined workflow, all annotation kinds, normalization,
+references, source retention and invalid input. All 180 tests and production
+build pass. Application adoption is next; no browser behavior changed here.
+
 The version-2 document envelope and data validator are implemented, including
 layout, palettes, row/cell compatibility metadata and analysis provenance.
 Raw measurements reference retained input snapshots independently of current
