@@ -110,8 +110,10 @@ l’avancement et empêche d’oublier une fonction de plugin.
     - [x] Implement the rich object data contract for all historical types,
       sparse coverage, per-item styles, stable links and drawing-space samples;
       verify round trips and malformed input before document integration.
-    - [ ] Add the document envelope, layout/palette/provenance records and
+    - [x] Add the document envelope, layout/palette/provenance records and
       full row/object validation; verify lossless version-2 serialization.
+    - [ ] Implement explicit version-1 migration with preservation tests before
+      adopting version 2 in application commands, rendering and file opening.
 - [ ] représenter cellules, régions, lignes d’annotation et attachements ;
 - [ ] représenter tous les objets ponctuels et régionaux d’ALINE ;
 - [ ] représenter styles, polices, palettes, graphiques et mise en page ;

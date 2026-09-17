@@ -1,6 +1,21 @@
 # État actuel d’Atlas Alignement
 
-## Current checkpoint — 2026-09-16
+## Current checkpoint — 2026-09-17
+
+The version-2 document envelope and data validator are implemented, including
+layout, palettes, row/cell compatibility metadata and analysis provenance.
+Raw measurements reference retained input snapshots independently of current
+alignment geometry; historical drawing samples stay explicitly transformed.
+Strict JSON parsing rejects duplicate names and numeric overflow/underflow;
+serialization rejects silent coercion and preserves signed zero. Thirty-one
+document tests and seventeen JSON tests cover complete round trips and invalid
+references/data. Full validation: 177 Vitest tests, 171 historical assertions
+and production build pass. No UI changed; the application still uses version 1.
+The next checkpoint is explicit version-1 migration, followed by application
+adoption and rich legacy conversion. Rendering style support, command/history
+integration and full ALINE parity remain incomplete.
+
+## Previous checkpoint — 2026-09-16
 
 Compact sidebar styling is verified: tool buttons are approximately 42–43px high,
 icons are 32px wide, and section/panel padding is reduced. Demo sidebar content

@@ -1,3 +1,5 @@
+import type { CompatibilityData } from "./richValidation";
+
 /** Version-2 row primitives. The application still uses the version-1 model. */
 export type RichTextStyle = {
   foreground?: string;
@@ -12,6 +14,7 @@ export type RichTextStyle = {
 
 export type RichCell = {
   text: string;
+  compatibility?: CompatibilityData;
   /** Missing and null preserve distinct historical numbering states. */
   number?: number | null;
   style?: RichTextStyle;
@@ -37,6 +40,8 @@ export type RichRow = {
   numbering: { mode: "automatic"; start: number } | { mode: "fixed" };
   attachedTo: string | null;
   titleStyle?: RichTextStyle;
+  analysisId?: string;
+  compatibility?: CompatibilityData;
 };
 
 /** Matches ALINE _FillSeqnum: only these complete cell texts are gaps. */

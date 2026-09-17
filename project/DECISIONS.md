@@ -259,6 +259,16 @@ Use compact tool buttons and section spacing to expose more tools in limited
 vertical space. Keep visible labels, selection feedback and independent sidebar
 scrolling. This is a presentation preference, not a document or history change.
 
+## D-028 — Preserve analysis provenance independently of drawing samples
+
+Version-2 documents retain input cell snapshots, provider/method/version,
+parameters and raw measurement series separately from transformed graph values.
+Source edits must not rewrite historical measurements; deleting a source row
+clears its live reference while retaining its snapshot. The JSON boundary rejects
+duplicate members and values that would be silently dropped or coerced. Preserve
+unknown data explicitly; parsing does not imply supported rendering or complete
+legacy import. See `docs/atlas-v2-format.md` for limits and adoption requirements.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

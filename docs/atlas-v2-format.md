@@ -29,9 +29,10 @@ number and insertion code independently of display numbering. Never fabricate
 an original insertion code from a legacy fractional value.
 
 Text styles retain foreground/background, font family, size, weight, slant,
-width and anchor. The full document validator must validate renderable values
-and preserve unsupported historical values as diagnosed compatibility data;
-the current TypeScript types are not an input-validation boundary.
+width and anchor. The document validator checks field types and finite,
+nonnegative sizes. Strings remain data: rendering adoption must validate their
+supported colour/font mappings and diagnose unsupported historical values.
+Parsing a style does not authorize inserting arbitrary strings into markup.
 
 ## Numbering and attachments
 
@@ -84,10 +85,47 @@ from silently dropping a new field. Style strings retain historical spellings
 and colour precision as data; renderers still need validated colour/font mapping
 and diagnostics for unsupported values before consuming them.
 
-The component parser accepts at most 16 million UTF-16 code units and one
-million items; compatibility nesting is capped at 64. Full-document validation
-and aggregate budgets remain necessary. This is a component contract, not a
-version-2 project opener or a duplicate-JSON-member validator.
+The component and document parsers share a strict JSON boundary. Inputs and
+outputs are capped at 16 million UTF-16 code units, two million JSON values and
+128 nesting levels. Cells and object items each have an additional one-million
+limit; compatibility nesting is capped at 64. Duplicate decoded member names,
+numeric overflow and underflow to zero are rejected. Numbers use JavaScript's
+IEEE-754 representation; this is not arbitrary-precision decimal storage.
+Writers preserve signed zero and reject undefined, nonfinite numbers, sparse
+arrays, accessors, hidden fields, serialization hooks and cyclic containers
+instead of silently dropping or coercing them. Symbolic row/object links may
+still describe cycles. Unknown metadata remains inert in compatibility maps.
+
+## Document envelope, layout and provenance
+
+`richProject.ts` reads/writes `format: "atlas-alignment", version: 2` with a
+stable document ID, name, column count, rows, objects, layout, palettes, active
+palette ID and analyses. All are required; absent data is not silently defaulted.
+Short rows remain short, but no row cell or object column may exceed document
+width. Empty documents are valid. IDs are unique within each entity collection;
+all attachment, object, palette and analysis references must resolve.
+
+Layout retains cell width, row height, title/wrap/number columns, repeat-name
+mode, offsets, font scale, aggressive-edit mode, grid, block gap and background.
+These correspond to the settings audited in `aline-packed-format.md`; derived
+layout caches are omitted. Spacing/scale must be positive, columns nonnegative
+safe integers, and wrapped width must leave room for the title. Renderer resource
+limits and supported style mappings remain adoption requirements.
+
+Palettes keep ordered, nonempty categories with strictly increasing finite
+thresholds, original style strings and optional compatibility metadata. Do not
+clamp legacy sentinel thresholds to a presumed zero-to-one measurement range.
+The active palette ID may be null.
+
+Analyses retain provider, method, nullable version, parameters, immutable input
+cell snapshots and explicitly raw measurement series. Each series references
+one input snapshot and has exactly its cell count; null represents a missing
+measurement. Snapshot length is independent of the current alignment length.
+The optional live source-row link becomes null when the row is removed, while
+the snapshot remains available. Rows and objects may reference an analysis.
+Drawing samples retain their own transformed values; no inverse transform or
+raw result is invented for historical saves. Recalculation, deletion and stale
+result indication must be implemented by later document commands.
 
 ## Verification and remaining design
 
@@ -105,8 +143,11 @@ numeric values, styles and depth. Tests require the local historical reference,
 as do the existing palette tests and historical oracle. These are data-contract
 tests, not browser rendering or `.aline` conversion evidence.
 
-The next design/implementation checkpoint must complete transformed/raw sample
-provenance, palettes, document layout and row/cell/plugin compatibility metadata.
-Then add strict validation, version-1 migration and lossless serialization before
-integrating the new document into commands, rendering and file opening. Keep
-the legacy wire representation separate from the editable document (D-015).
+`richProject.test.ts` verifies complete document round trips, absence/null/zero
+number states, sparse geometry, cyclic links, palette sentinels, source changes,
+snapshot retention and rejection of invalid references, dimensions, fields and
+provenance. `jsonData.test.ts` exercises the strict data boundary separately.
+The running application still uses version 1. Next: version-1 migration, rich
+legacy conversion and document commands/rendering/file opening adoption. These
+tests do not claim complete workflow or ALINE parity. Keep the legacy wire
+representation separate from the editable document (D-015).
