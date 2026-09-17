@@ -2,6 +2,17 @@
 
 ## Current checkpoint — 2026-09-17
 
+Insertion now extends eligible contiguous objects using the right boundary item's
+properties. The ten historical growth kinds are checked against ALINE's actual
+registry; Atlas Line follows the same continuous-line rule. Graphs, glyphs, text
+and Underline are not duplicated. Sparse holes and endpoints remain unfilled.
+Commands accept validated default text style or left-style inheritance, reset
+the inserted anchor to center, and do not copy numbering/identity metadata.
+Object expansion is bounded before allocation. All 190 tests and production
+build pass. These are model tests and registry evidence, not browser or complete
+historical editing parity. Next: remaining row/object commands and renderer/file
+workflow adoption. The application still uses version 1.
+
 Row-local splices now propagate through the complete attachment component,
 including cycles and reverse links. Unrelated rows/objects retain their identity;
 the document expands for moved cells/objects but local deletion does not crop

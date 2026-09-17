@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import legacySource from "../../aline_011208/bin/aline?raw";
-import { isRichGraphKind, parseRichObjects, RICH_OBJECT_KINDS, type RichObject } from "./richObjects";
+import { INSERT_GROWING_KINDS, isRichGraphKind, parseRichObjects, RICH_OBJECT_KINDS, type RichObject } from "./richObjects";
 
 function object(overrides: Partial<RichObject> = {}): RichObject {
   return { id: "object", rowId: "row", multi: false, zIndex: 1,
@@ -9,6 +9,13 @@ function object(overrides: Partial<RichObject> = {}): RichObject {
 const parse = (objects: unknown) => parseRichObjects(JSON.stringify(objects), ["row", "other"]);
 
 describe("rich object data contract", () => {
+  it("matches insertion growth flags in the historical registry", () => {
+    const registry = legacySource.match(/my %objectdata=\(([\s\S]*?)\n\);/)![1];
+    const growing = [...registry.matchAll(/^\s*(\w+)\s*=>\s*\[\d+,\s*-?\d+,\s*(\d+),/gm)]
+      .filter(match => Number(match[2]) & 2).map(match => match[1]);
+    expect([...INSERT_GROWING_KINDS].sort()).toEqual([...growing, "Line"].sort());
+    expect(growing).toHaveLength(10);
+  });
   it("covers every kind in the actual historical registry and the Atlas solid line", () => {
     const registry = legacySource.match(/my %objectdata=\(([\s\S]*?)\n\);/)![1];
     const names = [...registry.matchAll(/^\s*(\w+)\s*=>\s*\[/gm)].map((match) => match[1]);

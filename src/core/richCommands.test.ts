@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 import { applyRichCommand, createRichHistory, richHistoryReducer } from "./richCommands";
 import { DEFAULT_RICH_LAYOUT, parseRichProject, serializeRichProject, type RichDocument } from "./richProject";
+import { INSERT_GROWING_KINDS, RICH_OBJECT_KINDS, isRichGraphKind } from "./richObjects";
 
 function fixture(): RichDocument {
   return { format: "atlas-alignment", version: 2, id: "d", name: "edit", columnCount: 4,
@@ -94,4 +95,35 @@ it("retains document width on local deletion and rejects unknown target rows", (
   expect(next.columnCount).toBe(4);
   expect(next.rows.every(row => row.cells.length === 0)).toBe(true);
   expect(() => applyRichCommand(document, { type: "splice-row", rowId: "missing", start: 0, deleteCount: 0, insertCount: 0 })).toThrow(/Unknown row/);
+});
+
+it("grows eligible contiguous objects with the right boundary style, never graphs or glyphs", () => {
+  for (const kind of RICH_OBJECT_KINDS) {
+    const document = fixture();
+    document.objects[0].items = [0, 1, 2].map(column => ({ kind, column, style: { fillColor: `color-${column}` }, ...(isRichGraphKind(kind) ? { sample: column } : {}) }));
+    const next = applyRichCommand(document, { type: "splice-columns", start: 1, deleteCount: 0, insertCount: 2 });
+    expect(next.objects[0].items.map(item => item.column), kind).toEqual(INSERT_GROWING_KINDS.includes(kind) ? [0, 1, 2, 3, 4] : [0, 3, 4]);
+    if (INSERT_GROWING_KINDS.includes(kind)) expect(next.objects[0].items[1].style).toEqual({ fillColor: "color-1" });
+    expect(document.objects[0].items).toHaveLength(3);
+  }
+});
+
+it("does not fill sparse holes or extend object endpoints", () => {
+  const document = fixture();
+  document.objects[0].items = [0, 2].map(column => ({ kind: "Helix", column }));
+  for (const start of [0, 1, 2, 3]) {
+    const next = applyRichCommand(document, { type: "splice-columns", start, deleteCount: 0, insertCount: 1 });
+    expect(next.objects[0].items).toHaveLength(2);
+  }
+});
+
+it("copies only left text style, resets anchor and supports default insertion style", () => {
+  const document = fixture();
+  document.rows[0].cells[0] = { text: "A", number: 7, style: { foreground: "red", fontSize: 15, anchor: "w" }, compatibility: { neverCopy: true } };
+  const next = applyRichCommand(document, { type: "splice-row", rowId: "s", start: 1, deleteCount: 0, insertCount: 2, copyLeftStyle: true });
+  expect(next.rows[0].cells[1]).toEqual({ text: "-", number: null, style: { foreground: "red", fontSize: 15, anchor: "center" } });
+  expect(next.rows[0].cells[1].style).not.toBe(next.rows[0].cells[2].style);
+  const first = applyRichCommand(document, { type: "splice-columns", start: 0, deleteCount: 0, insertCount: 1, copyLeftStyle: true, defaultStyle: { foreground: "blue" } });
+  expect(first.rows[0].cells[0].style).toEqual({ foreground: "blue", anchor: "center" });
+  expect(() => applyRichCommand(document, { type: "splice-columns", start: 0, deleteCount: 0, insertCount: 1, defaultStyle: { fontSize: -1 } })).toThrow();
 });

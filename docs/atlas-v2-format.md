@@ -150,10 +150,20 @@ Row-local `splice-row` now applies the same sparse transformation to the target
 row's complete attachment component (including reverse edges and cycles), once
 per row. Unrelated rows and objects are untouched. Document width grows when
 needed and is not cropped by local deletion. Tests cover propagation, metadata,
-snapshot persistence and one-step undo. This primitive does not yet duplicate
-contiguous object items on insertion: ALINE `_InsertCells` uses object registry
-flag bit 1 for that behavior and optional previous-cell style inheritance.
-Those insertion policies remain a separate required checkpoint before UI adoption.
+snapshot persistence and one-step undo. Insertion now duplicates eligible
+contiguous object items according to ALINE `_InsertCells` registry flag bit 1:
+Helix, Helix2, Strand, Strand2, Coil, DashedLine, ConnectUp, ConnectDown, Box and
+Rect. Atlas Line uses the same rule. Underline, text, glyphs and graphs do not
+grow. A duplicate takes the right boundary item's complete properties; growth
+requires an immediately preceding adjacent item, preserving sparse holes.
+Combined splices delete first, then insert at the resulting boundary.
+
+Optional `copyLeftStyle` and `defaultStyle` control inserted cell typography.
+Copy only text style, reset anchor to center, and leave new cells unnumbered.
+No residue identity or compatibility metadata is copied. Absent styles use the
+renderer defaults. Registry equality, all-kind growth, holes/endpoints and style
+policies have automated tests. Historical flag variants and full browser editing
+remain separate integration evidence.
 
 `migrateV1Project` converts validated version-1 data with deterministic IDs,
 two explicit drawing lanes, every annotation kind, text styles and linked region

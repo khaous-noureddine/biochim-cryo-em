@@ -289,6 +289,12 @@ Row-local splices propagate once through the complete attachment component.
 They may grow document width but do not crop unrelated content on deletion.
 Contiguous-object insertion growth remains distinct from sparse remapping.
 
+Insertion growth follows historical registry bit 1 and also applies to Atlas's
+solid Line. Duplicate the right boundary item's properties only where the prior
+item is adjacent. New cells may inherit left text style or an explicit default;
+they never inherit residue identity, number or compatibility metadata, and their
+anchor resets to center. Graph measurements are never interpolated by insertion.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

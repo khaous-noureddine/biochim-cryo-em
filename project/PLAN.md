@@ -122,8 +122,9 @@ l’avancement et empêche d’oublier une fonction de plugin.
         before switching the application renderer and file workflow.
         - [x] Propagate sparse row splices through attachment groups atomically,
           preserving unrelated rows, metadata and analysis snapshots.
-        - [ ] Implement historical insertion growth for eligible contiguous
-          objects, insertion style rules and remaining row/object commands.
+        - [x] Implement historical insertion growth for eligible contiguous
+          objects and insertion style rules.
+        - [ ] Complete remaining row/object commands before renderer adoption.
 - [ ] représenter cellules, régions, lignes d’annotation et attachements ;
 - [ ] représenter tous les objets ponctuels et régionaux d’ALINE ;
 - [ ] représenter styles, polices, palettes, graphiques et mise en page ;

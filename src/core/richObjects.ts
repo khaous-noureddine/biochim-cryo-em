@@ -12,6 +12,10 @@ export const RICH_OBJECT_KINDS = [
   "Line", // Atlas version 1 also offers an explicit solid line.
 ] as const;
 export type RichObjectKind = typeof RICH_OBJECT_KINDS[number];
+/** Historical registry flag bit 1, plus Atlas's solid line counterpart. */
+export const INSERT_GROWING_KINDS: readonly RichObjectKind[] = [
+  "Helix", "Helix2", "Strand", "Strand2", "Coil", "DashedLine", "ConnectUp", "ConnectDown", "Box", "Rect", "Line",
+];
 export type RichObjectItem = {
   kind: RichObjectKind;
   column: number;
