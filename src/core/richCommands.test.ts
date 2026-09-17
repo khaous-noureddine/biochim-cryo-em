@@ -69,3 +69,29 @@ it("rejects invalid ranges and excessive allocation without changing history", (
   expect(state.past).toEqual([]);
   expect(serializeRichProject(state.present)).toBe(before);
 });
+
+it("propagates row splices through cyclic attachments without touching unrelated rows", () => {
+  const document = fixture();
+  document.rows.push({ ...document.rows[0], id: "unrelated", attachedTo: null });
+  document.objects.push({ ...document.objects[0], id: "other", rowId: "unrelated", previousId: "other", nextId: "other" });
+  const state = createRichHistory(document);
+  const next = richHistoryReducer(state, { type: "execute", command: { type: "splice-row", rowId: "a", start: 1, deleteCount: 0, insertCount: 2 } });
+  expect(next.present.columnCount).toBe(6);
+  expect(next.present.rows[0].cells.map(cell => cell.text)).toEqual(["A", "-", "-", "C", "D", "E"]);
+  expect(next.present.rows[1].cells.map(cell => cell.text)).toEqual(["label", "", ""]);
+  expect(next.present.rows[2]).toBe(document.rows[2]);
+  expect(next.present.objects[0].items.map(item => item.column)).toEqual([5, 3, 5]);
+  expect(next.present.objects[1]).toBe(document.objects[1]);
+  expect(next.present.analyses).toBe(document.analyses);
+  expect(next.past).toHaveLength(1);
+  expect(richHistoryReducer(next, { type: "undo" }).present).toBe(document);
+  expect(parseRichProject(serializeRichProject(next.present))).toEqual(next.present);
+});
+
+it("retains document width on local deletion and rejects unknown target rows", () => {
+  const document = fixture();
+  const next = applyRichCommand(document, { type: "splice-row", rowId: "s", start: 0, deleteCount: 4, insertCount: 0 });
+  expect(next.columnCount).toBe(4);
+  expect(next.rows.every(row => row.cells.length === 0)).toBe(true);
+  expect(() => applyRichCommand(document, { type: "splice-row", rowId: "missing", start: 0, deleteCount: 0, insertCount: 0 })).toThrow(/Unknown row/);
+});

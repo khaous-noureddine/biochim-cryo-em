@@ -285,6 +285,10 @@ Keep empty linked segments to preserve their metadata and valid references.
 Saved numbering and raw analysis snapshots are unchanged by column remapping;
 recalculation is explicit. Validate the candidate before adding a history entry.
 
+Row-local splices propagate once through the complete attachment component.
+They may grow document width but do not crop unrelated content on deletion.
+Contiguous-object insertion growth remains distinct from sparse remapping.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

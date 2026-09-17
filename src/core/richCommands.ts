@@ -1,41 +1,48 @@
 import type { RichDocument } from "./richProject";
 import { serializeRichProject } from "./richProject";
 import type { RichCell } from "./richRows";
+import { richAttachmentGroup } from "./richRows";
 
-export type RichCommand = {
-  type: "splice-columns";
+export type RichCommand = ({ type: "splice-columns" } | { type: "splice-row"; rowId: string }) & {
   start: number;
   deleteCount: number;
   insertCount: number;
 };
 
-/** Global column editing. Row-local edits and attachment propagation are separate. */
+/** Column or connected-row editing with one atomic publication boundary. */
 export function applyRichCommand(document: RichDocument, command: RichCommand): RichDocument {
   const { start, deleteCount, insertCount } = command;
-  if (command.type !== "splice-columns" || ![start, deleteCount, insertCount].every(value => Number.isSafeInteger(value) && value >= 0)
+  if (!["splice-columns", "splice-row"].includes(command.type) || ![start, deleteCount, insertCount].every(value => Number.isSafeInteger(value) && value >= 0)
     || start > document.columnCount || deleteCount > document.columnCount - start) {
     throw new Error("Invalid column splice.");
   }
+  const affected = command.type === "splice-row"
+    ? new Set(richAttachmentGroup(document.rows, command.rowId)) : null;
   if (!deleteCount && !insertCount) return document;
-  const columnCount = document.columnCount - deleteCount + insertCount;
+  let columnCount = affected ? document.columnCount : document.columnCount - deleteCount + insertCount;
   if (!Number.isSafeInteger(columnCount)) throw new Error("Column count exceeds safe integer range.");
   const end = start + deleteCount;
   let count = 0;
   for (const row of document.rows) {
-    count += row.cells.length - Math.max(0, Math.min(row.cells.length, end) - start)
-      + (start <= row.cells.length ? insertCount : 0);
+    const length = affected && !affected.has(row.id) ? row.cells.length
+      : row.cells.length - Math.max(0, Math.min(row.cells.length, end) - start)
+        + (start <= row.cells.length ? insertCount : 0);
+    count += length;
+    if (affected) columnCount = Math.max(columnCount, length);
     if (count > 1_000_000) throw new Error("Column splice exceeds cell limit.");
   }
   const rows = document.rows.map(row => {
     // Short rows do not acquire unrelated trailing cells from distant edits.
-    if (start > row.cells.length) return row;
+    if ((affected && !affected.has(row.id)) || start > row.cells.length) return row;
     const inserted = Array.from({ length: insertCount }, (): RichCell => ({ text: row.kind === "sequence" ? "-" : "", number: null }));
     return { ...row, cells: [...row.cells.slice(0, start), ...inserted, ...row.cells.slice(end)] };
   });
-  const objects = document.objects.map(object => ({ ...object,
+  const objects = document.objects.map(object => affected && !affected.has(object.rowId) ? object : ({ ...object,
     items: object.items.flatMap(item => {
       if (item.column >= start && item.column < end) return [];
-      return [item.column < start ? item : { ...item, column: item.column - deleteCount + insertCount }];
+      const column = item.column < start ? item.column : item.column - deleteCount + insertCount;
+      if (affected) columnCount = Math.max(columnCount, column + 1);
+      return [column === item.column ? item : { ...item, column }];
     }),
   }));
   const result = { ...document, columnCount, rows, objects };

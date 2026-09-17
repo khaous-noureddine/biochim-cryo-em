@@ -146,6 +146,15 @@ clears redo on branching, tracks saved identity, and leaves state unchanged on
 no-op or rejected input. `richCommands.test.ts` verifies these data operations;
 UI integration and row-local/attachment editing remain required.
 
+Row-local `splice-row` now applies the same sparse transformation to the target
+row's complete attachment component (including reverse edges and cycles), once
+per row. Unrelated rows and objects are untouched. Document width grows when
+needed and is not cropped by local deletion. Tests cover propagation, metadata,
+snapshot persistence and one-step undo. This primitive does not yet duplicate
+contiguous object items on insertion: ALINE `_InsertCells` uses object registry
+flag bit 1 for that behavior and optional previous-cell style inheritance.
+Those insertion policies remain a separate required checkpoint before UI adoption.
+
 `migrateV1Project` converts validated version-1 data with deterministic IDs,
 two explicit drawing lanes, every annotation kind, text styles and linked region
 segments. Manual styles are applied after version-1 padding/normalization.

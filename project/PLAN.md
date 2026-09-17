@@ -120,6 +120,10 @@ l’avancement et empêche d’oublier une fonction de plugin.
         preserving cell metadata, sparse object coverage and analysis snapshots.
       - [ ] Complete row-local/attachment editing and remaining rich commands
         before switching the application renderer and file workflow.
+        - [x] Propagate sparse row splices through attachment groups atomically,
+          preserving unrelated rows, metadata and analysis snapshots.
+        - [ ] Implement historical insertion growth for eligible contiguous
+          objects, insertion style rules and remaining row/object commands.
 - [ ] représenter cellules, régions, lignes d’annotation et attachements ;
 - [ ] représenter tous les objets ponctuels et régionaux d’ALINE ;
 - [ ] représenter styles, polices, palettes, graphiques et mise en page ;

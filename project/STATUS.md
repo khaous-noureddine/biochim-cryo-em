@@ -2,6 +2,16 @@
 
 ## Current checkpoint — 2026-09-17
 
+Row-local splices now propagate through the complete attachment component,
+including cycles and reverse links. Unrelated rows/objects retain their identity;
+the document expands for moved cells/objects but local deletion does not crop
+other rows. All changes share one validated history entry. Two additional tests
+cover cyclic propagation, unrelated content, raw snapshots, serialization,
+undo and invalid row targets. All 186 tests and production build pass. Historical
+`_InsertCells` review identified contiguous-object duplication and insertion
+style behavior as the next required command work; current sparse splices do not
+claim those semantics. No application UI changed.
+
 Global rich-document column splices and snapshot history are now implemented.
 Cells retain complete metadata while sparse/duplicate object items are remapped;
 deleted coverage is removed without invalidating segment links. Empty containers
