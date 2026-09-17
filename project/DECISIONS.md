@@ -278,6 +278,13 @@ text. Report layout defaults because version 1 did not persist view settings.
 Keep its numbering snapshot; later explicit recalculation uses rich-row rules.
 Application adoption must surface migration diagnostics before saving version 2.
 
+## D-030 — Atomic rich column edits retain metadata and provenance
+
+Global column edits move complete cells and sparse object coverage together.
+Keep empty linked segments to preserve their metadata and valid references.
+Saved numbering and raw analysis snapshots are unchanged by column remapping;
+recalculation is explicit. Validate the candidate before adding a history entry.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

@@ -129,6 +129,23 @@ result indication must be implemented by later document commands.
 
 ## Verification and remaining design
 
+`richCommands.ts` supplies a global column-splice operation and immutable
+snapshot history. A splice removes the specified range and inserts gap cells
+(`-` for sequence rows, empty text for annotation rows) with null numbering.
+Existing cell metadata and saved numbers move intact; renumbering is explicit.
+Edits beyond a short row do not materialize unrelated trailing cells. Object
+items in deleted columns disappear and later items shift, preserving order,
+duplicates, styles, samples and segment links. Empty segments remain data so
+links are not broken. Analysis snapshots and raw results do not shift.
+
+The source reference is ALINE `_DeleteCells`/`_InsertCells`, where cell editing
+also remaps object `xpos`; flag-dependent row-local behavior is not yet claimed.
+The modern global operation retains empty linked containers rather than silently
+discarding their metadata. History adds one snapshot per successful command,
+clears redo on branching, tracks saved identity, and leaves state unchanged on
+no-op or rejected input. `richCommands.test.ts` verifies these data operations;
+UI integration and row-local/attachment editing remain required.
+
 `migrateV1Project` converts validated version-1 data with deterministic IDs,
 two explicit drawing lanes, every annotation kind, text styles and linked region
 segments. Manual styles are applied after version-1 padding/normalization.

@@ -116,6 +116,10 @@ l’avancement et empêche d’oublier une fonction de plugin.
       adopting version 2 in application commands, rendering and file opening.
     - [ ] Adopt the rich document in commands and rendering, then route file
       opening/saving through version dispatch with migration diagnostics.
+      - [x] Implement atomic global column splices and rich-document history,
+        preserving cell metadata, sparse object coverage and analysis snapshots.
+      - [ ] Complete row-local/attachment editing and remaining rich commands
+        before switching the application renderer and file workflow.
 - [ ] représenter cellules, régions, lignes d’annotation et attachements ;
 - [ ] représenter tous les objets ponctuels et régionaux d’ALINE ;
 - [ ] représenter styles, polices, palettes, graphiques et mise en page ;

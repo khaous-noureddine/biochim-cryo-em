@@ -2,6 +2,17 @@
 
 ## Current checkpoint — 2026-09-17
 
+Global rich-document column splices and snapshot history are now implemented.
+Cells retain complete metadata while sparse/duplicate object items are remapped;
+deleted coverage is removed without invalidating segment links. Empty containers
+remain representable, and raw analysis snapshots are unchanged. Validation runs
+before publication, with allocation limits before constructing inserted cells.
+Tests cover mixed metadata, short rows, empty documents, undo/redo, saved state,
+branching, no-ops and atomic rejection. All 184 tests and production build pass.
+This is the first command-layer adoption checkpoint, not an application switch.
+Next: row-local edits with attachments and remaining rich commands, then renderer
+and file-workflow integration. Full ALINE parity remains incomplete.
+
 Explicit version-1 migration now maps sequence cells/styles, all 24 annotation
 kinds, text and linked region segments into version 2. IDs are deterministic
 and collision-safe. Preserve version-1 numbering snapshots (including counted
