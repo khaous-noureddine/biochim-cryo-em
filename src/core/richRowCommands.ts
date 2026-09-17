@@ -4,16 +4,32 @@ import { renumberRichRow, type RichRow } from "./richRows";
 import { keys, record } from "./richValidation";
 
 export type RichRowCommand =
+  | { type: "insert-row"; row: RichRow; atIndex: number }
+  | { type: "move-row"; rowId: string; toIndex: number }
   | { type: "update-row"; rowId: string; properties: Partial<Pick<RichRow, "name" | "description" | "role" | "titleStyle" | "numbering">> }
   | { type: "attach-row"; rowId: string; attachedTo: string | null }
   | { type: "renumber-row"; rowId: string }
   | { type: "delete-row"; rowId: string };
 
 export function applyRichRowCommand(document: RichDocument, command: RichRowCommand): RichDocument {
+  if (command.type === "insert-row") {
+    if (!Number.isInteger(command.atIndex) || command.atIndex < 0 || command.atIndex > document.rows.length) throw new Error("Invalid row insertion index.");
+    const rows = document.rows.map(entry => entry.position >= command.row.position ? { ...entry, position: entry.position + 1 } : entry);
+    rows.splice(command.atIndex, 0, command.row);
+    return parseRichProject(serializeRichProject({ ...document, rows, columnCount: Math.max(document.columnCount, command.row.cells.length) }));
+  }
   const row = document.rows.find(entry => entry.id === command.rowId);
   if (!row) throw new Error(`Unknown row: ${command.rowId}.`);
   let candidate: RichDocument;
-  if (command.type === "delete-row") {
+  if (command.type === "move-row") {
+    if (!Number.isInteger(command.toIndex) || command.toIndex < 0 || command.toIndex >= document.rows.length) throw new Error("Invalid row destination.");
+    const from = document.rows.indexOf(row);
+    if (from === command.toIndex) return document;
+    const rows = [...document.rows];
+    rows.splice(from, 1);
+    rows.splice(command.toIndex, 0, row);
+    candidate = { ...document, rows: rows.map((entry, index) => ({ ...entry, position: document.rows[index].position })) };
+  } else if (command.type === "delete-row") {
     const removed = new Set(document.objects.filter(object => object.rowId === row.id).map(object => object.id));
     const objectsById = new Map(document.objects.map(object => [object.id, object]));
     const survivingLink = (id: string | null, direction: "previousId" | "nextId"): string | null => {

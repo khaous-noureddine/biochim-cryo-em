@@ -299,6 +299,11 @@ Row deletion repairs surviving object links, detaches dependent rows and keeps
 analysis snapshots with null source-row references. Property updates do not
 implicitly recalculate saved numbering; renumbering is an explicit command.
 
+Row insertion uses explicit array and layout positions. Reordering moves stable
+IDs between existing layout slots without retargeting references or normalizing
+fractional positions. Wider inserted rows expand the document without padding
+unrelated rows.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

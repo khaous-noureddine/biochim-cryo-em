@@ -193,3 +193,36 @@ it("attaches and detaches rows with validation and no changes on rejection", () 
   expect(() => applyRichCommand(document, { type: "update-row", rowId: "s", properties: { numbering: { mode: "automatic", start: Infinity } } })).toThrow();
   expect(document.rows[0].attachedTo).toBe("a");
 });
+
+it("inserts complete rows with stable references and expands width without padding others", () => {
+  const document = fixture();
+  const row = { ...document.rows[1], id: "new", position: 1, attachedTo: "s", cells: [{ text: "multi" }, ...Array.from({ length: 4 }, () => ({ text: "" }))] };
+  const state = createRichHistory(document);
+  const next = richHistoryReducer(state, { type: "execute", command: { type: "insert-row", row, atIndex: 1 } });
+  expect(next.present.rows.map(entry => [entry.id, entry.position])).toEqual([["s", 2], ["new", 1], ["a", 0]]);
+  expect(next.present.rows[1].attachedTo).toBe("s");
+  expect(next.present.columnCount).toBe(5);
+  expect(next.present.rows[2].cells).toHaveLength(1);
+  expect(next.present.objects).toEqual(document.objects);
+  expect(next.present.analyses).toEqual(document.analyses);
+  row.cells[0].text = "changed by caller";
+  expect(next.present.rows[1].cells[0].text).toBe("multi");
+  expect(richHistoryReducer(next, { type: "undo" }).present).toBe(document);
+  expect(() => applyRichCommand(document, { type: "insert-row", row: document.rows[0], atIndex: 0 })).toThrow(/duplicate/);
+  expect(() => applyRichCommand(document, { type: "insert-row", row, atIndex: 3 })).toThrow(/index/);
+});
+
+it("moves row identities between existing layout slots without retargeting metadata", () => {
+  const document = fixture();
+  document.rows.push({ ...document.rows[0], id: "third", position: 4.5 });
+  const next = applyRichCommand(document, { type: "move-row", rowId: "s", toIndex: 2 });
+  expect(next.rows.map(row => [row.id, row.position])).toEqual([["a", 1], ["third", 0], ["s", 4.5]]);
+  expect(next.rows[2].cells).toEqual(document.rows[0].cells);
+  expect(next.rows[0].attachedTo).toBe("s");
+  expect(next.objects).toEqual(document.objects);
+  expect(next.analyses).toEqual(document.analyses);
+  const restored = applyRichCommand(next, { type: "move-row", rowId: "s", toIndex: 0 });
+  expect(restored).toEqual(document);
+  expect(applyRichCommand(document, { type: "move-row", rowId: "s", toIndex: 0 })).toBe(document);
+  expect(() => applyRichCommand(document, { type: "move-row", rowId: "s", toIndex: 3 })).toThrow(/destination/);
+});

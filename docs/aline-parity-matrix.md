@@ -24,7 +24,7 @@ colonne de vérification.
 | CORE-013 | Export ClustalW ALN | `ExportAln`, `_ExportMulti` | partiel | fixture comparative |
 | CORE-014 | Export PostScript/EPS | `PrintPS`, transformations PS | absent | remplacé par SVG/PDF fidèle |
 | CORE-015 | Export PNG | `PrintPNG` | absent | comparaison visuelle de références |
-| CORE-016 | Ajouter/supprimer/déplacer une ligne | `InsertRow`, `DeleteRowByN/Y`, `_SeqDrag` | partial | `richCommands.test.ts`: rich row deletion repairs segment links, detaches dependents, preserves analysis snapshots and supports undo; rich insertion/reordering and application adoption remain required |
+| CORE-016 | Ajouter/supprimer/déplacer une ligne | `InsertRow`, `DeleteRowByN/Y`, `_SeqDrag` | partial | `richCommands.test.ts`: rich insertion/reordering preserves IDs and layout slots; deletion repairs segment links and preserves analysis snapshots; history tested. Application adoption remains required |
 | CORE-017 | Ajouter une séquence et ses métadonnées | `InsertSequence`, `EditTitle`, propriétés | partiel | gestion UI du nom, commentaire et numérotation ; saisie de résidus à compléter |
 | CORE-018 | Attach rows | `AttachRow`, `_AttachmentForX`, `_InsertAttachmentElements` | partiel | `richRows.test.ts` and historical oracle verify connected groups, reverse edges, cycles and self-links; application editing propagation, persistence and undo remain required |
 | CORE-019 | Automatic/fixed numbering and offsets | `_FillSeqnum`, `_SeqStart`, `_SetNumberingType`, `SetNumberOffsets` | partiel | `richRows.test.ts` and historical oracle verify exact gap handling and fixed absent/null/zero/fractional states; rich application editing and insertion identity remain required |

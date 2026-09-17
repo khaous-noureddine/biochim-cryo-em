@@ -127,7 +127,8 @@ l’avancement et empêche d’oublier une fonction de plugin.
         - [ ] Complete remaining row/object commands before renderer adoption.
           - [x] Add row property, attachment, explicit renumbering and deletion
             commands with link repair, retained provenance and undo verification.
-          - [ ] Add row insertion/reordering and object/style editing commands.
+          - [x] Add row insertion/reordering with stable references and history.
+          - [ ] Add object/style editing commands.
 - [ ] représenter cellules, régions, lignes d’annotation et attachements ;
 - [ ] représenter tous les objets ponctuels et régionaux d’ALINE ;
 - [ ] représenter styles, polices, palettes, graphiques et mise en page ;

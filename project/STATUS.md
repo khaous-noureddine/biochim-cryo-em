@@ -2,6 +2,14 @@
 
 ## Current checkpoint — 2026-09-17
 
+Rich row insertion and reordering are implemented. Insertion accepts a complete
+row, makes room at its layout position, expands width if necessary, and validates
+IDs/references before publication. Reordering moves row identities between existing
+layout slots without retargeting objects, attachments or analysis inputs. Tests
+cover caller-data isolation, short rows, fractional layout slots, inverse moves,
+undo, no-ops and invalid indices/duplicate IDs. All 196 tests and production build
+pass. No UI changed. Next: object/style commands, then renderer/file adoption.
+
 Rich row commands now update properties, attach/detach, explicitly renumber and
 delete rows. Deletion follows `DeleteRowByN`/`_UnlinkObject`: remove row-local
 objects, reconnect surviving segments, detach children and compact later row

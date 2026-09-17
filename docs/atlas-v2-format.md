@@ -129,6 +129,16 @@ result indication must be implemented by later document commands.
 
 ## Verification and remaining design
 
+Row insertion takes an explicit array index and complete row (including its
+layout position), shifts positions at/after the insertion by one, and widens the
+document for longer cells without padding unrelated rows. Row moves reorder IDs
+between existing layout slots; array order and the original sequence of position
+values are preserved separately, including fractional or unsorted positions.
+Objects, attachments and analysis inputs remain bound to IDs. These commands
+follow `InsertRow`/`_MakeSpace` and the identity-preserving intent of `_SeqDrag`;
+array-slot movement is explicit rather than assuming positions equal indices.
+Validation, data ownership and one-step history apply to both operations.
+
 `richRowCommands.ts` implements property changes, attachment changes, explicit
 renumbering and deletion through rich history. Changing numbering mode/start
 does not implicitly recalculate the saved cell snapshot. Deletion removes the
