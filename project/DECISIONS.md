@@ -321,6 +321,16 @@ cross-platform in-app execution is claimed yet.
 
 Official reference: https://mafft.cbrc.jp/alignment/software/manual/manual.html
 
+## D-032 — Local alignment development boundary
+
+The first executable MAFFT integration is a Vite development-server endpoint.
+The browser sends parsed raw input to that local process boundary and adopts
+only validated, equal-width output with the same ungapped residues and row
+order. This demonstrates real alignment without implying that a static web
+build or packaged macOS/Windows/Linux application can yet launch MAFFT.
+Keep the engine adapter replaceable and retain desktop process packaging and
+alignment provenance as explicit unfinished work.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

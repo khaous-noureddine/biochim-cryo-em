@@ -10,6 +10,7 @@ import { documentHistoryReducer, createDocumentHistory } from "./core/history";
 import { AnnotationKind, CellPosition, createId, isPointAnnotationKind, nextGraphicZIndex, POINT_ANNOTATION_KINDS, PointAnnotationKind, RegionKind, TextAnnotation } from "./core/model";
 import { moveCellSelection, NavigationDirection, normalizeCellRange } from "./core/navigation";
 import { openAlignmentFile, serializeAtlasProject } from "./core/project";
+import { parseSequenceInput, SequenceInput } from "./core/unalignedInput";
 import {
   calculateAlscriptConservation,
   calculateSimilarityColors,
@@ -233,6 +234,8 @@ export function App() {
   const [zoom, setZoom] = useState(1);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [rawInput, setRawInput] = useState<{ source: string; filename: string; parsed: SequenceInput } | null>(null);
+  const [aligning, setAligning] = useState(false);
   const [selection, setSelection] = useState<CellPosition | null>(null);
   const [selectionAnchor, setSelectionAnchor] = useState<CellPosition | null>(null);
   const colourPalette = alignment.colourPalette ?? DEFAULT_GREYSCALE_PALETTE;
@@ -343,7 +346,22 @@ export function App() {
     const file = event.target.files?.[0];
     if (!file) return;
     try {
-      const opened = openAlignmentFile(await readAlignmentFile(file), file.name);
+      const source = await readAlignmentFile(file);
+      const firstLine = source.trimStart();
+      const isKnownAlignment = /^(?:CLUSTAL\b|>..;|Aline 1\.0 packed state|\{)/i.test(firstLine)
+        || /\bMSF\s*:/i.test(firstLine.slice(0, 2000));
+      const isSequenceContent = /^\s*>/m.test(source) && !isKnownAlignment;
+      if (isSequenceContent || (file.name.toLowerCase().endsWith(".txt") && !isKnownAlignment)) {
+        const parsed = parseSequenceInput(source);
+        if (!parsed.alreadyAligned) {
+          setRawInput({ source, filename: file.name, parsed });
+          setNotice("");
+          setError("");
+          return;
+        }
+      }
+      const opened = openAlignmentFile(source, file.name);
+      setRawInput(null);
       dispatch({ type: "open", document: opened.document });
       setSelection(null);
       setSelectionAnchor(null);
@@ -361,6 +379,37 @@ export function App() {
       setNotice("");
     } finally {
       event.target.value = "";
+    }
+  }
+
+  async function alignRawInput() {
+    if (!rawInput || aligning) return;
+    setAligning(true);
+    setError("");
+    try {
+      const response = await fetch("/api/align/mafft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: rawInput.source }),
+      });
+      const result: { alignedFasta?: string; error?: string; engine?: string; version?: string; method?: string } = await response.json();
+      if (!response.ok || !result.alignedFasta) throw new Error(result.error ?? "MAFFT alignment failed.");
+      const opened = openAlignmentFile(result.alignedFasta, rawInput.filename);
+      dispatch({ type: "open", document: opened.document });
+      setSelection(null);
+      setSelectionAnchor(null);
+      setAnnotationStart(null);
+      setSelectedAnnotationId(null);
+      setSelectedRegionId(null);
+      setSelectedTextId(null);
+      setColorExclusions(new Set());
+      setScheme("none");
+      setRawInput(null);
+      setNotice(`${result.engine ?? "MAFFT"} ${result.version ?? ""} ${result.method ?? ""} · ${opened.document.sequences.length} sequences aligned`);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Alignment failed.");
+    } finally {
+      setAligning(false);
     }
   }
 
@@ -1201,6 +1250,21 @@ export function App() {
           )}
         </section>
       </section>
+      {rawInput && (
+        <div className="dialog-backdrop" role="presentation" onMouseDown={() => { if (!aligning) { setRawInput(null); setError(""); } }}>
+          <div className="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="raw-input-title" onMouseDown={(event) => event.stopPropagation()}>
+            <span className="eyebrow">Raw protein sequences</span>
+            <h2 id="raw-input-title">Align {rawInput.parsed.sequences.length} sequences</h2>
+            <p>{rawInput.filename} contains unaligned proteins. Their original lengths are preserved until MAFFT computes an alignment.</p>
+            <ul>{rawInput.parsed.sequences.map((sequence) => <li key={sequence.name}>{sequence.name} · {sequence.residues.length} residues</li>)}</ul>
+            {error && <p className="error" role="alert">{error}</p>}
+            <div className="dialog-actions">
+              <button disabled={aligning} onClick={() => { setRawInput(null); setError(""); }}>Cancel</button>
+              <button className="primary" disabled={aligning} onClick={alignRawInput}>{aligning ? "Aligning…" : "Align with MAFFT"}</button>
+            </div>
+          </div>
+        </div>
+      )}
       {similarityDialogOpen && (
         <div className="dialog-backdrop" role="presentation" onMouseDown={() => setSimilarityDialogOpen(false)}>
           <form

@@ -2,6 +2,18 @@
 
 ## Product steering — 2026-09-18
 
+Atlas now computes a real multiple alignment in the local development server:
+the browser previews raw FASTA, calls a controlled MAFFT `--auto` adapter,
+validates sequence identity and equal output width, then opens the result.
+The five real globins produce 149 aligned columns and 15 gaps, matching the
+checked-in before/after pair. Browser and API workflows were exercised; 207
+tests and the production build passed at this checkpoint. The static build
+does not provide a MAFFT process endpoint. Desktop packaging, cancellation,
+alignment provenance in `.atlas`, and cross-platform verification remain open.
+This is not yet the finished raw-input-to-figure workflow.
+
+### Earlier raw-input checkpoints
+
 A five-sequence UniProtKB globin fixture (142/147 raw residues) now provides
 real unaligned test input. `docs/real-sequence-test-data.md` records accession
 links, retrieval provenance and the expected import/alignment checks. The

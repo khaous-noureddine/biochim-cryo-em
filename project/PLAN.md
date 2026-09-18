@@ -13,13 +13,16 @@ as small verified checkpoints alongside the existing rich-document work:
     a core building block only; the application import workflow is pending.
   - [x] Add a provenance-documented real, unaligned protein fixture with
     different sequence lengths and an executable parser regression check.
-  - [ ] Integrate raw-input preview and diagnostics in the application while
+  - [x] Integrate raw-input preview and diagnostics in the application while
     keeping existing aligned-file and project opening intact.
 - [ ] Run a maintained local multiple-alignment engine (MAFFT first) on all
   three target operating systems through a controlled process adapter. Include
   engine detection/install guidance, explicit method choice or `--auto`,
   progress, cancellation, errors and output validation. Do not substitute
   ad-hoc residue padding or an unvalidated homegrown algorithm.
+  - [x] Add and verify a local MAFFT development-server adapter, including
+    raw-input preview, output validation and a real before/after fixture.
+    Desktop/static execution, progress and cancellation remain pending.
 - [ ] Preview the resulting alignment before adoption; record input snapshot,
   engine/version/arguments and warnings in the project. Make acceptance and
   subsequent edits compatible with history, save/reopen and export.
