@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { parseSequenceInput, toUnalignedFasta } from "./unalignedInput";
+import globins from "../../examples/real-globins-unaligned.fasta?raw";
 
 describe("unaligned protein input", () => {
+  it("parses the real UniProt globin fixture without fabricating an alignment", () => {
+    const input = parseSequenceInput(globins);
+    expect(input.sequences.map((sequence) => sequence.residues.length)).toEqual([142, 147, 147, 147, 147]);
+    expect(input.sequences.map((sequence) => sequence.name)).toEqual([
+      "P69905_HBA_HUMAN", "P68871_HBB_HUMAN", "P02042_HBD_HUMAN",
+      "P02088_HBB1_MOUSE", "P02091_HBB1_RAT",
+    ]);
+    expect(input.alreadyAligned).toBe(false);
+  });
+
   it("keeps unequal FASTA lengths instead of padding them", () => {
     const input = parseSequenceInput(">alpha long protein\nMKTAA\n>beta\nMKTA\n");
     expect(input.format).toBe("fasta");

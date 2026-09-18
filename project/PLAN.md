@@ -11,6 +11,8 @@ as small verified checkpoints alongside the existing rich-document work:
   - [x] Add a pure parser for FASTA and explicitly defined plain-text input
     (one sequence per line), with tests and no implicit gap padding. This is
     a core building block only; the application import workflow is pending.
+  - [x] Add a provenance-documented real, unaligned protein fixture with
+    different sequence lengths and an executable parser regression check.
   - [ ] Integrate raw-input preview and diagnostics in the application while
     keeping existing aligned-file and project opening intact.
 - [ ] Run a maintained local multiple-alignment engine (MAFFT first) on all

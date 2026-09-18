@@ -2,6 +2,12 @@
 
 ## Product steering — 2026-09-18
 
+A five-sequence UniProtKB globin fixture (142/147 raw residues) now provides
+real unaligned test input. `docs/real-sequence-test-data.md` records accession
+links, retrieval provenance and the expected import/alignment checks. The
+fixture is covered by an executable parser test. This does not validate an
+alignment algorithm or complete the still-pending application workflow.
+
 The requested scope now includes a complete raw-protein-sequence to
 publication-figure workflow. The first bounded checkpoint adds a pure
 FASTA/plain-text input parser that preserves unequal sequence lengths and
