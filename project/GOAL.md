@@ -1,5 +1,19 @@
 # Objectif durable d’Atlas Alignement
 
+## Expanded end-to-end mission (2026-09-18)
+
+Atlas must also turn **unaligned protein sequences into a publication-ready
+figure** within one user workflow: import raw sequences, run and inspect a
+multiple sequence alignment, edit and annotate that alignment, then save the
+project and export the figure. Accept supported sequence content regardless of
+filename extension (including `.txt` and FASTA); do not claim that arbitrary
+text or every biological file format can be parsed. Never silently pad unequal
+raw sequences and present the result as a computed alignment. Show the method,
+version, parameters and input provenance for computed alignments. Prefer a
+local, maintained alignment engine and preserve the ability to work offline on
+macOS, Windows and Linux. Scientific quality and reproducibility matter more
+than hiding the alignment step.
+
 ## Mission
 
 Atlas Alignement est la réécriture moderne, rapide et multiplateforme d’ALINE.

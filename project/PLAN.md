@@ -1,5 +1,34 @@
 # Feuille de route vers la parité complète avec ALINE
 
+## Priority extension — raw proteins to publication figure (2026-09-18)
+
+This is an Atlas capability beyond ALINE figure-editing parity. Implement it
+as small verified checkpoints alongside the existing rich-document work:
+
+- [ ] Import raw protein sequences by recognized content, not extension;
+  preserve original lengths and names, validate ambiguities, and distinguish
+  raw input from an actual computed or imported alignment.
+  - [x] Add a pure parser for FASTA and explicitly defined plain-text input
+    (one sequence per line), with tests and no implicit gap padding. This is
+    a core building block only; the application import workflow is pending.
+  - [ ] Integrate raw-input preview and diagnostics in the application while
+    keeping existing aligned-file and project opening intact.
+- [ ] Run a maintained local multiple-alignment engine (MAFFT first) on all
+  three target operating systems through a controlled process adapter. Include
+  engine detection/install guidance, explicit method choice or `--auto`,
+  progress, cancellation, errors and output validation. Do not substitute
+  ad-hoc residue padding or an unvalidated homegrown algorithm.
+- [ ] Preview the resulting alignment before adoption; record input snapshot,
+  engine/version/arguments and warnings in the project. Make acceptance and
+  subsequent edits compatible with history, save/reopen and export.
+- [ ] Verify the complete raw-input → alignment → figure workflow with
+  representative real proteins, malformed input, regression tests, user-facing
+  checks and macOS/Windows/Linux packaging evidence.
+
+The current browser-only UI cannot execute a local scientific binary directly;
+the process boundary and desktop distribution must be completed before this
+workflow is called finished. See D-031.
+
 Cette feuille de route est ordonnée pour éviter de construire les fonctions
 avancées sur un modèle ou un rendu qui devrait ensuite être remplacé.
 

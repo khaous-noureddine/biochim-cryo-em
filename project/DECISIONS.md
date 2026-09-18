@@ -304,6 +304,23 @@ IDs between existing layout slots without retargeting references or normalizing
 fractional positions. Wider inserted rows expand the document without padding
 unrelated rows.
 
+## D-031 — Alignment is an explicit, reproducible stage
+
+Atlas must accept unaligned protein sequences and prepare a scientific figure
+end to end. Recognize supported formats by content rather than extension;
+initial scope is FASTA and plain text containing one sequence per line.
+Unrecognized input gets a clear error, not a best-effort fabricated alignment.
+Unequal raw lengths must remain unequal until an actual alignment engine runs.
+Use a maintained local engine, MAFFT first, behind a replaceable process
+adapter; do not implement a new scientific MSA algorithm solely for UI
+convenience. Capture method, version, arguments and input provenance in the
+project and require output validation before replacing the visible document.
+MAFFT documents FASTA input and `--auto` strategy selection. The exact desktop
+container and bundled-binary distribution remain open decisions, and no
+cross-platform in-app execution is claimed yet.
+
+Official reference: https://mafft.cbrc.jp/alignment/software/manual/manual.html
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

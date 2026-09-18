@@ -1,5 +1,18 @@
 # État actuel d’Atlas Alignement
 
+## Product steering — 2026-09-18
+
+The requested scope now includes a complete raw-protein-sequence to
+publication-figure workflow. The first bounded checkpoint adds a pure
+FASTA/plain-text input parser that preserves unequal sequence lengths and
+rejects malformed or ambiguous content. Four focused tests pass; the full
+suite passes (203 tests) and the production build succeeds. It is not yet
+wired into the UI and does not run an aligner. The existing FASTA file-opening path pads unequal
+sequences for display; it must not be represented as a computed alignment.
+Next for this product extension: application import/preview, then a local
+MAFFT adapter and desktop process boundary. The existing rich-document
+checkpoint remains in progress; unrelated worktree edits were not changed.
+
 ## Current checkpoint — 2026-09-17
 
 Rich row insertion and reordering are implemented. Insertion accepts a complete
