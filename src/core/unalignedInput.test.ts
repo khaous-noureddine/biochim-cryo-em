@@ -31,14 +31,23 @@ describe("unaligned protein input", () => {
   it("recognizes an explicitly gapped alignment and strips gaps for realignment", () => {
     const input = parseSequenceInput(">a\nMK-TA\n>b\nMKKTA\n");
     expect(input.alreadyAligned).toBe(true);
+    expect(input.gapCount).toBe(1);
     expect(toUnalignedFasta(input)).toBe(">a\nMKTA\n>b\nMKKTA\n");
+  });
+
+  it("accepts partial gaps in unequal raw sequences and removes them only for alignment", () => {
+    const input = parseSequenceInput(">a\nMK-TA*\n>b\nMKT\n");
+    expect(input.alreadyAligned).toBe(false);
+    expect(input.gapCount).toBe(1);
+    expect(input.stopCount).toBe(1);
+    expect(input.sequences.map((sequence) => sequence.residues)).toEqual(["MK-TA*", "MKT"]);
+    expect(toUnalignedFasta(input)).toBe(">a\nMKTA\n>b\nMKT\n");
   });
 
   it("rejects ambiguous or invalid input", () => {
     expect(() => parseSequenceInput("MKTAA")).toThrow("At least two");
     expect(() => parseSequenceInput(">a\nMKT\n>a\nMKT")).toThrow("duplicate");
     expect(() => parseSequenceInput(">a\nMKT\n>b\nMK1")).toThrow("Invalid FASTA");
-    expect(() => parseSequenceInput(">a\nMK-TA\n>b\nMKT")).toThrow("same length");
     expect(() => parseSequenceInput("Protein A: MKT\nProtein B: MKT")).toThrow("Unrecognized");
   });
 });

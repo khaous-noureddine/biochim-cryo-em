@@ -11,7 +11,7 @@ export function validateAlignmentResult(source: string, original: InputSequence[
   for (let index = 0; index < original.length; index += 1) {
     const actual = result.sequences[index];
     const expected = original[index];
-    if (actual.name !== expected.name || actual.residues.replace(/-/g, "") !== expected.residues.replace(/-/g, "")) {
+    if (actual.name !== expected.name || actual.residues.replace(/-/g, "") !== expected.residues.replace(/[-*]/g, "")) {
       throw new Error(`The alignment engine changed or reordered ${expected.name}.`);
     }
   }

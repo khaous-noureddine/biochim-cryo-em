@@ -19,6 +19,12 @@ describe("alignment result validation", () => {
     );
   });
 
+  it("accepts a stop marker removed from the engine input, but no other residue loss", () => {
+    const input = parseSequenceInput(">one\nMK*TA\n>two\nMKTA").sequences;
+    expect(validateAlignmentResult(">one\nMKTA\n>two\nMKTA\n", input)).toContain(">one\nMKTA");
+    expect(() => validateAlignmentResult(">one\nMKAA\n>two\nMKTA\n", input)).toThrow("changed");
+  });
+
   it("rejects changes to residues, identity, order and width", () => {
     expect(() => validateAlignmentResult(">one\nMKTAA\n>two\nMKTAA\n", original)).toThrow("changed");
     expect(() => validateAlignmentResult(">two\nMKTA-\n>one\nMKTAA\n", original)).toThrow("reordered");

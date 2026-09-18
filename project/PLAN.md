@@ -23,6 +23,9 @@ as small verified checkpoints alongside the existing rich-document work:
   - [x] Add and verify a local MAFFT development-server adapter, including
     raw-input preview, output validation and a real before/after fixture.
     Desktop/static execution, progress and cancellation remain pending.
+  - [x] Accept partial pre-existing gaps and stop markers in raw protein
+    inputs with explicit preview warnings, then verify a real 47-sequence
+    AtUMAMIT alignment without changing the source file.
 - [ ] Preview the resulting alignment before adoption; record input snapshot,
   engine/version/arguments and warnings in the project. Make acceptance and
   subsequent edits compatible with history, save/reopen and export.

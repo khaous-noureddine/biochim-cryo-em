@@ -2,6 +2,16 @@
 
 ## Product steering — 2026-09-18
 
+The user-provided 47-sequence AtUMAMIT FASTA exposed one pre-existing gap
+and one internal `*` stop marker in AtUMAMIT39-Ψ. Atlas now previews these
+markers, explicitly explains their removal for protein realignment, and
+preserves the original file. A local MAFFT API run on this exact file succeeded:
+47 rows of 482 aligned columns, with validated sequence order and amino-acid
+content. Synthetic tests cover partial gaps, stop normalization and output
+validation. The user-provided file was inspected but not added to this commit.
+The existing development-only process and provenance limitations below remain.
+
+
 Atlas now computes a real multiple alignment in the local development server:
 the browser previews raw FASTA, calls a controlled MAFFT `--auto` adapter,
 validates sequence identity and equal output width, then opens the result.

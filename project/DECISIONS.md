@@ -331,6 +331,17 @@ build or packaged macOS/Windows/Linux application can yet launch MAFFT.
 Keep the engine adapter replaceable and retain desktop process packaging and
 alignment provenance as explicit unfinished work.
 
+## D-033 — Explicit normalization of raw protein markers
+
+Partially gapped FASTA is not automatically an alignment: unequal-width rows
+remain raw input. Before MAFFT realignment, remove existing `-` gap placeholders
+and `*` stop markers from the protein strings, with counts and a warning in
+the preview. Neither marker is an amino acid. Preserve the original file;
+validate the output against the normalized amino-acid strings, row names and
+order. Do not silently remove any other residue or claim that stop positions
+remain represented in the resulting alignment. Source-snapshot provenance in
+`.atlas` is still pending.
+
 ## Open decisions
 
 - conteneur desktop final : Tauri, Electron ou autre solution ;

@@ -8,6 +8,8 @@ export type SequenceInput = {
   format: "fasta" | "plain";
   sequences: InputSequence[];
   alreadyAligned: boolean;
+  gapCount: number;
+  stopCount: number;
 };
 
 const PROTEIN_RESIDUES = /^[ACDEFGHIKLMNPQRSTVWYBXZJUO*]+$/;
@@ -65,13 +67,11 @@ export function parseSequenceInput(source: string): SequenceInput {
 
   validateSequences(sequences);
   const widths = new Set(sequences.map((sequence) => sequence.residues.length));
-  const hasGaps = sequences.some((sequence) => sequence.residues.includes("-"));
-  if (hasGaps && widths.size !== 1) {
-    throw new Error("Gapped sequences must have the same length; remove gaps before a new alignment.");
-  }
-  return { format, sequences, alreadyAligned: hasGaps && widths.size === 1 };
+  const gapCount = sequences.reduce((count, sequence) => count + (sequence.residues.match(/-/g)?.length ?? 0), 0);
+  const stopCount = sequences.reduce((count, sequence) => count + (sequence.residues.match(/\*/g)?.length ?? 0), 0);
+  return { format, sequences, alreadyAligned: gapCount > 0 && widths.size === 1, gapCount, stopCount };
 }
 
 export function toUnalignedFasta(input: SequenceInput): string {
-  return `${input.sequences.map(({ name, residues }) => `>${name}\n${residues.replace(/-/g, "")}`).join("\n")}\n`;
+  return `${input.sequences.map(({ name, residues }) => `>${name}\n${residues.replace(/[-*]/g, "")}`).join("\n")}\n`;
 }

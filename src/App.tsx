@@ -1255,8 +1255,10 @@ export function App() {
           <div className="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="raw-input-title" onMouseDown={(event) => event.stopPropagation()}>
             <span className="eyebrow">Raw protein sequences</span>
             <h2 id="raw-input-title">Align {rawInput.parsed.sequences.length} sequences</h2>
-            <p>{rawInput.filename} contains unaligned proteins. Their original lengths are preserved until MAFFT computes an alignment.</p>
-            <ul>{rawInput.parsed.sequences.map((sequence) => <li key={sequence.name}>{sequence.name} · {sequence.residues.length} residues</li>)}</ul>
+            <p>{rawInput.filename} contains sequences that need alignment. Atlas preserves the source file unchanged.</p>
+            {rawInput.parsed.gapCount > 0 && <p role="status">{rawInput.parsed.gapCount} existing gap{rawInput.parsed.gapCount === 1 ? "" : "s"} will be removed from the MAFFT input before a new alignment is computed. Review this if the gap marks have a special meaning.</p>}
+            {rawInput.parsed.stopCount > 0 && <p role="status">{rawInput.parsed.stopCount} stop marker{rawInput.parsed.stopCount === 1 ? "" : "s"} (*) will be omitted from the protein alignment; these are not amino acids. The original file remains unchanged.</p>}
+            <ul>{rawInput.parsed.sequences.map((sequence) => <li key={sequence.name}>{sequence.name} · {sequence.residues.replace(/[-*]/g, "").length} amino acids</li>)}</ul>
             {error && <p className="error" role="alert">{error}</p>}
             <div className="dialog-actions">
               <button disabled={aligning} onClick={() => { setRawInput(null); setError(""); }}>Cancel</button>
